@@ -1,0 +1,20 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: Ruff check
+        entry: python -m ruff check .
+        language: system
+        pass_filenames: false
+
+      - id: ruff-format-check
+        name: Ruff format check
+        entry: python -m ruff format --check .
+        language: system
+        pass_filenames: false
+
+      - id: project-smoke-test
+        name: Project smoke test
+        entry: python -m pytest tests/test_project_boot.py
+        language: system
+        pass_filenames: false
