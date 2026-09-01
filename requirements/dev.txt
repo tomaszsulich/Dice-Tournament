@@ -1,0 +1,11 @@
+-r base.txt
+
+# Testing
+pytest
+pytest-django
+factory-boy
+Faker
+
+# Development / code quality
+ruff
+pre-commit
