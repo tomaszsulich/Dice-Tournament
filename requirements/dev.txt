@@ -1,11 +1,13 @@
 -r base.txt
 
 # Testing
+coverage
+factory-boy
+faker
 pytest
 pytest-django
-factory-boy
-Faker
+pytest-mock
 
 # Development / code quality
-ruff
 pre-commit
+ruff
