@@ -48,6 +48,12 @@ class Tournament(models.Model):
         default=RegistrationMode.ORGANIZER_ONLY,
     )
 
+    organizers = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        through="TournamentOrganizer",
+        related_name="organized_tournaments",
+    )
+
     min_participants = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1)],
     )

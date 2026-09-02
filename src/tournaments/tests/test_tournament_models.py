@@ -229,6 +229,21 @@ def test_tournament_allows_multiple_organizers():
 
 
 @pytest.mark.django_db
+def test_tournament_exposes_organizers_many_to_many_relation():
+    tournament = build_tournament()
+    tournament.save()
+    organizer = UserFactory.create()
+
+    TournamentOrganizer.objects.create(
+        tournament=tournament,
+        user=organizer,
+    )
+
+    assert list(tournament.organizers.all()) == [organizer]
+    assert list(organizer.organized_tournaments.all()) == [tournament]
+
+
+@pytest.mark.django_db
 def test_tournament_organizer_does_not_need_staff_status():
     tournament = build_tournament()
     tournament.save()
