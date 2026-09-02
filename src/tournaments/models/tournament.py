@@ -8,6 +8,7 @@ from django.db import models
 from tournaments.domain.tournament.types import (
     DecisionTimeLimit,
     EventMode,
+    PokerScoringVariant,
     RegistrationMode,
     TournamentStatus,
 )
@@ -21,6 +22,7 @@ FROZEN_CONFIGURATION_FIELDS = (
     "max_participants",
     "group_rounds",
     "table_size",
+    "poker_scoring_variant",
     "decision_time_limit",
     "event_mode",
 )
@@ -85,6 +87,11 @@ class Tournament(models.Model):
             MinValueValidator(MIN_TABLE_SIZE),
             MaxValueValidator(MAX_TABLE_SIZE),
         ],
+    )
+
+    poker_scoring_variant = models.CharField(
+        max_length=1,
+        choices=PokerScoringVariant,
     )
 
     decision_time_limit = models.PositiveSmallIntegerField(

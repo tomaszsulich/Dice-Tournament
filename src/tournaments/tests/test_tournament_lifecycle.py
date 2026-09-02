@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 
 from tournaments.domain.tournament.types import (
     EventMode,
+    PokerScoringVariant,
     RegistrationMode,
     TournamentStatus,
 )
@@ -25,6 +26,7 @@ def tournament(db):
         timezone="Europe/Warsaw",
         group_rounds=5,
         table_size=4,
+        poker_scoring_variant=PokerScoringVariant.A,
         event_mode=EventMode.IN_PERSON,
     )
 

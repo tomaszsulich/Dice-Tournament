@@ -5,6 +5,7 @@ from django.db import IntegrityError
 from accounts.tests.factories import UserFactory
 from tournaments.domain.tournament.types import (
     EventMode,
+    PokerScoringVariant,
     RegistrationMode,
     TournamentStatus,
 )
@@ -21,6 +22,7 @@ def build_tournament(**overrides):
         "timezone": "Europe/Warsaw",
         "group_rounds": 5,
         "table_size": 4,
+        "poker_scoring_variant": PokerScoringVariant.A,
         "event_mode": EventMode.IN_PERSON,
     }
 
@@ -138,6 +140,33 @@ def test_tournament_rejects_unsupported_table_sizes(table_size):
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
+    "poker_scoring_variant",
+    [PokerScoringVariant.A, PokerScoringVariant.B],
+)
+def test_tournament_accepts_supported_poker_scoring_variants(
+    poker_scoring_variant,
+):
+    tournament = build_tournament(
+        poker_scoring_variant=poker_scoring_variant,
+    )
+
+    tournament.full_clean()
+
+
+@pytest.mark.django_db
+def test_tournament_rejects_unsupported_poker_scoring_variant():
+    tournament = build_tournament(
+        poker_scoring_variant="standard",
+    )
+
+    with pytest.raises(ValidationError) as exc_info:
+        tournament.full_clean()
+
+    assert "poker_scoring_variant" in exc_info.value.message_dict
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
     "event_mode",
     [EventMode.IN_PERSON, EventMode.REMOTE],
 )
@@ -174,6 +203,7 @@ def test_tournament_rejects_invalid_timezone():
         ("max_participants", 64),
         ("group_rounds", 10),
         ("table_size", 6),
+        ("poker_scoring_variant", PokerScoringVariant.B),
         ("decision_time_limit", 60),
         ("event_mode", EventMode.REMOTE),
     ],
@@ -203,6 +233,7 @@ def test_tournament_allows_configuration_change_before_start():
     tournament.save()
 
     tournament.table_size = 6
+    tournament.poker_scoring_variant = PokerScoringVariant.B
     tournament.event_mode = EventMode.REMOTE
     tournament.full_clean()
 

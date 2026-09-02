@@ -18,6 +18,11 @@ class EventMode(models.TextChoices):
     REMOTE = "remote", "Remote"
 
 
+class PokerScoringVariant(models.TextChoices):
+    A = "a", "Variant A — descending"
+    B = "b", "Variant B — ascending"
+
+
 class DecisionTimeLimit(models.IntegerChoices):
     UNLIMITED = 0, "Unlimited"
     SECONDS_30 = 30, "30 seconds"
