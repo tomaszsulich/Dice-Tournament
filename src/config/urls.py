@@ -17,7 +17,7 @@ Including another URLconf
 
 from django.contrib import admin
 from django.http import HttpRequest, JsonResponse
-from django.urls import path
+from django.urls import include, path
 
 
 def health_live(request: HttpRequest):
@@ -26,5 +26,6 @@ def health_live(request: HttpRequest):
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/", include("accounts.api.urls")),
     path("health/live/", health_live),
 ]
