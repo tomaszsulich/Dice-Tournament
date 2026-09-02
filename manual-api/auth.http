@@ -1,0 +1,43 @@
+@access_token = ACCESS_TOKEN
+@refresh_token = REFRESH_TOKEN
+
+### Login — obtain access and refresh tokens
+POST http://127.0.0.1:8000/api/auth/jwt/create/
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "test-password"
+}
+
+### Refresh — obtain a new access token
+POST http://127.0.0.1:8000/api/auth/jwt/refresh/
+Content-Type: application/json
+
+{
+  "refresh": "{{refresh_token}}"
+}
+
+### Protected profile — authenticated request
+GET http://127.0.0.1:8000/api/profile/
+Authorization: Bearer {{access_token}}
+
+### Protected profile — missing access token -> 401
+GET http://127.0.0.1:8000/api/profile/
+
+### Logout — blacklist refresh token
+POST http://127.0.0.1:8000/api/auth/logout/
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+  "refresh": "{{refresh_token}}"
+}
+
+### Refresh after logout — must not issue a new access token
+POST http://127.0.0.1:8000/api/auth/jwt/refresh/
+Content-Type: application/json
+
+{
+  "refresh": "{{refresh_token}}"
+}
