@@ -28,3 +28,10 @@ class DecisionTimeLimit(models.IntegerChoices):
     SECONDS_30 = 30, "30 seconds"
     SECONDS_60 = 60, "60 seconds"
     SECONDS_90 = 90, "90 seconds"
+
+
+class ParticipantStatus(models.TextChoices):
+    REGISTERED = "registered", "Registered"
+    ACTIVE = "active", "Active"
+    WITHDRAWN = "withdrawn", "Withdrawn"
+    ELIMINATED = "eliminated", "Eliminated"

@@ -56,6 +56,12 @@ class Tournament(models.Model):
         related_name="organized_tournaments",
     )
 
+    participants = models.ManyToManyField(
+        "accounts.PlayerProfile",
+        through="TournamentParticipant",
+        related_name="tournaments",
+    )
+
     min_participants = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1)],
     )
