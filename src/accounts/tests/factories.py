@@ -7,10 +7,18 @@ from accounts.models import PlayerProfile
 class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = get_user_model()
+        skip_postgeneration_save = True
 
     username = factory.Faker("user_name")
     email = factory.Faker("email")
-    password = factory.PostGenerationMethodCall("set_password", "test-password")
+
+    @factory.post_generation
+    def password(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        self.set_password(extracted or "test-password")
+        self.save(update_fields=["password"])
 
 
 class PlayerProfileFactory(factory.django.DjangoModelFactory):
