@@ -1,0 +1,102 @@
+@base_url = http://127.0.0.1:8000
+@access_token = ACCESS_TOKEN
+@second_access_token = SECOND_ACCESS_TOKEN
+@open_tournament_id = OPEN_TOURNAMENT_ID
+@organizer_only_tournament_id = ORGANIZER_ONLY_TOURNAMENT_ID
+@full_tournament_id = FULL_TOURNAMENT_ID
+@missing_tournament_id = 999999
+@last_place_tournament_id = LAST_PLACE_TOURNAMENT_ID
+
+### Open registrations — authenticated minimal list
+GET {{base_url}}/api/tournaments/?available_to_join=true
+Authorization: Bearer {{access_token}}
+
+### Open registrations — missing token -> 401
+GET {{base_url}}/api/tournaments/?available_to_join=true
+
+### Join — authenticated user joins in own identity -> 201
+POST {{base_url}}/api/tournaments/{{open_tournament_id}}/join/
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{}
+
+### Join — forbidden client-controlled start number -> 400
+POST {{base_url}}/api/tournaments/{{open_tournament_id}}/join/
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+  "start_number": 7
+}
+
+### Join — forbidden team id -> 400
+POST {{base_url}}/api/tournaments/{{open_tournament_id}}/join/
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+  "team_id": 1
+}
+
+### Join — forbidden player id / identity override -> 400
+POST {{base_url}}/api/tournaments/{{open_tournament_id}}/join/
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+  "player_id": 1
+}
+
+### Join — organizer-only registration -> 403
+POST {{base_url}}/api/tournaments/{{organizer_only_tournament_id}}/join/
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{}
+
+### Join — missing tournament -> 404
+POST {{base_url}}/api/tournaments/{{missing_tournament_id}}/join/
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{}
+
+### Join — duplicate active registration -> 409
+# Run the successful join above twice with the same user and tournament.
+POST {{base_url}}/api/tournaments/{{open_tournament_id}}/join/
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{}
+
+### Join — full tournament -> 409
+POST {{base_url}}/api/tournaments/{{full_tournament_id}}/join/
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{}
+
+### Leave — own participation before start -> 200 and WITHDRAWN
+POST {{base_url}}/api/tournaments/{{open_tournament_id}}/leave/
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{}
+
+### Last place — request A
+# Prepare a REGISTRATION/OPEN tournament with exactly one free place.
+POST {{base_url}}/api/tournaments/{{last_place_tournament_id}}/join/
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{}
+
+### Last place — request B
+# Send concurrently with request A from a second authenticated user.
+# Exactly one request must return 201 and the other 409 TOURNAMENT_FULL.
+POST {{base_url}}/api/tournaments/{{last_place_tournament_id}}/join/
+Authorization: Bearer {{second_access_token}}
+Content-Type: application/json
+
+{}
