@@ -27,5 +27,6 @@ def health_live(request: HttpRequest):
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("accounts.api.urls")),
+    path("api/", include("tournaments.api.urls")),
     path("health/live/", health_live),
 ]
