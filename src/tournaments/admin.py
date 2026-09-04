@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from tournaments.models import Tournament, TournamentOrganizer
+from tournaments.models import Round, Tournament, TournamentOrganizer
 
 
 class TournamentOrganizerInline(admin.TabularInline):
@@ -37,6 +37,24 @@ class TournamentAdmin(admin.ModelAdmin):
     )
 
     inlines = (TournamentOrganizerInline,)
+
+
+@admin.register(Round)
+class RoundAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "tournament",
+        "number",
+        "name",
+        "status",
+        "started_at",
+        "ended_at",
+    )
+
+    list_filter = ("status", "type")
+    search_fields = ("name", "tournament__name")
+    ordering = ("tournament", "number")
+    readonly_fields = ("status", "started_at", "ended_at")
 
 
 @admin.register(TournamentOrganizer)
