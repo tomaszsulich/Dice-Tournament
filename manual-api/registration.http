@@ -7,11 +7,11 @@
 @missing_tournament_id = 999999
 @last_place_tournament_id = LAST_PLACE_TOURNAMENT_ID
 
-### Open registrations — authenticated minimal list
+### Tournament registration — open tournaments, authenticated minimal list
 GET {{base_url}}/api/tournaments/?available_to_join=true
 Authorization: Bearer {{access_token}}
 
-### Open registrations — missing token -> 401
+### Tournament registration — open tournaments, missing token -> 401
 GET {{base_url}}/api/tournaments/?available_to_join=true
 
 ### Join — authenticated user joins in own identity -> 201
@@ -48,7 +48,7 @@ Content-Type: application/json
   "player_id": 1
 }
 
-### Join — organizer-only registration -> 403
+### Join — organizer-only tournament registration -> 403
 POST {{base_url}}/api/tournaments/{{organizer_only_tournament_id}}/join/
 Authorization: Bearer {{access_token}}
 Content-Type: application/json
@@ -62,7 +62,7 @@ Content-Type: application/json
 
 {}
 
-### Join — duplicate active registration -> 409
+### Join — duplicate active tournament registration -> 409
 # Run the successful join above twice with the same user and tournament.
 POST {{base_url}}/api/tournaments/{{open_tournament_id}}/join/
 Authorization: Bearer {{access_token}}
