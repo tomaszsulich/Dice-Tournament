@@ -1,13 +1,40 @@
 import pytest
+from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APIClient
 
+from accounts.models import PlayerProfile
 from accounts.tests.factories import PlayerProfileFactory, UserFactory
 
 
 @pytest.fixture
 def api_client():
     return APIClient()
+
+
+@pytest.mark.integration
+@pytest.mark.postgres
+@pytest.mark.django_db
+def test_account_registration_creates_user_without_player_profile(api_client):
+    payload = {
+        "username": "newplayer",
+        "email": "newplayer@example.com",
+        "password": "Example-Password-42",
+    }
+
+    response = api_client.post(
+        "/api/auth/users/",
+        payload,
+        format="json",
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+
+    user = get_user_model().objects.get(username=payload["username"])
+
+    assert user.email == payload["email"]
+    assert user.check_password(payload["password"])
+    assert not PlayerProfile.objects.filter(user=user).exists()
 
 
 @pytest.mark.integration

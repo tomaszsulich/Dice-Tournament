@@ -1,8 +1,19 @@
+@base_url = http://127.0.0.1:8000
 @access_token = ACCESS_TOKEN
 @refresh_token = REFRESH_TOKEN
 
+### Account registration — create a user account by Djoser
+POST {{base_url}}/api/auth/users/
+Content-Type: application/json
+
+{
+  "username": "newplayer",
+  "email": "newplayer@example.com",
+  "password": "Example-Password-42"
+}
+
 ### Login — obtain access and refresh tokens
-POST http://127.0.0.1:8000/api/auth/jwt/create/
+POST {{base_url}}/api/auth/jwt/create/
 Content-Type: application/json
 
 {
@@ -11,7 +22,7 @@ Content-Type: application/json
 }
 
 ### Refresh — obtain a new access token
-POST http://127.0.0.1:8000/api/auth/jwt/refresh/
+POST {{base_url}}/api/auth/jwt/refresh/
 Content-Type: application/json
 
 {
@@ -19,14 +30,14 @@ Content-Type: application/json
 }
 
 ### Protected profile — authenticated request
-GET http://127.0.0.1:8000/api/profile/
+GET {{base_url}}/api/profile/
 Authorization: Bearer {{access_token}}
 
 ### Protected profile — missing access token -> 401
-GET http://127.0.0.1:8000/api/profile/
+GET {{base_url}}/api/profile/
 
 ### Logout — blacklist refresh token
-POST http://127.0.0.1:8000/api/auth/logout/
+POST {{base_url}}/api/auth/logout/
 Authorization: Bearer {{access_token}}
 Content-Type: application/json
 
@@ -35,7 +46,7 @@ Content-Type: application/json
 }
 
 ### Refresh after logout — must not issue a new access token
-POST http://127.0.0.1:8000/api/auth/jwt/refresh/
+POST {{base_url}}/api/auth/jwt/refresh/
 Content-Type: application/json
 
 {
