@@ -1,3 +1,5 @@
+from secrets import SystemRandom
+
 from django.db.models import Count, F, Q
 from django.http import HttpRequest
 from django.utils import timezone
@@ -17,6 +19,15 @@ from tournaments.serializers.registration import (
     EmptyRegistrationCommandSerializer,
     OpenTournamentSerializer,
 )
+from tournaments.serializers.roll import RollCommandSerializer
+from tournaments.services.dice.roll_dice import (
+    GameNotFound,
+    InvalidRollPayload,
+    RollForbidden,
+    RollUnavailable,
+    execute_roll,
+)
+from tournaments.services.idempotency import IdempotencyConflict
 from tournaments.services.participants import (
     AlreadyRegistered,
     ParticipationNotFound,
@@ -30,14 +41,14 @@ from tournaments.services.participants import (
 )
 
 
-def _domain_error(code: str, response_status: int) -> Response:
+def _domain_error(code: str, response_status: int):
     return Response(
         {"code": code},
         status=response_status,
     )
 
 
-def _validate_empty_command(request: HttpRequest) -> Response | None:
+def _validate_empty_command(request: HttpRequest):
     serializer = EmptyRegistrationCommandSerializer(data=request.data)
 
     if not serializer.is_valid():
@@ -133,3 +144,40 @@ def leave(request: HttpRequest, tournament_id: int):
 
     serializer = TournamentParticipantSerializer(participant)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def roll_game(request: HttpRequest, game_id: int):
+    key = request.headers.get("Idempotency-Key")
+
+    if not key or len(key) > 128:
+        return Response(
+            {"idempotency_key": ["A valid Idempotency-Key header is required."]},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    serializer = RollCommandSerializer(data=request.data)
+
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        response = execute_roll(
+            user=request.user,
+            game_id=game_id,
+            payload=serializer.validated_data,
+            key=key,
+            rng=SystemRandom(),
+            publisher=lambda _event, _payload: None,
+        )
+    except GameNotFound as exc:
+        return _domain_error(exc.code, status.HTTP_404_NOT_FOUND)
+    except RollForbidden as exc:
+        return _domain_error(exc.code, status.HTTP_403_FORBIDDEN)
+    except InvalidRollPayload as exc:
+        return _domain_error(exc.code, status.HTTP_400_BAD_REQUEST)
+    except (IdempotencyConflict, RollUnavailable) as exc:
+        return _domain_error(exc.code, status.HTTP_409_CONFLICT)
+
+    return Response(response, status=status.HTTP_201_CREATED)
