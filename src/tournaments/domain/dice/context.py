@@ -46,7 +46,7 @@ class ScoringContext:
     roll_number: int
     config: ScoringConfig
 
-    def __post_init__(self) -> None:
+    def __post_init__(self):
         if not MIN_ROLL_NUMBER <= self.roll_number <= MAX_ROLL_NUMBER:
             raise InvalidRollNumberError(
                 f"Roll number must be between {MIN_ROLL_NUMBER} and {MAX_ROLL_NUMBER}."

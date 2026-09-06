@@ -127,7 +127,7 @@ def test_scoring_context_and_config_are_immutable() -> None:
 
 
 @pytest.mark.unit
-def test_score_category_is_closed_and_has_approved_ui_labels() -> None:
+def test_score_category_is_closed_and_has_stable_values_and_ui_labels() -> None:
     expected = {
         ScoreCategory.ONES: ("ones", "1"),
         ScoreCategory.TWOS: ("twos", "2"),
@@ -182,19 +182,23 @@ def test_school_categories_are_exactly_the_six_number_fields() -> None:
 @pytest.mark.unit
 def test_scoring_result_variants_are_disjoint_and_immutable() -> None:
     points = PointsResult(points=18)
-    school = SchoolSuccessResult(category=ScoreCategory.THREES)
+    school = SchoolSuccessResult(category=ScoreCategory.THREES, balance=0)
     strike_off = FigureStrikeOffResult()
 
     assert type(points) is PointsResult
     assert type(school) is SchoolSuccessResult
     assert type(strike_off) is FigureStrikeOffResult
     assert school.category is ScoreCategory.THREES
+    assert school.balance == 0
 
     with pytest.raises(FrozenInstanceError):
         points.points = 0  # type: ignore[misc]
 
     with pytest.raises(FrozenInstanceError):
         school.category = ScoreCategory.FOURS  # type: ignore[misc]
+
+    with pytest.raises(FrozenInstanceError):
+        school.balance = 3  # type: ignore[misc]
 
 
 @pytest.mark.unit
@@ -212,12 +216,11 @@ def test_scoring_result_variants_are_disjoint_and_immutable() -> None:
 def test_school_result_accepts_each_school_category(
     category: ScoreCategory,
 ) -> None:
-    result = SchoolSuccessResult(category=category)
-
+    result = SchoolSuccessResult(category=category, balance=0)
     assert result.category is category
 
 
 @pytest.mark.unit
 def test_school_result_rejects_non_school_category() -> None:
     with pytest.raises(ValueError, match="requires one of the 1-6 school categories"):
-        SchoolSuccessResult(category=ScoreCategory.PAIR)
+        SchoolSuccessResult(category=ScoreCategory.PAIR, balance=0)

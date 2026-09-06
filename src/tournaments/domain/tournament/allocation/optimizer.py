@@ -201,7 +201,7 @@ def _replace_basket_members(
     candidate: AllocationCandidate,
     participant_ids: tuple[int, ...],
     replacements: Mapping[int, int],
-) -> AllocationCandidate:
+):
     participant_id_set = set(participant_ids)
     groups = [list(group) for group in candidate.assignments]
 
@@ -219,7 +219,7 @@ def _swap_participants(
     candidate: AllocationCandidate,
     first_id: int,
     second_id: int,
-) -> AllocationCandidate:
+):
     groups = [list(group) for group in candidate.assignments]
 
     for group in groups:

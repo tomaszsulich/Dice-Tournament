@@ -11,8 +11,9 @@ class PointsResult:
 @dataclass(frozen=True, slots=True)
 class SchoolSuccessResult:
     category: ScoreCategory
+    balance: int
 
-    def __post_init__(self) -> None:
+    def __post_init__(self):
         if self.category not in SCHOOL_CATEGORIES:
             raise ValueError("School result requires one of the 1-6 school categories.")
 
