@@ -41,11 +41,6 @@ def build_tournament(**overrides):
     return tournament
 
 
-@pytest.fixture
-def api_client():
-    return APIClient()
-
-
 @pytest.mark.django_db
 def test_open_registration_list_requires_authentication(api_client):
     response = api_client.get("/api/tournaments/?available_to_join=true")

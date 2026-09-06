@@ -6,7 +6,7 @@ from django.db import close_old_connections
 
 from tournaments.models import Roll
 from tournaments.services.dice.roll_dice import execute_roll
-from tournaments.tests.test_roll_service import FakeRandomizer
+from tournaments.tests.helpers import FakeRandomizer
 
 
 @pytest.mark.django_db(transaction=True)

@@ -1,5 +1,3 @@
-from collections import deque
-
 import pytest
 
 from accounts.tests.factories import PlayerProfileFactory
@@ -17,16 +15,7 @@ from tournaments.services.dice.roll_dice import (
     execute_roll,
 )
 from tournaments.services.idempotency import IdempotencyConflict
-
-
-class FakeRandomizer:
-    def __init__(self, values):
-        self.values = deque(values)
-        self.calls = 0
-
-    def randint(self, _a, _b):
-        self.calls += 1
-        return self.values.popleft()
+from tournaments.tests.helpers import FakeRandomizer
 
 
 @pytest.mark.django_db

@@ -1,15 +1,9 @@
 import pytest
 from django.contrib.auth import get_user_model
 from rest_framework import status
-from rest_framework.test import APIClient
 
 from accounts.models import PlayerProfile
 from accounts.tests.factories import PlayerProfileFactory, UserFactory
-
-
-@pytest.fixture
-def api_client():
-    return APIClient()
 
 
 @pytest.mark.integration
