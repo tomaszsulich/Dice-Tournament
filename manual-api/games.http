@@ -1,0 +1,59 @@
+@baseUrl = http://127.0.0.1:8000/api
+@accessToken = REPLACE_WITH_ACCESS_TOKEN
+@gameId = 1
+
+### STATIONARY — first roll
+POST {{baseUrl}}/games/{{gameId}}/roll/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+Idempotency-Key: stationary-roll-1
+
+{"values": [1, 2, 3, 4, 5]}
+
+### Retry exactly the same accepted command — must replay, not create Roll #2
+POST {{baseUrl}}/games/{{gameId}}/roll/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+Idempotency-Key: stationary-roll-1
+
+{"values": [1, 2, 3, 4, 5]}
+
+### Same key, different payload — 409
+POST {{baseUrl}}/games/{{gameId}}/roll/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+Idempotency-Key: stationary-roll-1
+
+{"values": [6, 2, 3, 4, 5]}
+
+### STATIONARY — second roll (use a new key)
+POST {{baseUrl}}/games/{{gameId}}/roll/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+Idempotency-Key: stationary-roll-2
+
+{"values": [1, 6, 3, 6, 5]}
+
+### STATIONARY — third roll
+POST {{baseUrl}}/games/{{gameId}}/roll/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+Idempotency-Key: stationary-roll-3
+
+{"values": [1, 6, 3, 6, 6]}
+
+### Fourth roll — 409
+POST {{baseUrl}}/games/{{gameId}}/roll/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+Idempotency-Key: stationary-roll-4
+
+{"values": [1, 6, 3, 6, 6]}
+
+### REMOTE — client sends intent only; use this against a REMOTE game
+POST {{baseUrl}}/games/{{gameId}}/roll/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+Idempotency-Key: remote-roll-1
+
+{}

@@ -2,7 +2,7 @@ import pytest
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.test import APIClient, APIRequestFactory, force_authenticate
+from rest_framework.test import APIRequestFactory, force_authenticate
 from rest_framework.views import APIView
 
 from accounts.api.permissions import IsOwner
@@ -20,11 +20,6 @@ class OwnerOnlyTestView(APIView):
     def get(self, request, profile):
         self.check_object_permissions(request, profile)
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-@pytest.fixture
-def api_client():
-    return APIClient()
 
 
 @pytest.mark.unit

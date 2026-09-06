@@ -1,14 +1,8 @@
 import pytest
 from rest_framework import status
-from rest_framework.test import APIClient
 
 from tournaments.domain.tournament.types import EventMode
 from tournaments.models import Roll
-
-
-@pytest.fixture
-def api_client():
-    return APIClient()
 
 
 @pytest.mark.django_db
