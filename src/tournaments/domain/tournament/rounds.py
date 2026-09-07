@@ -3,6 +3,7 @@ from django.db import models
 
 class RoundType(models.TextChoices):
     GROUP = "group", "Group"
+    OVERTIME = "overtime", "Overtime"
 
 
 class RoundStatus(models.TextChoices):

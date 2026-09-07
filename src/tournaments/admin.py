@@ -1,6 +1,16 @@
+from collections.abc import Callable
+
 from django.contrib import admin
+from django.core.exceptions import ValidationError
+from django.db.models import QuerySet
+from django.http import HttpRequest
 
 from tournaments.models import Round, Tournament, TournamentOrganizer
+from tournaments.services.tournament_lifecycle import (
+    complete_tournament,
+    open_registration,
+    start_tournament,
+)
 
 
 class TournamentOrganizerInline(admin.TabularInline):
@@ -10,6 +20,42 @@ class TournamentOrganizerInline(admin.TabularInline):
 
 @admin.register(Tournament)
 class TournamentAdmin(admin.ModelAdmin):
+    actions = (
+        "open_registration_action",
+        "start_tournament_action",
+        "complete_tournament_action",
+    )
+
+    @admin.action(description="Open registration")
+    def open_registration_action(
+        self, request: HttpRequest, queryset: QuerySet[Tournament]
+    ):
+        self._run_lifecycle_action(request, queryset, open_registration)
+
+    @admin.action(description="Start tournament")
+    def start_tournament_action(
+        self, request: HttpRequest, queryset: QuerySet[Tournament]
+    ):
+        self._run_lifecycle_action(request, queryset, start_tournament)
+
+    @admin.action(description="Complete tournament")
+    def complete_tournament_action(
+        self, request: HttpRequest, queryset: QuerySet[Tournament]
+    ):
+        self._run_lifecycle_action(request, queryset, complete_tournament)
+
+    def _run_lifecycle_action(
+        self,
+        request: HttpRequest,
+        queryset: QuerySet[Tournament],
+        command: Callable[[Tournament], None],
+    ):
+        for tournament in queryset:
+            try:
+                command(tournament)
+            except ValidationError as exc:
+                self.message_user(request, f"{tournament}: {exc}", level="ERROR")
+
     list_display = (
         "name",
         "status",
