@@ -33,7 +33,7 @@ def test_remote_first_roll_uses_backend_rng_for_all_five_dice(roll_setup):
     )
 
     assert response["values"] == [1, 2, 3, 4, 5]
-    assert response["held_before_roll"] == [False] * 5
+    assert response["held_after_roll"] == [False] * 5
     assert rng.calls == 5
 
 
@@ -66,7 +66,7 @@ def test_remote_second_roll_randomizes_only_unheld_positions(roll_setup):
     )
 
     assert response["values"] == [1, 6, 3, 6, 6]
-    assert response["held_before_roll"] == [True, False, True, False, False]
+    assert response["held_after_roll"] == [True, False, True, False, False]
     assert rng.calls == 3
 
 

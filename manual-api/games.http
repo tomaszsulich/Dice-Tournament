@@ -1,5 +1,6 @@
 @baseUrl = http://127.0.0.1:8000/api
-@accessToken = REPLACE_WITH_ACCESS_TOKEN
+@accessToken = ACCESS_TOKEN
+@secondAccessToken = SECOND_ACCESS_TOKEN
 @gameId = 1
 
 ### STATIONARY — first roll
@@ -57,3 +58,78 @@ Content-Type: application/json
 Idempotency-Key: remote-roll-1
 
 {}
+
+### HOLD — after an accepted first roll, exactly five booleans
+POST {{baseUrl}}/games/{{gameId}}/holds/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{"held": [true, false, true, false, false]}
+
+### HOLD — invalid before first roll or after third roll — 409
+POST {{baseUrl}}/games/{{gameId}}/holds/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{"held": [false, false, false, false, false]}
+
+### CHOOSE CATEGORY — backend owns player identity and points
+POST {{baseUrl}}/games/{{gameId}}/choose-category/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+Idempotency-Key: choose-chance-1
+
+{"category": "chance"}
+
+### Retry the same accepted category command — same response, no second score
+POST {{baseUrl}}/games/{{gameId}}/choose-category/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+Idempotency-Key: choose-chance-1
+
+{"category": "chance"}
+
+### Same category key with different payload — 409
+POST {{baseUrl}}/games/{{gameId}}/choose-category/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+Idempotency-Key: choose-chance-1
+
+{"category": "pair", "pair_value": 6}
+
+### Client must not send player_id or points — 400
+POST {{baseUrl}}/games/{{gameId}}/choose-category/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+Idempotency-Key: forbidden-owned-fields
+
+{"category": "chance", "player_id": 123, "points": 999}
+
+### Other participant attempts the current player's category — 403
+# Define @secondAccessToken locally before running this request.
+POST {{baseUrl}}/games/{{gameId}}/choose-category/
+Authorization: Bearer {{secondAccessToken}}
+Content-Type: application/json
+Idempotency-Key: foreign-category
+
+{"category": "chance"}
+
+### Action outside the caller's turn — 403 after the queue has advanced
+POST {{baseUrl}}/games/{{gameId}}/holds/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{"held": [true, false, false, false, false]}
+
+### Reusing an already occupied scorecard field — 409 CATEGORY_ALREADY_USED
+# Run when the same participant becomes active again after Chance was already used.
+POST {{baseUrl}}/games/{{gameId}}/choose-category/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+Idempotency-Key: reuse-chance-new-turn
+
+{"category": "chance"}
+
+### Current authoritative turn state — can_roll is calculated, not persisted
+GET {{baseUrl}}/games/{{gameId}}/state/
+Authorization: Bearer {{accessToken}}

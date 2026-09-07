@@ -1,9 +1,9 @@
-@base_url = http://127.0.0.1:8000
-@access_token = ACCESS_TOKEN
-@refresh_token = REFRESH_TOKEN
+@baseUrl = http://127.0.0.1:8000
+@accessToken = ACCESS_TOKEN
+@refreshToken = REFRESH_TOKEN
 
 ### Account registration — create a user account by Djoser
-POST {{base_url}}/api/auth/users/
+POST {{baseUrl}}/api/auth/users/
 Content-Type: application/json
 
 {
@@ -13,7 +13,7 @@ Content-Type: application/json
 }
 
 ### Login — obtain access and refresh tokens
-POST {{base_url}}/api/auth/jwt/create/
+POST {{baseUrl}}/api/auth/jwt/create/
 Content-Type: application/json
 
 {
@@ -22,33 +22,33 @@ Content-Type: application/json
 }
 
 ### Refresh — obtain a new access token
-POST {{base_url}}/api/auth/jwt/refresh/
+POST {{baseUrl}}/api/auth/jwt/refresh/
 Content-Type: application/json
 
 {
-  "refresh": "{{refresh_token}}"
+  "refresh": "{{refreshToken}}"
 }
 
 ### Protected profile — authenticated request
-GET {{base_url}}/api/profile/
-Authorization: Bearer {{access_token}}
+GET {{baseUrl}}/api/profile/
+Authorization: Bearer {{accessToken}}
 
 ### Protected profile — missing access token -> 401
-GET {{base_url}}/api/profile/
+GET {{baseUrl}}/api/profile/
 
 ### Logout — blacklist refresh token
-POST {{base_url}}/api/auth/logout/
-Authorization: Bearer {{access_token}}
+POST {{baseUrl}}/api/auth/logout/
+Authorization: Bearer {{accessToken}}
 Content-Type: application/json
 
 {
-  "refresh": "{{refresh_token}}"
+  "refresh": "{{refreshToken}}"
 }
 
 ### Refresh after logout — must not issue a new access token
-POST {{base_url}}/api/auth/jwt/refresh/
+POST {{baseUrl}}/api/auth/jwt/refresh/
 Content-Type: application/json
 
 {
-  "refresh": "{{refresh_token}}"
+  "refresh": "{{refreshToken}}"
 }

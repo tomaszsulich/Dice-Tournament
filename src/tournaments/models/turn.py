@@ -31,6 +31,7 @@ class Turn(models.Model):
 
     @property
     def held_dice(self) -> tuple[bool, bool, bool, bool, bool]:
+        """Return the current mutable hold selection for this turn."""
         return (
             self.held_die_1,
             self.held_die_2,
