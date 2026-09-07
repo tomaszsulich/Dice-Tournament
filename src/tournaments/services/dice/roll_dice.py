@@ -15,7 +15,7 @@ from tournaments.services.idempotency import (
     replay_or_raise_conflict,
 )
 
-Publisher = Callable[[str, dict[str, int]], None]
+type Publisher = Callable[[str, dict[str, int]], None]
 
 
 class RollCommandError(Exception):
@@ -70,7 +70,7 @@ def execute_roll(
 
         previous_roll = turn.rolls.order_by("roll_number").last()
         roll_number = 1 if previous_roll is None else previous_roll.roll_number + 1
-        held_before = (False,) * 5 if previous_roll is None else turn.held_dice
+        held_dice = (False,) * 5 if previous_roll is None else turn.held_dice
 
         event_mode = turn.game_participant.game.round.tournament.event_mode
 
@@ -78,7 +78,7 @@ def execute_roll(
             event_mode=event_mode,
             payload=canonical,
             previous_roll=previous_roll,
-            held_before=held_before,
+            held_dice=held_dice,
             rng=rng,
         )
 
@@ -86,7 +86,7 @@ def execute_roll(
             turn=turn,
             roll_number=roll_number,
             values=values,
-            held_before=held_before,
+            held_after_roll=held_dice,
         )
 
         response = _serialize_roll(roll)
@@ -157,7 +157,7 @@ def _build_values(
     event_mode: str,
     payload: Mapping[str, Any],
     previous_roll: Roll | None,
-    held_before: tuple[bool, bool, bool, bool, bool],
+    held_dice: tuple[bool, bool, bool, bool, bool],
     rng: DiceRandomizer,
 ) -> tuple[int, int, int, int, int]:
     if event_mode == EventMode.REMOTE:
@@ -169,7 +169,7 @@ def _build_values(
         )
 
         return tuple(
-            previous_values[index] if held_before[index] else rng.randint(1, 6)
+            previous_values[index] if held_dice[index] else rng.randint(1, 6)
             for index in range(5)
         )
 
@@ -182,7 +182,7 @@ def _build_values(
         snapshot = tuple(values)
 
         if previous_roll is not None:
-            for index, held in enumerate(held_before):
+            for index, held in enumerate(held_dice):
                 if held and snapshot[index] != previous_roll.values[index]:
                     raise InvalidRollPayload
 
@@ -203,13 +203,13 @@ def _create_roll(
     turn: Turn,
     roll_number: int,
     values: tuple[int, int, int, int, int],
-    held_before: tuple[bool, bool, bool, bool, bool],
+    held_after_roll: tuple[bool, bool, bool, bool, bool],
 ) -> Roll:
     return Roll.objects.create(
         turn=turn,
         roll_number=roll_number,
         **{f"die_{index + 1}": value for index, value in enumerate(values)},
-        **{f"held_die_{index + 1}": held for index, held in enumerate(held_before)},
+        **{f"held_die_{index + 1}": held for index, held in enumerate(held_after_roll)},
     )
 
 
@@ -219,7 +219,7 @@ def _serialize_roll(roll: Roll) -> dict[str, Any]:
         "turn_id": roll.turn_id,
         "roll_number": roll.roll_number,
         "values": list(roll.values),
-        "held_before_roll": [
+        "held_after_roll": [
             roll.held_die_1,
             roll.held_die_2,
             roll.held_die_3,

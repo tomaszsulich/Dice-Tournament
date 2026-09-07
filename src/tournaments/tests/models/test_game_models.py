@@ -155,7 +155,7 @@ def test_game_participant_persists_turn_order_and_score_aggregates(game_setup):
 
 
 @pytest.mark.django_db
-def test_partial_reroll_stores_complete_snapshot_with_pre_roll_holds(game_setup):
+def test_partial_reroll_stores_complete_snapshot_with_post_roll_holds(game_setup):
     _tournament, _round_, _game, _game_participant, turn = game_setup
 
     Roll.objects.create(
@@ -184,7 +184,7 @@ def test_partial_reroll_stores_complete_snapshot_with_pre_roll_holds(game_setup)
     )
 
     assert second.values == (2, 2, 4, 4, 6)
-    assert second.held_before_roll == (True, True, False, False, True)
+    assert second.held_after_roll == (True, True, False, False, True)
 
 
 @pytest.mark.django_db(transaction=True)

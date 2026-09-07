@@ -3,9 +3,11 @@ import json
 from collections.abc import Mapping
 from typing import Any
 
+from accounts.models import User
 from tournaments.models import IdempotencyRecord
 
 ROLL_COMMAND = "ROLL"
+CATEGORY_COMMAND = "CHOOSE_CATEGORY"
 
 
 class IdempotencyConflict(Exception):
@@ -27,11 +29,17 @@ def hash_payload(payload: Mapping[str, Any]) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
-def find_idempotency_record(*, user, game_id: int, key: str):
+def find_idempotency_record(
+    *,
+    user: User,
+    game_id: int,
+    key: str,
+    command: str = ROLL_COMMAND,
+):
     return IdempotencyRecord.objects.filter(
         user=user,
         game_id=game_id,
-        command=ROLL_COMMAND,
+        command=command,
         key=key,
     ).first()
 

@@ -64,7 +64,8 @@ class Roll(models.Model):
         return (self.die_1, self.die_2, self.die_3, self.die_4, self.die_5)
 
     @property
-    def held_before_roll(self) -> tuple[bool, bool, bool, bool, bool]:
+    def held_after_roll(self) -> tuple[bool, bool, bool, bool, bool]:
+        """Return the immutable hold state immediately after this roll."""
         return (
             self.held_die_1,
             self.held_die_2,

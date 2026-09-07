@@ -13,19 +13,43 @@ from tournaments.domain.tournament.types import (
     RegistrationMode,
     TournamentStatus,
 )
-from tournaments.models import Tournament
+from tournaments.models import Game, Tournament, Turn
 from tournaments.serializers.participants import TournamentParticipantSerializer
 from tournaments.serializers.registration import (
     EmptyRegistrationCommandSerializer,
     OpenTournamentSerializer,
 )
 from tournaments.serializers.roll import RollCommandSerializer
+from tournaments.serializers.turn_flow import (
+    ChooseCategoryCommandSerializer,
+    HoldDiceCommandSerializer,
+    TurnStateSerializer,
+)
+from tournaments.services.dice.hold_dice import (
+    GameNotFound as HoldGameNotFound,
+)
+from tournaments.services.dice.hold_dice import (
+    HoldForbidden,
+    HoldUnavailable,
+    InvalidHoldPayload,
+    set_held_dice,
+)
 from tournaments.services.dice.roll_dice import (
     GameNotFound,
     InvalidRollPayload,
     RollForbidden,
     RollUnavailable,
     execute_roll,
+)
+from tournaments.services.dice.select_category import (
+    CategoryAlreadyUsed,
+    CategoryForbidden,
+    CategoryUnavailable,
+    InvalidCategorySelection,
+    select_category,
+)
+from tournaments.services.dice.select_category import (
+    GameNotFound as CategoryGameNotFound,
 )
 from tournaments.services.idempotency import IdempotencyConflict
 from tournaments.services.participants import (
@@ -181,3 +205,114 @@ def roll_game(request: HttpRequest, game_id: int):
         return _domain_error(exc.code, status.HTTP_409_CONFLICT)
 
     return Response(response, status=status.HTTP_201_CREATED)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def hold_game_dice(request: HttpRequest, game_id: int):
+    serializer = HoldDiceCommandSerializer(data=request.data)
+
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        response = set_held_dice(
+            user=request.user,
+            game_id=game_id,
+            held_flags=tuple(serializer.validated_data["held"]),
+            publisher=lambda _event, _payload: None,
+        )
+    except HoldGameNotFound as exc:
+        return _domain_error(exc.code, status.HTTP_404_NOT_FOUND)
+    except HoldForbidden as exc:
+        return _domain_error(exc.code, status.HTTP_403_FORBIDDEN)
+    except InvalidHoldPayload as exc:
+        return _domain_error(exc.code, status.HTTP_400_BAD_REQUEST)
+    except HoldUnavailable as exc:
+        return _domain_error(exc.code, status.HTTP_409_CONFLICT)
+
+    return Response(response, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def choose_game_category(request: HttpRequest, game_id: int):
+    key = request.headers.get("Idempotency-Key")
+
+    if not key or len(key) > 128:
+        return Response(
+            {"idempotency_key": ["A valid Idempotency-Key header is required."]},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    serializer = ChooseCategoryCommandSerializer(data=request.data)
+
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        response = select_category(
+            user=request.user,
+            game_id=game_id,
+            payload=serializer.validated_data,
+            key=key,
+            publisher=lambda _event, _payload: None,
+        )
+    except CategoryGameNotFound as exc:
+        return _domain_error(exc.code, status.HTTP_404_NOT_FOUND)
+    except CategoryForbidden as exc:
+        return _domain_error(exc.code, status.HTTP_403_FORBIDDEN)
+    except InvalidCategorySelection as exc:
+        return _domain_error(exc.code, status.HTTP_400_BAD_REQUEST)
+    except (CategoryAlreadyUsed, CategoryUnavailable, IdempotencyConflict) as exc:
+        return _domain_error(exc.code, status.HTTP_409_CONFLICT)
+
+    return Response(response, status=status.HTTP_201_CREATED)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def game_state(request: HttpRequest, game_id: int):
+    try:
+        game = Game.objects.select_related("round__tournament").get(pk=game_id)
+    except Game.DoesNotExist:
+        return _domain_error("GAME_NOT_FOUND", status.HTTP_404_NOT_FOUND)
+
+    is_table_participant = game.game_participants.filter(
+        tournament_participant__player_profile__user=request.user
+    ).exists()
+
+    is_organizer = game.round.tournament.organizers.filter(pk=request.user.pk).exists()
+
+    if not (is_table_participant or is_organizer):
+        return _domain_error("GAME_FORBIDDEN", status.HTTP_403_FORBIDDEN)
+
+    turn = (
+        Turn.objects.select_related(
+            "game_participant__tournament_participant__player_profile__user",
+            "game_participant__game__round__tournament",
+        )
+        .filter(
+            game_participant__game_id=game_id,
+            completed_at__isnull=True,
+        )
+        .order_by("game_participant__turn_order", "number", "pk")
+        .first()
+    )
+
+    game_complete = (
+        game.game_participants.exists()
+        and not game.game_participants.filter(is_completed=False).exists()
+    )
+
+    data = {
+        "game_id": game_id,
+        "game_complete": game_complete,
+        "turn": (
+            TurnStateSerializer(turn, context={"user": request.user}).data
+            if turn is not None
+            else None
+        ),
+    }
+
+    return Response(data, status=status.HTTP_200_OK)
