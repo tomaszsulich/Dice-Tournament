@@ -315,7 +315,7 @@ def test_used_category_is_rejected_explicitly(roll_setup):
     current = Turn.objects.create(game_participant=participant, number=2)
     _roll(current)
 
-    with pytest.raises(CategoryAlreadyUsed):
+    with pytest.raises(CategoryAlreadyUsed) as exc_info:
         select_category(
             user=user,
             game_id=game.pk,
@@ -323,6 +323,8 @@ def test_used_category_is_rejected_explicitly(roll_setup):
             key="chance-again",
             publisher=lambda _event, _payload: None,
         )
+
+    assert exc_info.value.code == "CATEGORY_ALREADY_USED"
 
 
 @pytest.mark.django_db
