@@ -140,6 +140,8 @@ REST_FRAMEWORK = {
         "accounts.throttles.GameCommandThrottle",
         "accounts.throttles.RegistrationCommandThrottle",
     ),
+    "EXCEPTION_HANDLER": "api.exception_handler.api_exception_handler",
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_THROTTLE_RATES": {
         "auth_security": "10/min",
         "game_command": "60/min",
@@ -158,3 +160,9 @@ JWT_ACCESS_COOKIE = "access_token"
 JWT_REFRESH_COOKIE = "refresh_token"
 JWT_COOKIE_SECURE = True
 JWT_COOKIE_SAMESITE = "Lax"
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Dice Tournament API",
+    "DESCRIPTION": "Authoritative REST contract for Dice Tournament.",
+    "VERSION": "1.0.0",
+}

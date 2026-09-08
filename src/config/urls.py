@@ -18,6 +18,8 @@ Including another URLconf
 from django.contrib import admin
 from django.http import HttpRequest, JsonResponse
 from django.urls import include, path
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from rest_framework.permissions import IsAdminUser
 
 
 def health_live(request: HttpRequest):
@@ -28,5 +30,18 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("accounts.api.urls")),
     path("api/", include("tournaments.api.urls")),
+    path(
+        "api/schema/",
+        SpectacularAPIView.as_view(permission_classes=[IsAdminUser]),
+        name="schema",
+    ),
+    path(
+        "api/docs/",
+        SpectacularSwaggerView.as_view(
+            url_name="schema",
+            permission_classes=[IsAdminUser],
+        ),
+        name="swagger-ui",
+    ),
     path("health/live/", health_live),
 ]

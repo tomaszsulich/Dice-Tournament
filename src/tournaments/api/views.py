@@ -9,6 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from common.errors import domain_error
 from tournaments.domain.tournament.types import (
     ParticipantStatus,
     RegistrationMode,
@@ -79,13 +80,6 @@ from tournaments.services.tournament_lifecycle import (
 )
 
 
-def _domain_error(code: str, response_status: int):
-    return Response(
-        {"code": code},
-        status=response_status,
-    )
-
-
 def _validate_empty_command(request: Request):
     serializer = EmptyRegistrationCommandSerializer(data=request.data)
 
@@ -143,18 +137,18 @@ def join(request: Request, tournament_id: int):
             user=request.user,
         )
     except Tournament.DoesNotExist:
-        return _domain_error("TOURNAMENT_NOT_FOUND", status.HTTP_404_NOT_FOUND)
+        return domain_error("TOURNAMENT_NOT_FOUND", status.HTTP_404_NOT_FOUND)
     except SelfRegistrationForbidden as exc:
-        return _domain_error(exc.code, status.HTTP_403_FORBIDDEN)
+        return domain_error(exc.code, status.HTTP_403_FORBIDDEN)
     except ParticipationNotFound as exc:
-        return _domain_error(exc.code, status.HTTP_404_NOT_FOUND)
+        return domain_error(exc.code, status.HTTP_404_NOT_FOUND)
     except (
         AlreadyRegistered,
         PlayerProfileRequired,
         RegistrationUnavailable,
         TournamentFull,
     ) as exc:
-        return _domain_error(exc.code, status.HTTP_409_CONFLICT)
+        return domain_error(exc.code, status.HTTP_409_CONFLICT)
 
     serializer = TournamentParticipantSerializer(participant)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -174,11 +168,11 @@ def leave(request: Request, tournament_id: int):
             user=request.user,
         )
     except Tournament.DoesNotExist:
-        return _domain_error("TOURNAMENT_NOT_FOUND", status.HTTP_404_NOT_FOUND)
+        return domain_error("TOURNAMENT_NOT_FOUND", status.HTTP_404_NOT_FOUND)
     except ParticipationNotFound as exc:
-        return _domain_error(exc.code, status.HTTP_404_NOT_FOUND)
+        return domain_error(exc.code, status.HTTP_404_NOT_FOUND)
     except (PlayerProfileRequired, SelfWithdrawalUnavailable) as exc:
-        return _domain_error(exc.code, status.HTTP_409_CONFLICT)
+        return domain_error(exc.code, status.HTTP_409_CONFLICT)
 
     serializer = TournamentParticipantSerializer(participant)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -210,13 +204,13 @@ def roll_game(request: Request, game_id: int):
             publisher=lambda _event, _payload: None,
         )
     except GameNotFound as exc:
-        return _domain_error(exc.code, status.HTTP_404_NOT_FOUND)
+        return domain_error(exc.code, status.HTTP_404_NOT_FOUND)
     except RollForbidden as exc:
-        return _domain_error(exc.code, status.HTTP_403_FORBIDDEN)
+        return domain_error(exc.code, status.HTTP_403_FORBIDDEN)
     except InvalidRollPayload as exc:
-        return _domain_error(exc.code, status.HTTP_400_BAD_REQUEST)
+        return domain_error(exc.code, status.HTTP_400_BAD_REQUEST)
     except (IdempotencyConflict, RollUnavailable) as exc:
-        return _domain_error(exc.code, status.HTTP_409_CONFLICT)
+        return domain_error(exc.code, status.HTTP_409_CONFLICT)
 
     return Response(response, status=status.HTTP_201_CREATED)
 
@@ -237,13 +231,13 @@ def hold_game_dice(request: Request, game_id: int):
             publisher=lambda _event, _payload: None,
         )
     except HoldGameNotFound as exc:
-        return _domain_error(exc.code, status.HTTP_404_NOT_FOUND)
+        return domain_error(exc.code, status.HTTP_404_NOT_FOUND)
     except HoldForbidden as exc:
-        return _domain_error(exc.code, status.HTTP_403_FORBIDDEN)
+        return domain_error(exc.code, status.HTTP_403_FORBIDDEN)
     except InvalidHoldPayload as exc:
-        return _domain_error(exc.code, status.HTTP_400_BAD_REQUEST)
+        return domain_error(exc.code, status.HTTP_400_BAD_REQUEST)
     except HoldUnavailable as exc:
-        return _domain_error(exc.code, status.HTTP_409_CONFLICT)
+        return domain_error(exc.code, status.HTTP_409_CONFLICT)
 
     return Response(response, status=status.HTTP_200_OK)
 
@@ -273,13 +267,13 @@ def choose_game_category(request: Request, game_id: int):
             publisher=lambda _event, _payload: None,
         )
     except CategoryGameNotFound as exc:
-        return _domain_error(exc.code, status.HTTP_404_NOT_FOUND)
+        return domain_error(exc.code, status.HTTP_404_NOT_FOUND)
     except CategoryForbidden as exc:
-        return _domain_error(exc.code, status.HTTP_403_FORBIDDEN)
+        return domain_error(exc.code, status.HTTP_403_FORBIDDEN)
     except InvalidCategorySelection as exc:
-        return _domain_error(exc.code, status.HTTP_400_BAD_REQUEST)
+        return domain_error(exc.code, status.HTTP_400_BAD_REQUEST)
     except (CategoryAlreadyUsed, CategoryUnavailable, IdempotencyConflict) as exc:
-        return _domain_error(exc.code, status.HTTP_409_CONFLICT)
+        return domain_error(exc.code, status.HTTP_409_CONFLICT)
 
     return Response(response, status=status.HTTP_201_CREATED)
 
@@ -290,7 +284,7 @@ def game_state(request: Request, game_id: int):
     try:
         game = Game.objects.select_related("round__tournament").get(pk=game_id)
     except Game.DoesNotExist:
-        return _domain_error("GAME_NOT_FOUND", status.HTTP_404_NOT_FOUND)
+        return domain_error("GAME_NOT_FOUND", status.HTTP_404_NOT_FOUND)
 
     is_table_participant = game.game_participants.filter(
         tournament_participant__player_profile__user=request.user
@@ -299,7 +293,7 @@ def game_state(request: Request, game_id: int):
     is_organizer = game.round.tournament.organizers.filter(pk=request.user.pk).exists()
 
     if not (is_table_participant or is_organizer):
-        return _domain_error("GAME_FORBIDDEN", status.HTTP_403_FORBIDDEN)
+        return domain_error("GAME_FORBIDDEN", status.HTTP_403_FORBIDDEN)
 
     turn = (
         Turn.objects.select_related(
@@ -338,10 +332,10 @@ def _organizer_tournament(
     try:
         tournament = Tournament.objects.get(pk=tournament_id)
     except Tournament.DoesNotExist:
-        return None, _domain_error("TOURNAMENT_NOT_FOUND", status.HTTP_404_NOT_FOUND)
+        return None, domain_error("TOURNAMENT_NOT_FOUND", status.HTTP_404_NOT_FOUND)
 
     if not tournament.organizers.filter(pk=request.user.pk).exists():
-        return None, _domain_error("TOURNAMENT_FORBIDDEN", status.HTTP_403_FORBIDDEN)
+        return None, domain_error("TOURNAMENT_FORBIDDEN", status.HTTP_403_FORBIDDEN)
 
     return tournament, None
 
@@ -376,7 +370,7 @@ def tournament_open_registration(request: Request, tournament_id: int):
     try:
         tournament = open_registration(tournament)
     except ValidationError:
-        return _domain_error(
+        return domain_error(
             "TOURNAMENT_TRANSITION_UNAVAILABLE", status.HTTP_409_CONFLICT
         )
 
@@ -399,7 +393,7 @@ def tournament_start(request: Request, tournament_id: int):
     try:
         tournament = start_tournament(tournament)
     except ValidationError:
-        return _domain_error(
+        return domain_error(
             "TOURNAMENT_TRANSITION_UNAVAILABLE", status.HTTP_409_CONFLICT
         )
 
@@ -422,7 +416,7 @@ def tournament_complete(request: Request, tournament_id: int):
     try:
         tournament = complete_tournament(tournament)
     except ValidationError:
-        return _domain_error(
+        return domain_error(
             "TOURNAMENT_TRANSITION_UNAVAILABLE", status.HTTP_409_CONFLICT
         )
 
@@ -458,10 +452,10 @@ def round_barrier(request: Request, round_id: int):
     try:
         round_ = Round.objects.select_related("tournament").get(pk=round_id)
     except Round.DoesNotExist:
-        return _domain_error("ROUND_NOT_FOUND", status.HTTP_404_NOT_FOUND)
+        return domain_error("ROUND_NOT_FOUND", status.HTTP_404_NOT_FOUND)
 
     if not round_.tournament.organizers.filter(pk=request.user.pk).exists():
-        return _domain_error("TOURNAMENT_FORBIDDEN", status.HTTP_403_FORBIDDEN)
+        return domain_error("TOURNAMENT_FORBIDDEN", status.HTTP_403_FORBIDDEN)
 
     serializer = EmptyLifecycleCommandSerializer(data=request.data)
 
@@ -488,10 +482,10 @@ def round_draw(request: Request, round_id: int):
     try:
         round_ = Round.objects.select_related("tournament").get(pk=round_id)
     except Round.DoesNotExist:
-        return _domain_error("ROUND_NOT_FOUND", status.HTTP_404_NOT_FOUND)
+        return domain_error("ROUND_NOT_FOUND", status.HTTP_404_NOT_FOUND)
 
     if not round_.tournament.organizers.filter(pk=request.user.pk).exists():
-        return _domain_error("TOURNAMENT_FORBIDDEN", status.HTTP_403_FORBIDDEN)
+        return domain_error("TOURNAMENT_FORBIDDEN", status.HTTP_403_FORBIDDEN)
 
     serializer = DrawCommandSerializer(data=request.data)
 
@@ -508,13 +502,13 @@ def round_draw(request: Request, round_id: int):
         )
 
     except PermissionDenied:
-        return _domain_error("TOURNAMENT_FORBIDDEN", status.HTTP_403_FORBIDDEN)
+        return domain_error("TOURNAMENT_FORBIDDEN", status.HTTP_403_FORBIDDEN)
 
     except ValidationError:
-        return _domain_error("DRAW_UNAVAILABLE", status.HTTP_409_CONFLICT)
+        return domain_error("DRAW_UNAVAILABLE", status.HTTP_409_CONFLICT)
 
     if result.state != "drawn":
-        return _domain_error("DRAW_UNAVAILABLE", status.HTTP_409_CONFLICT)
+        return domain_error("DRAW_UNAVAILABLE", status.HTTP_409_CONFLICT)
 
     return Response(
         {
