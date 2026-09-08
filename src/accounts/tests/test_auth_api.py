@@ -157,7 +157,7 @@ def test_logout_blacklists_refresh_token(api_client):
         format="json",
     )
 
-    assert refresh_response.status_code != status.HTTP_200_OK
+    assert refresh_response.status_code == status.HTTP_400_BAD_REQUEST
 
 
 @pytest.mark.integration
