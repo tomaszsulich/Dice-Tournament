@@ -3,13 +3,32 @@ from secrets import SystemRandom
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db.models import Count, F, Q
 from django.utils import timezone
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from api.schema import (
+    AUTHENTICATED_ERROR_RESPONSES,
+    DOMAIN_ERROR_RESPONSE,
+    VALIDATION_ERROR_RESPONSE,
+    VALIDATION_OR_DOMAIN_ERROR_RESPONSE,
+)
 from common.errors import domain_error
+from tournaments.api.schema import (
+    ChooseCategoryResultSerializer,
+    GameStateResultSerializer,
+    HoldResultSerializer,
+    RollResultSerializer,
+    RoundBarrierResultSerializer,
+    RoundDrawResultSerializer,
+    TournamentDetailResultSerializer,
+    TournamentLifecycleResultSerializer,
+    TournamentRankingRowSerializer,
+)
 from tournaments.domain.tournament.types import (
     ParticipantStatus,
     RegistrationMode,
@@ -89,6 +108,25 @@ def _validate_empty_command(request: Request):
     return None
 
 
+@extend_schema(
+    operation_id="tournaments_list_available",
+    parameters=[
+        OpenApiParameter(
+            name="available_to_join",
+            type=OpenApiTypes.BOOL,
+            location=OpenApiParameter.QUERY,
+            required=True,
+            description=(
+                "Must be true. Returns tournaments currently available to join."
+            ),
+        )
+    ],
+    responses={
+        **AUTHENTICATED_ERROR_RESPONSES,
+        200: OpenTournamentSerializer(many=True),
+        400: VALIDATION_ERROR_RESPONSE,
+    },
+)
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def tournament_list(request: Request):
@@ -123,6 +161,17 @@ def tournament_list(request: Request):
     return Response(serializer.data)
 
 
+@extend_schema(
+    request=EmptyRegistrationCommandSerializer,
+    responses={
+        **AUTHENTICATED_ERROR_RESPONSES,
+        201: TournamentParticipantSerializer,
+        400: VALIDATION_ERROR_RESPONSE,
+        403: DOMAIN_ERROR_RESPONSE,
+        404: DOMAIN_ERROR_RESPONSE,
+        409: DOMAIN_ERROR_RESPONSE,
+    },
+)
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def join(request: Request, tournament_id: int):
@@ -154,6 +203,16 @@ def join(request: Request, tournament_id: int):
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+@extend_schema(
+    request=EmptyRegistrationCommandSerializer,
+    responses={
+        **AUTHENTICATED_ERROR_RESPONSES,
+        200: TournamentParticipantSerializer,
+        400: VALIDATION_ERROR_RESPONSE,
+        404: DOMAIN_ERROR_RESPONSE,
+        409: DOMAIN_ERROR_RESPONSE,
+    },
+)
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def leave(request: Request, tournament_id: int):
@@ -178,6 +237,26 @@ def leave(request: Request, tournament_id: int):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+@extend_schema(
+    request=RollCommandSerializer,
+    parameters=[
+        OpenApiParameter(
+            name="Idempotency-Key",
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.HEADER,
+            required=True,
+            description="Unique key for safely retrying the same roll command.",
+        )
+    ],
+    responses={
+        **AUTHENTICATED_ERROR_RESPONSES,
+        201: RollResultSerializer,
+        400: VALIDATION_OR_DOMAIN_ERROR_RESPONSE,
+        403: DOMAIN_ERROR_RESPONSE,
+        404: DOMAIN_ERROR_RESPONSE,
+        409: DOMAIN_ERROR_RESPONSE,
+    },
+)
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def roll_game(request: Request, game_id: int):
@@ -215,6 +294,17 @@ def roll_game(request: Request, game_id: int):
     return Response(response, status=status.HTTP_201_CREATED)
 
 
+@extend_schema(
+    request=HoldDiceCommandSerializer,
+    responses={
+        **AUTHENTICATED_ERROR_RESPONSES,
+        200: HoldResultSerializer,
+        400: VALIDATION_OR_DOMAIN_ERROR_RESPONSE,
+        403: DOMAIN_ERROR_RESPONSE,
+        404: DOMAIN_ERROR_RESPONSE,
+        409: DOMAIN_ERROR_RESPONSE,
+    },
+)
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def hold_game_dice(request: Request, game_id: int):
@@ -242,6 +332,26 @@ def hold_game_dice(request: Request, game_id: int):
     return Response(response, status=status.HTTP_200_OK)
 
 
+@extend_schema(
+    request=ChooseCategoryCommandSerializer,
+    parameters=[
+        OpenApiParameter(
+            name="Idempotency-Key",
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.HEADER,
+            required=True,
+            description="Unique key for safely retrying the same category command.",
+        )
+    ],
+    responses={
+        **AUTHENTICATED_ERROR_RESPONSES,
+        201: ChooseCategoryResultSerializer,
+        400: VALIDATION_OR_DOMAIN_ERROR_RESPONSE,
+        403: DOMAIN_ERROR_RESPONSE,
+        404: DOMAIN_ERROR_RESPONSE,
+        409: DOMAIN_ERROR_RESPONSE,
+    },
+)
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def choose_game_category(request: Request, game_id: int):
@@ -278,6 +388,14 @@ def choose_game_category(request: Request, game_id: int):
     return Response(response, status=status.HTTP_201_CREATED)
 
 
+@extend_schema(
+    responses={
+        **AUTHENTICATED_ERROR_RESPONSES,
+        200: GameStateResultSerializer,
+        403: DOMAIN_ERROR_RESPONSE,
+        404: DOMAIN_ERROR_RESPONSE,
+    }
+)
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def game_state(request: Request, game_id: int):
@@ -340,6 +458,15 @@ def _organizer_tournament(
     return tournament, None
 
 
+@extend_schema(
+    operation_id="tournaments_retrieve",
+    responses={
+        **AUTHENTICATED_ERROR_RESPONSES,
+        200: TournamentDetailResultSerializer,
+        403: DOMAIN_ERROR_RESPONSE,
+        404: DOMAIN_ERROR_RESPONSE,
+    },
+)
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def tournament_detail(request: Request, tournament_id: int):
@@ -354,6 +481,17 @@ def tournament_detail(request: Request, tournament_id: int):
     )
 
 
+@extend_schema(
+    request=EmptyLifecycleCommandSerializer,
+    responses={
+        **AUTHENTICATED_ERROR_RESPONSES,
+        200: TournamentLifecycleResultSerializer,
+        400: VALIDATION_ERROR_RESPONSE,
+        403: DOMAIN_ERROR_RESPONSE,
+        404: DOMAIN_ERROR_RESPONSE,
+        409: DOMAIN_ERROR_RESPONSE,
+    },
+)
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def tournament_open_registration(request: Request, tournament_id: int):
@@ -377,6 +515,17 @@ def tournament_open_registration(request: Request, tournament_id: int):
     return Response({"id": tournament.pk, "status": tournament.status})
 
 
+@extend_schema(
+    request=EmptyLifecycleCommandSerializer,
+    responses={
+        **AUTHENTICATED_ERROR_RESPONSES,
+        200: TournamentLifecycleResultSerializer,
+        400: VALIDATION_ERROR_RESPONSE,
+        403: DOMAIN_ERROR_RESPONSE,
+        404: DOMAIN_ERROR_RESPONSE,
+        409: DOMAIN_ERROR_RESPONSE,
+    },
+)
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def tournament_start(request: Request, tournament_id: int):
@@ -400,6 +549,17 @@ def tournament_start(request: Request, tournament_id: int):
     return Response({"id": tournament.pk, "status": tournament.status})
 
 
+@extend_schema(
+    request=EmptyLifecycleCommandSerializer,
+    responses={
+        **AUTHENTICATED_ERROR_RESPONSES,
+        200: TournamentLifecycleResultSerializer,
+        400: VALIDATION_ERROR_RESPONSE,
+        403: DOMAIN_ERROR_RESPONSE,
+        404: DOMAIN_ERROR_RESPONSE,
+        409: DOMAIN_ERROR_RESPONSE,
+    },
+)
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def tournament_complete(request: Request, tournament_id: int):
@@ -423,6 +583,14 @@ def tournament_complete(request: Request, tournament_id: int):
     return Response({"id": tournament.pk, "status": tournament.status})
 
 
+@extend_schema(
+    responses={
+        **AUTHENTICATED_ERROR_RESPONSES,
+        200: TournamentRankingRowSerializer(many=True),
+        403: DOMAIN_ERROR_RESPONSE,
+        404: DOMAIN_ERROR_RESPONSE,
+    }
+)
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def tournament_ranking(request: Request, tournament_id: int):
@@ -446,6 +614,16 @@ def tournament_ranking(request: Request, tournament_id: int):
     )
 
 
+@extend_schema(
+    request=EmptyLifecycleCommandSerializer,
+    responses={
+        **AUTHENTICATED_ERROR_RESPONSES,
+        200: RoundBarrierResultSerializer,
+        400: VALIDATION_ERROR_RESPONSE,
+        403: DOMAIN_ERROR_RESPONSE,
+        404: DOMAIN_ERROR_RESPONSE,
+    },
+)
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def round_barrier(request: Request, round_id: int):
@@ -476,6 +654,17 @@ def round_barrier(request: Request, round_id: int):
     )
 
 
+@extend_schema(
+    request=DrawCommandSerializer,
+    responses={
+        **AUTHENTICATED_ERROR_RESPONSES,
+        200: RoundDrawResultSerializer,
+        400: VALIDATION_ERROR_RESPONSE,
+        403: DOMAIN_ERROR_RESPONSE,
+        404: DOMAIN_ERROR_RESPONSE,
+        409: DOMAIN_ERROR_RESPONSE,
+    },
+)
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def round_draw(request: Request, round_id: int):
