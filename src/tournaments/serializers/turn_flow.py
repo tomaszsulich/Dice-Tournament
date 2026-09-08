@@ -69,13 +69,13 @@ class TurnStateSerializer(serializers.Serializer):
     roll_count = serializers.SerializerMethodField()
     can_roll = serializers.SerializerMethodField()
 
-    def get_held_dice(self, turn: Turn):
+    def get_held_dice(self, turn: Turn) -> list[bool]:
         return list(turn.held_dice)
 
-    def get_roll_count(self, turn: Turn):
+    def get_roll_count(self, turn: Turn) -> int:
         return turn.rolls.count()
 
-    def get_can_roll(self, turn: Turn):
+    def get_can_roll(self, turn: Turn) -> bool:
         user = self.context.get("user")
         owner = turn.game_participant.tournament_participant.player_profile.user
         tournament = turn.game_participant.game.round.tournament

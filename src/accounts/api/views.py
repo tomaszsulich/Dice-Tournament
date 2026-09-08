@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.middleware.csrf import get_token
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -10,11 +11,13 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+from accounts.api.schema import LogoutRequestSerializer
 from accounts.authentication import enforce_csrf
 from accounts.jwt import SessionTokenObtainPairSerializer, SessionTokenRefreshSerializer
 from accounts.models import PlayerProfile, SessionFamily
 from accounts.serializers import PlayerProfileSerializer
 from accounts.services.session_activity import revoke_session_family
+from api.schema import AUTHENTICATED_ERROR_RESPONSES, VALIDATION_ERROR_RESPONSE
 
 
 def _set_auth_cookies(response: Response) -> None:
@@ -81,6 +84,12 @@ class SessionTokenRefreshView(TokenRefreshView):
         return response
 
 
+@extend_schema(
+    responses={
+        **AUTHENTICATED_ERROR_RESPONSES,
+        200: PlayerProfileSerializer,
+    }
+)
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def profile(request: Request):
@@ -89,6 +98,14 @@ def profile(request: Request):
     return Response(serializer.data)
 
 
+@extend_schema(
+    request=LogoutRequestSerializer,
+    responses={
+        **AUTHENTICATED_ERROR_RESPONSES,
+        204: None,
+        400: VALIDATION_ERROR_RESPONSE,
+    },
+)
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def logout(request: Request):
