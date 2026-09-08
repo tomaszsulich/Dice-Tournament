@@ -7,8 +7,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
-# English status terms are covered as the initial baseline.
-# User-facing terms in other languages may be added as needed.
+# English and Polish status terms intentionally share one validation registry.
+# Add equivalent phrases when supporting status terms in another language.
 FORBIDDEN_NICKNAME_PATTERNS = (
     r"\bzwyci[eę]zca\b",
     r"\bzwyci[eę]zczyni\b",

@@ -27,7 +27,7 @@ class Game(models.Model):
 
     @property
     def display_label(self) -> str:
-        return f"Stół #{self.display_number}"
+        return f"Table #{self.display_number}"
 
     def __str__(self):
         return f"{self.round} — {self.display_label}"

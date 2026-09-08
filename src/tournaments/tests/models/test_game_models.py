@@ -129,8 +129,8 @@ def test_games_have_stable_unique_display_numbers_and_serializer_labels():
     )
 
     assert second.pk != second.display_number
-    assert GameSerializer(first).data["display_label"] == "Stół #1"
-    assert GameSerializer(second).data["display_label"] == "Stół #2"
+    assert GameSerializer(first).data["display_label"] == "Table #1"
+    assert GameSerializer(second).data["display_label"] == "Table #2"
 
     with pytest.raises(IntegrityError):
         Game.objects.create(

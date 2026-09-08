@@ -39,7 +39,7 @@ def build_profile(
     first_name="Jan",
     last_name="Kowalski",
     display_name="Jan Kowalski",
-    nickname="Kostka",
+    nickname="DiceFox",
 ):
     user = UserFactory.create(
         first_name=first_name,
@@ -67,7 +67,7 @@ def test_create_participant_copies_identity_snapshot():
 
     assert participant.full_name_snapshot == "Jan Kowalski"
     assert participant.display_name_snapshot == "Jan Kowalski"
-    assert participant.nickname_snapshot == "Kostka"
+    assert participant.nickname_snapshot == "DiceFox"
     assert participant.starting_number == 7
     assert participant.seeding == 3
     assert participant.status == ParticipantStatus.REGISTERED
@@ -83,8 +83,8 @@ def test_profile_change_does_not_change_participant_snapshot():
         player_profile=profile,
     )
 
-    profile.display_name = "Nowa nazwa"
-    profile.nickname = "Nowy nick"
+    profile.display_name = "New name"
+    profile.nickname = "New nickname"
     profile.save(update_fields=("display_name", "nickname"))
 
     profile.user.first_name = "Adam"
@@ -95,7 +95,7 @@ def test_profile_change_does_not_change_participant_snapshot():
 
     assert participant.full_name_snapshot == "Jan Kowalski"
     assert participant.display_name_snapshot == "Jan Kowalski"
-    assert participant.nickname_snapshot == "Kostka"
+    assert participant.nickname_snapshot == "DiceFox"
 
 
 @pytest.mark.django_db
@@ -108,7 +108,7 @@ def test_participant_identity_can_be_edited_before_start():
     )
 
     participant.display_name_snapshot = "Jan K."
-    participant.nickname_snapshot = "Nowy nick"
+    participant.nickname_snapshot = "New nickname"
     participant.starting_number = 12
     participant.seeding = 4
 
@@ -118,7 +118,7 @@ def test_participant_identity_can_be_edited_before_start():
     participant.refresh_from_db()
 
     assert participant.display_name_snapshot == "Jan K."
-    assert participant.nickname_snapshot == "Nowy nick"
+    assert participant.nickname_snapshot == "New nickname"
     assert participant.starting_number == 12
     assert participant.seeding == 4
 
@@ -129,7 +129,7 @@ def test_participant_identity_can_be_edited_before_start():
     [
         ("full_name_snapshot", "Adam Nowak"),
         ("display_name_snapshot", "Adam"),
-        ("nickname_snapshot", "NowyNick"),
+        ("nickname_snapshot", "NewNick"),
         ("starting_number", 99),
         ("seeding", 9),
     ],
@@ -143,7 +143,7 @@ def test_participant_identity_is_frozen_after_start(field_name, new_value):
         player_profile=profile,
         full_name_snapshot="Jan Kowalski",
         display_name_snapshot="Jan Kowalski",
-        nickname_snapshot="Kostka",
+        nickname_snapshot="DiceFox",
         starting_number=7,
         seeding=3,
     )
@@ -166,7 +166,7 @@ def test_participant_status_can_change_after_start_without_deleting_history():
         player_profile=profile,
         full_name_snapshot="Jan Kowalski",
         display_name_snapshot="Jan Kowalski",
-        nickname_snapshot="Kostka",
+        nickname_snapshot="DiceFox",
     )
 
     participant.status = ParticipantStatus.WITHDRAWN
@@ -196,7 +196,7 @@ def test_player_profile_can_participate_only_once_per_tournament():
             player_profile=profile,
             full_name_snapshot="Jan Kowalski",
             display_name_snapshot="Jan Kowalski",
-            nickname_snapshot="Kostka",
+            nickname_snapshot="DiceFox",
         )
 
 
@@ -233,7 +233,7 @@ def test_participant_accepts_canonical_statuses(status):
         player_profile=profile,
         full_name_snapshot="Jan Kowalski",
         display_name_snapshot="Jan Kowalski",
-        nickname_snapshot="Kostka",
+        nickname_snapshot="DiceFox",
         status=status,
     )
 
@@ -250,7 +250,7 @@ def test_participant_rejects_removed_status_from_old_plan():
         player_profile=profile,
         full_name_snapshot="Jan Kowalski",
         display_name_snapshot="Jan Kowalski",
-        nickname_snapshot="Kostka",
+        nickname_snapshot="DiceFox",
         status="removed",
     )
 

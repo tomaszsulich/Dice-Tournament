@@ -74,7 +74,7 @@ def add_round(
     round_ = Round.objects.create(
         tournament=tournament,
         number=number,
-        name=f"Runda {number}",
+        name=f"Round {number}",
         type=round_type,
         status=RoundStatus.ACTIVE,
     )
@@ -107,7 +107,7 @@ def test_empty_round_keeps_barrier_waiting(active_tournament):
     round_ = Round.objects.create(
         tournament=tournament,
         number=1,
-        name="Runda 1",
+        name="Round 1",
         status=RoundStatus.ACTIVE,
     )
 

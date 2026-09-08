@@ -131,7 +131,7 @@ def test_complete_tournament_rejects_unfinished_round(tournament):
 
     tournament.rounds.create(
         number=1,
-        name="Runda 1",
+        name="Round 1",
         status=RoundStatus.ACTIVE,
     )
 
@@ -145,7 +145,7 @@ def test_complete_tournament_requires_all_configured_group_rounds(tournament):
 
     tournament.rounds.create(
         number=1,
-        name="Runda 1",
+        name="Round 1",
         type=RoundType.GROUP,
         status=RoundStatus.COMPLETED,
     )
@@ -161,7 +161,7 @@ def test_complete_tournament_changes_active_to_completed(tournament):
     for number in (1, 2):
         tournament.rounds.create(
             number=number,
-            name=f"Runda {number}",
+            name=f"Round {number}",
             type=RoundType.GROUP,
             status=RoundStatus.COMPLETED,
         )

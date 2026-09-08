@@ -117,9 +117,9 @@ def _create_allocated_round(
         tournament=tournament,
         number=next_number,
         name=(
-            f"Dogrywka {next_number - tournament.group_rounds}"
+            f"Overtime {next_number - tournament.group_rounds}"
             if overtime
-            else f"Runda {next_number}"
+            else f"Round {next_number}"
         ),
         type=RoundType.OVERTIME if overtime else RoundType.GROUP,
         status=RoundStatus.WAITING,
@@ -350,7 +350,7 @@ def create_initial_round(tournament: Tournament) -> Round:
     round_ = Round.objects.create(
         tournament=tournament,
         number=1,
-        name="Runda 1",
+        name="Round 1",
         status=RoundStatus.WAITING,
     )
 

@@ -54,7 +54,7 @@ def test_join_open_registration_creates_participant_with_identity_snapshot():
         user__first_name="Jan",
         user__last_name="Kowalski",
         display_name="Jan Kowalski",
-        nickname="Kostka",
+        nickname="DiceFox",
     )
 
     participant = join_tournament(tournament_id=tournament.pk, user=profile.user)
@@ -64,7 +64,7 @@ def test_join_open_registration_creates_participant_with_identity_snapshot():
     assert participant.status == ParticipantStatus.REGISTERED
     assert participant.full_name_snapshot == "Jan Kowalski"
     assert participant.display_name_snapshot == "Jan Kowalski"
-    assert participant.nickname_snapshot == "Kostka"
+    assert participant.nickname_snapshot == "DiceFox"
 
 
 @pytest.mark.django_db
@@ -178,7 +178,7 @@ def test_join_reactivates_withdrawn_participant_without_replacing_record():
         user__first_name="Jan",
         user__last_name="Kowalski",
         display_name="Jan Kowalski",
-        nickname="Kostka",
+        nickname="DiceFox",
     )
 
     participant = join_tournament(tournament_id=tournament.pk, user=profile.user)
