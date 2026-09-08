@@ -46,6 +46,7 @@ AUTH_USER_MODEL = "accounts.User"
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "accounts.middleware.SessionActivityMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -122,15 +123,38 @@ MAILERS = {
     },
 }
 
+DJOSER = {
+    "PASSWORD_RESET_CONFIRM_URL": "set-password/?uid={uid}&token={token}",
+    "PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND": False,
+    "TOKEN_MODEL": None,
+}
+
 # DRF and JWT configuration
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "accounts.authentication.CookieOrHeaderJWTAuthentication",
     ),
+    "DEFAULT_THROTTLE_CLASSES": (
+        "accounts.throttles.AuthSecurityThrottle",
+        "accounts.throttles.GameCommandThrottle",
+        "accounts.throttles.RegistrationCommandThrottle",
+    ),
+    "DEFAULT_THROTTLE_RATES": {
+        "auth_security": "10/min",
+        "game_command": "60/min",
+        "registration_command": "30/min",
+    },
 }
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
     "REFRESH_TOKEN_LIFETIME": timedelta(hours=8),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
 }
+
+JWT_ACCESS_COOKIE = "access_token"
+JWT_REFRESH_COOKIE = "refresh_token"
+JWT_COOKIE_SECURE = True
+JWT_COOKIE_SAMESITE = "Lax"

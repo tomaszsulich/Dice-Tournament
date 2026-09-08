@@ -1,9 +1,11 @@
 import re
+import uuid
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
 
 # English status terms are covered as the initial baseline.
 # User-facing terms in other languages may be added as needed.
@@ -38,6 +40,51 @@ def validate_nickname(value: str) -> None:
 
 class User(AbstractUser):
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        password_changed = False
+
+        if self.pk:
+            previous_password = (
+                type(self)
+                .objects.filter(pk=self.pk)
+                .values_list("password", flat=True)
+                .first()
+            )
+
+            password_changed = (
+                previous_password is not None and previous_password != self.password
+            )
+
+        result = super().save(*args, **kwargs)
+
+        if password_changed:
+            SessionFamily.objects.filter(user=self, revoked_at__isnull=True).update(
+                revoked_at=timezone.now()
+            )
+
+        return result
+
+
+class SessionFamily(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="session_families",
+    )
+
+    created_at = models.DateTimeField()
+    absolute_expires_at = models.DateTimeField()
+    last_activity_at = models.DateTimeField()
+    revoked_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["user", "revoked_at"]),
+            models.Index(fields=["absolute_expires_at"]),
+        ]
 
 
 class PlayerProfile(models.Model):

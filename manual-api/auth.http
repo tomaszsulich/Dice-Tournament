@@ -1,6 +1,7 @@
 @baseUrl = http://127.0.0.1:8000
 @accessToken = ACCESS_TOKEN
 @refreshToken = REFRESH_TOKEN
+@csrfToken = CSRF_TOKEN_FROM_COOKIE
 
 ### Account registration — create a user account by Djoser
 POST {{baseUrl}}/api/auth/users/
@@ -12,7 +13,7 @@ Content-Type: application/json
   "password": "Example-Password-42"
 }
 
-### Login — obtain access and refresh tokens
+### Login — obtain access and refresh tokens; response also sets auth cookies
 POST {{baseUrl}}/api/auth/jwt/create/
 Content-Type: application/json
 
@@ -21,7 +22,7 @@ Content-Type: application/json
   "password": "test-password"
 }
 
-### Refresh — obtain a new access token
+### Refresh — explicit token form retained for API/manual verification
 POST {{baseUrl}}/api/auth/jwt/refresh/
 Content-Type: application/json
 
@@ -29,14 +30,49 @@ Content-Type: application/json
   "refresh": "{{refreshToken}}"
 }
 
-### Protected profile — authenticated request
+### Cookie refresh — browser form requires the CSRF header
+POST {{baseUrl}}/api/auth/jwt/refresh/
+X-CSRFToken: {{csrfToken}}
+Content-Type: application/json
+
+{}
+
+### Protected profile — Bearer JWT does not require CSRF
 GET {{baseUrl}}/api/profile/
 Authorization: Bearer {{accessToken}}
 
 ### Protected profile — missing access token -> 401
 GET {{baseUrl}}/api/profile/
 
-### Logout — blacklist refresh token
+### Change password — revokes all current session families for the user
+POST {{baseUrl}}/api/auth/users/set-password/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "current_password": "test-password",
+  "new_password": "Example-New-Password-43"
+}
+
+### Request password reset — same response whether the account exists or not
+POST {{baseUrl}}/api/auth/users/reset-password/
+Content-Type: application/json
+
+{
+  "email": "newplayer@example.com"
+}
+
+### Confirm password reset — fill uid/token from the one-time e-mail link
+POST {{baseUrl}}/api/auth/users/reset-password-confirm/
+Content-Type: application/json
+
+{
+  "uid": "RESET_UID",
+  "token": "ONE_TIME_RESET_TOKEN",
+  "new_password": "Example-Reset-Password-44"
+}
+
+### Logout — revokes the current refresh-token family
 POST {{baseUrl}}/api/auth/logout/
 Authorization: Bearer {{accessToken}}
 Content-Type: application/json
@@ -51,4 +87,13 @@ Content-Type: application/json
 
 {
   "refresh": "{{refreshToken}}"
+}
+
+### Throttling smoke check — manually repeat this request until 429
+POST {{baseUrl}}/api/auth/jwt/create/
+Content-Type: application/json
+
+{
+  "username": "rate-limit-probe",
+  "password": "wrong-password"
 }
