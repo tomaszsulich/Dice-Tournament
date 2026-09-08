@@ -118,7 +118,7 @@ def test_join_creates_participation_for_authenticated_user(api_client):
         user__first_name="Jan",
         user__last_name="Kowalski",
         display_name="Jan Kowalski",
-        nickname="Kostka",
+        nickname="DiceFox",
     )
 
     api_client.force_authenticate(user=profile.user)

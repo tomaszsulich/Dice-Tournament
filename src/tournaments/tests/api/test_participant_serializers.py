@@ -24,7 +24,7 @@ def test_participant_serializer_uses_historical_snapshot():
     profile = PlayerProfile.objects.create(
         user=user,
         display_name="Jan Kowalski",
-        nickname="Kostka",
+        nickname="DiceFox",
     )
 
     tournament = Tournament.objects.create(
@@ -49,11 +49,11 @@ def test_participant_serializer_uses_historical_snapshot():
     user.save(update_fields=("first_name", "last_name"))
 
     profile.display_name = "Adam Nowak"
-    profile.nickname = "NowyNick"
+    profile.nickname = "NewNick"
     profile.save(update_fields=("display_name", "nickname"))
 
     data = TournamentParticipantSerializer(participant).data
 
     assert data["full_name"] == "Jan Kowalski"
     assert data["display_name"] == "Jan Kowalski"
-    assert data["nickname"] == "Kostka"
+    assert data["nickname"] == "DiceFox"

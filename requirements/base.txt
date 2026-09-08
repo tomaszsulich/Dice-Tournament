@@ -6,3 +6,6 @@ djoser
 drf-spectacular
 psycopg
 python-dotenv
+channels
+channels-redis
+daphne
