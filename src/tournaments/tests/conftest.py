@@ -1,8 +1,10 @@
 import pytest
 
 from accounts.tests.factories import PlayerProfileFactory
+from tournaments.domain.tournament.rounds import RoundStatus
 from tournaments.domain.tournament.types import (
     EventMode,
+    ParticipantStatus,
     PokerScoringVariant,
     RegistrationMode,
     TournamentStatus,
@@ -40,9 +42,12 @@ def roll_setup(db):
             player_profile=profile,
             full_name_snapshot="Player One",
             display_name_snapshot="Player One",
+            status=ParticipantStatus.ACTIVE,
         )
 
-        round_ = Round.objects.create(tournament=tournament, number=1)
+        round_ = Round.objects.create(
+            tournament=tournament, number=1, status=RoundStatus.ACTIVE
+        )
 
         game = Game.objects.create(
             round=round_,

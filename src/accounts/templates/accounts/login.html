@@ -1,0 +1,41 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in · Dice Tournament</title>
+  <link rel="stylesheet" href="{% static 'accounts/css/auth.css' %}">
+</head>
+
+<body>
+  <main class="auth-shell">
+    <section class="auth-card" aria-labelledby="page-title">
+      <header class="auth-heading">
+        <div class="brand-mark" aria-hidden="true">⚄</div>
+        <div>
+          <p class="eyebrow">Dice Tournament</p>
+          <h1 id="page-title">Welcome back</h1>
+        </div>
+      </header>
+      <p class="intro">Sign in to continue.</p>
+
+      <form id="login-form" class="auth-form" novalidate>
+        <label>Username<input name="username" autocomplete="username" required></label>
+        <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
+        <p id="form-error" class="form-message error" role="alert" hidden></p>
+        <div class="form-actions">
+          <a class="quiet-link" href="{% url 'password-reset' %}">Forgot&nbsp;password?</a>
+          <button class="primary-action" type="submit">Sign in</button>
+        </div>
+      </form>
+
+      <p class="switch-link">New here? <a href="{% url 'register' %}">Create an&nbsp;account</a></p>
+    </section>
+  </main>
+  <script src="{% static 'accounts/js/auth.js' %}" defer></script>
+  <script src="{% static 'accounts/js/login.js' %}" defer></script>
+</body>
+
+</html>

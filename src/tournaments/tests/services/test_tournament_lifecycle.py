@@ -88,8 +88,14 @@ def test_start_tournament_activates_players_and_creates_first_round(tournament):
 
     assert first_round.number == 1
     assert first_round.type == RoundType.GROUP
-    assert first_round.status == RoundStatus.WAITING
+    assert first_round.status == RoundStatus.ACTIVE
+    assert first_round.started_at is not None
     assert first_round.games.count() == 1
+
+    first_game = first_round.games.get()
+    first_turn = first_game.game_participants.get(turn_order=1).turns.get(number=1)
+
+    assert first_turn.completed_at is None
 
 
 def test_start_tournament_rejects_too_few_players(tournament):
@@ -182,3 +188,14 @@ def test_complete_tournament_rejects_invalid_status(tournament, status):
 
     with pytest.raises(ValidationError):
         complete_tournament(tournament)
+
+
+def test_start_tournament_rejects_count_that_cannot_form_a_table(tournament):
+    tournament.status = TournamentStatus.REGISTRATION
+    tournament.min_participants = 1
+    tournament.save(update_fields=("status", "min_participants"))
+
+    register_players(tournament, count=1)
+
+    with pytest.raises(ValidationError, match="valid table structure"):
+        start_tournament(tournament)

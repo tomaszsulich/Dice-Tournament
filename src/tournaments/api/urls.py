@@ -9,7 +9,10 @@ from tournaments.api.views import (
     roll_game,
     round_barrier,
     round_draw,
+    tournament_add_participant,
+    tournament_close_registration,
     tournament_complete,
+    tournament_create,
     tournament_detail,
     tournament_list,
     tournament_open_registration,
@@ -28,6 +31,7 @@ urlpatterns = [
         name="game-choose-category",
     ),
     path("games/<int:game_id>/state/", game_state, name="game-state"),
+    path("tournaments/create/", tournament_create, name="tournament-create"),
     path("tournaments/", tournament_list, name="tournament-list"),
     path(
         "tournaments/<int:tournament_id>/",
@@ -38,6 +42,16 @@ urlpatterns = [
         "tournaments/<int:tournament_id>/open-registration/",
         tournament_open_registration,
         name="tournament-open-registration",
+    ),
+    path(
+        "tournaments/<int:tournament_id>/close-registration/",
+        tournament_close_registration,
+        name="tournament-close-registration",
+    ),
+    path(
+        "tournaments/<int:tournament_id>/participants/",
+        tournament_add_participant,
+        name="tournament-add-participant",
     ),
     path(
         "tournaments/<int:tournament_id>/start/",

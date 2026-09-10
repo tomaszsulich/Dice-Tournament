@@ -108,6 +108,23 @@ def test_figure_strategies_score_valid_hands(
 
 @pytest.mark.unit
 @pytest.mark.parametrize(
+    ("dice", "points"),
+    [
+        ((4, 4, 4, 4, 1), 16),
+        ((6, 6, 6, 6, 6), 24),
+    ],
+)
+def test_two_pairs_can_be_formed_from_repeated_same_value(
+    dice: tuple[int, int, int, int, int],
+    points: int,
+) -> None:
+    assert score(ScoreCategory.TWO_PAIRS, make_context(dice)) == PointsResult(
+        points=points
+    )
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
     ("category", "dice"),
     [
         (ScoreCategory.PAIR, (1, 2, 3, 4, 5)),

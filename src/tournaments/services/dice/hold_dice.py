@@ -3,7 +3,8 @@ from collections.abc import Callable
 from django.db import transaction
 
 from accounts.models import User
-from tournaments.domain.tournament.types import TournamentStatus
+from tournaments.domain.tournament.rounds import RoundStatus
+from tournaments.domain.tournament.types import ParticipantStatus, TournamentStatus
 from tournaments.models import Game, Turn
 
 type HeldDice = tuple[bool, bool, bool, bool, bool]
@@ -26,6 +27,10 @@ class HoldUnavailable(HoldCommandError):
     code = "HOLD_UNAVAILABLE"
 
 
+class HoldUnchanged(HoldCommandError):
+    code = "HOLD_UNCHANGED"
+
+
 class InvalidHoldPayload(HoldCommandError):
     code = "INVALID_HOLD_PAYLOAD"
 
@@ -46,6 +51,9 @@ def set_held_dice(
     with transaction.atomic():
         turn = _lock_current_turn(game_id)
         _require_legal_hold(turn, user)
+
+        if turn.held_dice == held_flags:
+            raise HoldUnchanged
 
         for position, held in enumerate(held_flags, start=1):
             setattr(turn, f"held_die_{position}", held)
@@ -101,7 +109,11 @@ def _require_legal_hold(turn: Turn, user: User) -> None:
     if owner.pk != user.pk:
         raise HoldForbidden
 
-    if tournament.status != TournamentStatus.ACTIVE:
+    if (
+        tournament.status != TournamentStatus.ACTIVE
+        or participant.game.round.status != RoundStatus.ACTIVE
+        or participant.tournament_participant.status != ParticipantStatus.ACTIVE
+    ):
         raise HoldUnavailable
 
     if hasattr(turn, "score_entry"):

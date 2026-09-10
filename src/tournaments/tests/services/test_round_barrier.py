@@ -152,6 +152,14 @@ def test_completed_nonfinal_round_creates_exactly_one_next_round(active_tourname
     assert first.round_id == second.round_id
     assert tournament.rounds.filter(number=2).count() == 1
 
+    next_round = tournament.rounds.get(number=2)
+
+    assert next_round.status == RoundStatus.ACTIVE
+    assert next_round.started_at is not None
+
+    for game in next_round.games.all():
+        assert game.game_participants.get(turn_order=1).turns.filter(number=1).exists()
+
 
 def test_final_material_tie_creates_overtime_for_tied_players_only(active_tournament):
     tournament, participants = active_tournament

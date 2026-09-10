@@ -35,7 +35,7 @@ class TournamentParticipant(models.Model):
     display_name_snapshot = models.CharField(max_length=150)
     nickname_snapshot = models.CharField(max_length=50, blank=True)
 
-    team_label = models.CharField(max_length=150, blank=True)
+    team_label = models.CharField(max_length=50, blank=True)
 
     starting_number = models.PositiveSmallIntegerField(
         null=True,

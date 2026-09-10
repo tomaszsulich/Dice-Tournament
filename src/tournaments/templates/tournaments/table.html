@@ -1,0 +1,117 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ table_label }} — Dice Tournament</title>
+    <link rel="stylesheet" href="{% static 'tournaments/css/table.css' %}">
+</head>
+
+<body>
+    <main class="table-layout" data-game-id="{{ game_id }}">
+        <section class="play-area" aria-labelledby="table-heading">
+            <header class="table-header">
+
+                <div>
+                    <p class="eyebrow">Dice Tournament</p>
+                    <h1 id="table-heading">{{ table_label_ui }}</h1>
+                </div>
+
+                <div class="table-header-actions">
+                    <p id="turn-status" class="turn-status" aria-live="polite"></p>
+                    <button id="logout-button" class="quiet-button" type="button">Log&nbsp;out</button>
+                </div>
+            </header>
+
+            <dl class="turn-summary" aria-label="Current turn summary">
+                <div><dt>Rerolls&nbsp;remaining</dt><dd id="rerolls-remaining">—</dd></div>
+            </dl>
+
+            <div class="felt" aria-label="Dice table">
+                <section class="dice-zone" aria-label="Dice">
+                    <div id="dice" class="dice" aria-label="Dice"></div>
+                </section>
+
+                <section class="held-zone" aria-labelledby="held-heading">
+                    <div class="zone-title-row">
+                        <h2 id="held-heading" class="zone-heading">Held&nbsp;dice</h2>
+                        <span class="zone-hint">Select a die to hold it.</span>
+                    </div>
+                    <div id="held-dice" class="dice" aria-label="Held dice"></div>
+                </section>
+            </div>
+
+            <div class="roll-row">
+                <button id="roll-button" type="button" disabled>Roll</button>
+                <div class="live-messages">
+                    <p id="request-status" role="status" aria-live="polite"></p>
+                    <p id="connection-status" role="status" aria-live="polite"></p>
+                    <p id="error-message" role="alert" aria-live="assertive"></p>
+                </div>
+            </div>
+        </section>
+
+        <section class="scorecard" aria-labelledby="scorecard-heading">
+            <header class="scorecard-header">
+                <div>
+                    <p class="eyebrow">Shared scorecard</p>
+                    <h2 id="scorecard-heading">Scores</h2>
+                </div>
+                <p class="scorecard-hint">Tap your empty cell to choose a category.</p>
+            </header>
+            <div class="scorecard-scroll" tabindex="0" aria-label="Scrollable scorecard">
+                <table>
+                    <thead><tr id="scorecard-head"><th scope="col">Category</th></tr></thead>
+                    <tbody id="scorecard-body"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <div id="category-help" class="context-popover" role="dialog" aria-labelledby="help-title" hidden>
+        <div class="popover-heading">
+            <h2 id="help-title">Category rule</h2>
+            <button type="button" id="help-close" class="icon-close" aria-label="Close information">×</button>
+        </div>
+        <p id="help-text"></p>
+    </div>
+
+    <dialog id="physical-roll" class="choice-dialog" aria-labelledby="physical-roll-title">
+        <form id="physical-roll-form" method="dialog">
+            <div class="popover-heading">
+                <h2 id="physical-roll-title">Enter physical dice</h2>
+                <button type="button" id="physical-roll-close" class="icon-close" aria-label="Close physical dice entry">×</button>
+            </div>
+            <p class="dialog-note">Enter the five values visible on the table.</p>
+            <div id="physical-roll-values" class="physical-roll-values"></div>
+            <div class="dialog-actions">
+                <button id="physical-roll-submit" type="submit">Save roll</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="pair-choice" class="choice-dialog" aria-labelledby="pair-choice-title">
+        <div class="popover-heading">
+            <h2 id="pair-choice-title">Choose a pair</h2>
+            <button type="button" id="pair-choice-close" class="icon-close" aria-label="Close pair selection">×</button>
+        </div>
+        <p class="dialog-note">Multiple valid pairs. Choose which one to score.</p>
+        <div id="pair-choice-options" class="pair-options"></div>
+    </dialog>
+
+    <dialog id="logout-confirm" class="logout-dialog" aria-labelledby="logout-title">
+        <h2 id="logout-title">Leave the tournament?</h2>
+        <p>You can sign in and return. If you are away too long, the organizer may end your participation.</p>
+        <div class="dialog-actions">
+            <button id="logout-stay" class="quiet-button" type="button">Stay</button>
+            <button id="logout-confirm-button" class="danger-button" type="button">Log out</button>
+        </div>
+    </dialog>
+
+    {{ initial_snapshot|json_script:"initial-game-snapshot" }}
+    <script type="module" src="{% static 'tournaments/js/table.js' %}"></script>
+</body>
+</html>

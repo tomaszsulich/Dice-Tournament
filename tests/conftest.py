@@ -5,7 +5,7 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def block_external_network(monkeypatch):
-    """Block unindented external network access during tests."""
+    """Block unintended external network access during tests."""
     original_create_connection = socket.create_connection
 
     def guarded_create_connection(address, *args, **kwargs):

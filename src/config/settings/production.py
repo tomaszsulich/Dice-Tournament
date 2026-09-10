@@ -27,3 +27,12 @@ DATABASES = {
         "PORT": database_url.port or 5432,
     }
 }
+
+
+# HTTPS-only production hardening.
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+SECURE_HSTS_PRELOAD = False

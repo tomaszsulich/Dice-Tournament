@@ -5,7 +5,12 @@ from django.db import transaction
 
 from accounts.models import User
 from tournaments.domain.dice.randomizer import DiceRandomizer
-from tournaments.domain.tournament.types import EventMode, TournamentStatus
+from tournaments.domain.tournament.rounds import RoundStatus
+from tournaments.domain.tournament.types import (
+    EventMode,
+    ParticipantStatus,
+    TournamentStatus,
+)
 from tournaments.models import Game, IdempotencyRecord, Roll, Turn
 from tournaments.services.idempotency import (
     ROLL_COMMAND,
@@ -136,13 +141,19 @@ def _lock_current_turn(game_id: int) -> Turn:
 
 
 def _require_legal_roll(turn: Turn, user: User) -> None:
-    tournament = turn.game_participant.game.round.tournament
+    game = turn.game_participant.game
+    tournament = game.round.tournament
     owner = turn.game_participant.tournament_participant.player_profile.user
 
     if owner.pk != user.pk:
         raise RollForbidden
 
-    if tournament.status != TournamentStatus.ACTIVE:
+    if (
+        tournament.status != TournamentStatus.ACTIVE
+        or game.round.status != RoundStatus.ACTIVE
+        or turn.game_participant.tournament_participant.status
+        != ParticipantStatus.ACTIVE
+    ):
         raise RollUnavailable
 
     if hasattr(turn, "score_entry"):

@@ -28,6 +28,7 @@ from tournaments.models import (
     Tournament,
     TournamentOrganizer,
     TournamentParticipant,
+    Turn,
 )
 from tournaments.services.ranking import CompletedResult, RankingRow, build_ranking
 
@@ -91,7 +92,7 @@ def _create_games_from_allocation(
             allocation_cost=int(evaluation.cost.weighted_total),
         )
 
-        GameParticipant.objects.bulk_create(
+        game_participants = GameParticipant.objects.bulk_create(
             [
                 GameParticipant(
                     game=game,
@@ -101,6 +102,9 @@ def _create_games_from_allocation(
                 for turn_order, participant_id in enumerate(assignment, start=1)
             ]
         )
+
+        first_participant = min(game_participants, key=lambda item: item.turn_order)
+        Turn.objects.create(game_participant=first_participant, number=1)
 
 
 def _create_allocated_round(
@@ -122,7 +126,8 @@ def _create_allocated_round(
             else f"Round {next_number}"
         ),
         type=RoundType.OVERTIME if overtime else RoundType.GROUP,
-        status=RoundStatus.WAITING,
+        status=RoundStatus.ACTIVE,
+        started_at=timezone.now(),
     )
 
     rank_order = {row.participant_id: index for index, row in enumerate(ranking)}
@@ -351,7 +356,8 @@ def create_initial_round(tournament: Tournament) -> Round:
         tournament=tournament,
         number=1,
         name="Round 1",
-        status=RoundStatus.WAITING,
+        status=RoundStatus.ACTIVE,
+        started_at=timezone.now(),
     )
 
     _create_games_from_allocation(

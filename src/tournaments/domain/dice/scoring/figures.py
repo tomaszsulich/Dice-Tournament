@@ -38,7 +38,7 @@ class PairStrategy:
 
         else:
             raise AmbiguousFigureSelectionError(
-                "Pair scoring requires pair_value when more then one pair is available."
+                "Pair scoring requires pair_value when more than one pair is available."
             )
 
         return PointsResult(points=2 * pair_value)
@@ -50,12 +50,16 @@ class TwoPairsStrategy:
         context: ScoringContext,
         _selection: ScoreSelection,
     ) -> ScoringResult:
-        eligible = _values_with_minimum_count(context.dice.counts, 2)
+        pairs = [
+            value
+            for value, count in context.dice.counts.items()
+            for _ in range(count // 2)
+        ]
 
-        if len(eligible) != 2:
+        if len(pairs) < 2:
             return FigureStrikeOffResult()
 
-        return PointsResult(points=sum(2 * value for value in eligible))
+        return PointsResult(points=2 * sum(sorted(pairs, reverse=True)[:2]))
 
 
 class TripleStrategy:

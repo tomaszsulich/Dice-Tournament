@@ -2,10 +2,23 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
 
+from accounts.models import User
 from tournaments.domain.tournament.rounds import RoundStatus
+from tournaments.domain.tournament.table_sizes import compute_balanced_table_sizes
 from tournaments.domain.tournament.types import ParticipantStatus, TournamentStatus
-from tournaments.models import Tournament
+from tournaments.models import Tournament, TournamentOrganizer
 from tournaments.services.round_barrier import create_initial_round
+
+
+@transaction.atomic
+def create_tournament(*, organizer: User, **configuration) -> Tournament:
+    tournament = Tournament(**configuration)
+
+    tournament.full_clean()
+    tournament.save()
+    TournamentOrganizer.objects.create(tournament=tournament, user=organizer)
+
+    return tournament
 
 
 @transaction.atomic
@@ -18,6 +31,20 @@ def open_registration(tournament: Tournament) -> Tournament:
     tournament.full_clean()
     tournament.status = TournamentStatus.REGISTRATION
     tournament.save(update_fields=("status",))
+
+    return tournament
+
+
+@transaction.atomic
+def close_registration(tournament: Tournament) -> Tournament:
+    tournament = Tournament.objects.select_for_update().get(pk=tournament.pk)
+
+    if tournament.status != TournamentStatus.REGISTRATION:
+        raise ValidationError("Only an open registration phase can be closed.")
+
+    if tournament.registration_closed_at is None:
+        tournament.registration_closed_at = timezone.now()
+        tournament.save(update_fields=("registration_closed_at",))
 
     return tournament
 
@@ -40,6 +67,13 @@ def start_tournament(tournament: Tournament) -> Tournament:
 
     if registered_count > tournament.max_participants:
         raise ValidationError("Tournament exceeds its participant limit.")
+
+    try:
+        compute_balanced_table_sizes(registered_count, tournament.table_size)
+    except ValueError as exc:
+        raise ValidationError(
+            "The registered participant count cannot form a valid table structure."
+        ) from exc
 
     tournament.full_clean()
     registered.update(status=ParticipantStatus.ACTIVE)

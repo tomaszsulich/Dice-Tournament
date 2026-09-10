@@ -22,7 +22,10 @@ class AuthSecurityThrottle(SimpleRateThrottle):
     _paths = {
         "/api/auth/jwt/create/",
         "/api/auth/jwt/refresh/",
+        "/api/auth/users/",
+        "/api/auth/users/set-password/",
         "/api/auth/users/reset-password/",
+        "/api/auth/users/reset-password-confirm/",
     }
 
     def get_cache_key(self, request: Request, _view: APIView) -> str | None:
@@ -55,6 +58,24 @@ class AuthSecurityThrottle(SimpleRateThrottle):
                 pass
 
         return "anonymous"
+
+
+class ApiMutationThrottle(SimpleRateThrottle):
+    """Apply a broad safety ceiling to unsafe API mutations."""
+
+    scope = "api_mutation"
+    _safe_methods = {"GET", "HEAD", "OPTIONS"}
+
+    def get_cache_key(self, request: Request, _view: APIView) -> str | None:
+        if request.method in self._safe_methods or not request.path.startswith("/api/"):
+            return None
+
+        if request.user and request.user.is_authenticated:
+            ident = f"user:{request.user.pk}"
+        else:
+            ident = f"ip:{self.get_ident(request)}"
+
+        return self.cache_format % {"scope": self.scope, "ident": ident}
 
 
 class GameCommandThrottle(SimpleRateThrottle):

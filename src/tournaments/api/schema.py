@@ -1,7 +1,5 @@
 from rest_framework import serializers
 
-from tournaments.serializers.turn_flow import TurnStateSerializer
-
 
 class RollResultSerializer(serializers.Serializer):
     id = serializers.IntegerField()
@@ -42,10 +40,51 @@ class ChooseCategoryResultSerializer(serializers.Serializer):
     game_complete = serializers.BooleanField()
 
 
+class ScorecardParticipantSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    is_current_user = serializers.BooleanField()
+    is_active = serializers.BooleanField()
+    total_score = serializers.IntegerField()
+    scores = serializers.DictField()
+
+
+class ScorecardCategorySerializer(serializers.Serializer):
+    id = serializers.CharField()
+    label = serializers.CharField()
+    information = serializers.CharField(allow_null=True)
+    selection_options = serializers.ListField(child=serializers.IntegerField())
+
+
+class ScorecardSectionSerializer(serializers.Serializer):
+    label = serializers.CharField()
+    information = serializers.CharField()
+
+
+class GameTurnSnapshotSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    number = serializers.IntegerField()
+    roll_count = serializers.IntegerField()
+    can_roll = serializers.BooleanField()
+    can_hold = serializers.BooleanField()
+    selectable_category_ids = serializers.ListField(child=serializers.CharField())
+    held_dice = serializers.ListField(child=serializers.BooleanField())
+    dice = serializers.ListField(child=serializers.IntegerField(allow_null=True))
+    dice_total = serializers.IntegerField(allow_null=True)
+    rerolls_remaining = serializers.IntegerField(allow_null=True)
+    is_current_user = serializers.BooleanField()
+    category_required = serializers.BooleanField()
+
+
 class GameStateResultSerializer(serializers.Serializer):
     game_id = serializers.IntegerField()
+    event_mode = serializers.CharField()
     game_complete = serializers.BooleanField()
-    turn = TurnStateSerializer(allow_null=True)
+    participation_ongoing = serializers.BooleanField()
+    participants = ScorecardParticipantSerializer(many=True)
+    category_sections = serializers.DictField(child=ScorecardSectionSerializer())
+    categories = ScorecardCategorySerializer(many=True)
+    turn = GameTurnSnapshotSerializer(allow_null=True)
 
 
 class TournamentDetailResultSerializer(serializers.Serializer):
@@ -75,4 +114,4 @@ class RoundBarrierResultSerializer(serializers.Serializer):
 class RoundDrawResultSerializer(serializers.Serializer):
     state = serializers.CharField()
     round_id = serializers.IntegerField(allow_null=True)
-    select_participant_id = serializers.IntegerField(allow_null=True)
+    selected_participant_id = serializers.IntegerField(allow_null=True)

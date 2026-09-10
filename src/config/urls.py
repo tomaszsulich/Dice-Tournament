@@ -19,26 +19,57 @@ from django.contrib import admin
 from django.http import HttpRequest, JsonResponse
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAdminUser
 
+from accounts.authentication import CookieOrHeaderJWTAuthentication
+from accounts.views import (
+    login_page,
+    password_reset_page,
+    profile_edit_page,
+    profile_page,
+    profile_setup_page,
+    register_page,
+    set_password_page,
+)
+from tournaments.views import participant_table
 
-def health_live(request: HttpRequest):
+
+def health_live(_request: HttpRequest):
     return JsonResponse({"status": "ok"})
 
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("login/", login_page, name="login"),
+    path("register/", register_page, name="register"),
+    path("profile/", profile_page, name="profile"),
+    path("profile/setup/", profile_setup_page, name="profile-setup"),
+    path("profile/edit/", profile_edit_page, name="profile-edit"),
+    path("forgot-password/", password_reset_page, name="password-reset"),
+    path("set-password/", set_password_page, name="set-password"),
     path("api/", include("accounts.api.urls")),
     path("api/", include("tournaments.api.urls")),
+    path("tables/<int:game_id>/", participant_table, name="participant-table"),
     path(
         "api/schema/",
-        SpectacularAPIView.as_view(permission_classes=[IsAdminUser]),
+        SpectacularAPIView.as_view(
+            authentication_classes=[
+                SessionAuthentication,
+                CookieOrHeaderJWTAuthentication,
+            ],
+            permission_classes=[IsAdminUser],
+        ),
         name="schema",
     ),
     path(
         "api/docs/",
         SpectacularSwaggerView.as_view(
             url_name="schema",
+            authentication_classes=[
+                SessionAuthentication,
+                CookieOrHeaderJWTAuthentication,
+            ],
             permission_classes=[IsAdminUser],
         ),
         name="swagger-ui",

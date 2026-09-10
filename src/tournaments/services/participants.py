@@ -192,3 +192,54 @@ def leave_tournament(*, tournament_id: int, user: User) -> TournamentParticipant
     )
 
     return participant
+
+
+@transaction.atomic
+def add_participant_by_organizer(
+    *,
+    tournament_id: int,
+    player_profile: PlayerProfile,
+    team_label: str = "",
+    starting_number: int | None = None,
+    seeding: int | None = None,
+) -> TournamentParticipant:
+    tournament = Tournament.objects.select_for_update().get(pk=tournament_id)
+
+    if tournament.status not in {TournamentStatus.DRAFT, TournamentStatus.REGISTRATION}:
+        raise RegistrationUnavailable
+
+    existing = TournamentParticipant.objects.filter(
+        tournament=tournament,
+        player_profile=player_profile,
+    ).first()
+
+    if existing is not None and existing.status != ParticipantStatus.WITHDRAWN:
+        raise AlreadyRegistered
+
+    if _occupied_places(tournament) >= tournament.max_participants:
+        raise TournamentFull
+
+    if existing is None:
+        return create_participant(
+            tournament=tournament,
+            player_profile=player_profile,
+            team_label=team_label,
+            starting_number=starting_number,
+            seeding=seeding,
+        )
+
+    existing.status = ParticipantStatus.REGISTERED
+    existing.joined_at = timezone.now()
+
+    existing.withdrawn_at = None
+    existing.withdrawn_by = None
+    existing.withdrawal_reason = ""
+
+    existing.team_label = team_label
+    existing.starting_number = starting_number
+    existing.seeding = seeding
+
+    existing.full_clean()
+    existing.save()
+
+    return existing

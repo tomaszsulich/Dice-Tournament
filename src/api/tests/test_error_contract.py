@@ -2,6 +2,7 @@ import logging
 
 import pytest
 from rest_framework import status
+from rest_framework.exceptions import PermissionDenied
 
 from accounts.tests.factories import UserFactory
 from api.exception_handler import api_exception_handler
@@ -14,8 +15,22 @@ def test_domain_error_has_stable_code_and_message():
 
     assert response.data == {
         "code": "NOT_YOUR_TURN",
-        "message": "This action is not available outside your turn.",
+        "message": "Not your turn.",
     }
+
+
+@pytest.mark.unit
+def test_domain_forbidden_and_csrf_forbidden_keep_distinct_contracts():
+    domain = domain_error("NOT_YOUR_TURN", status.HTTP_403_FORBIDDEN)
+    csrf = api_exception_handler(PermissionDenied("CSRF Failed: token missing."), {})
+
+    assert domain.status_code == status.HTTP_403_FORBIDDEN
+    assert domain.data["code"] == "NOT_YOUR_TURN"
+    assert "detail" not in domain.data
+
+    assert csrf.status_code == status.HTTP_403_FORBIDDEN
+    assert "code" not in csrf.data
+    assert str(csrf.data["detail"]).startswith("CSRF Failed:")
 
 
 @pytest.mark.unit
@@ -29,7 +44,7 @@ def test_unhandled_exception_returns_safe_correlated_error(caplog):
 
     assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
     assert response.data["code"] == "INTERNAL_ERROR"
-    assert response.data["message"] == "The request could not be completed."
+    assert response.data["message"] == "Request failed."
     assert "secret internal failure" not in str(response.data)
 
     assert correlation_id
@@ -75,3 +90,62 @@ def test_openapi_schema_requires_admin(api_client):
     response = api_client.get("/api/schema/")
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.integration
+@pytest.mark.postgres
+@pytest.mark.django_db
+def test_openapi_documents_security_and_domain_refusals_for_mvp_commands(api_client):
+    staff = UserFactory.create(is_staff=True)
+    api_client.force_authenticate(user=staff)
+
+    response = api_client.get("/api/schema/", HTTP_ACCEPT="application/json")
+
+    assert response.status_code == status.HTTP_200_OK
+    schema = response.data
+
+    expected_responses = {
+        "/api/auth/jwt/create/": {"200", "400", "401", "403", "429", "500"},
+        "/api/auth/jwt/refresh/": {"200", "400", "401", "403", "429", "500"},
+        "/api/auth/logout/": {"204", "400", "401", "403", "429", "500"},
+        "/api/auth/users/": {"201", "400", "403", "429", "500"},
+        "/api/auth/users/set-password/": {"204", "400", "401", "403", "429", "500"},
+        "/api/auth/users/reset-password/": {"204", "400", "403", "429", "500"},
+        "/api/auth/users/reset-password-confirm/": {"204", "400", "403", "429", "500"},
+        "/api/profile/": {"200", "201", "400", "401", "403", "409", "429", "500"},
+        "/api/games/{game_id}/roll/": {
+            "201",
+            "400",
+            "401",
+            "403",
+            "404",
+            "409",
+            "429",
+            "500",
+        },
+        "/api/games/{game_id}/holds/": {
+            "200",
+            "400",
+            "401",
+            "403",
+            "404",
+            "409",
+            "429",
+            "500",
+        },
+        "/api/games/{game_id}/choose-category/": {
+            "201",
+            "400",
+            "401",
+            "403",
+            "404",
+            "409",
+            "429",
+            "500",
+        },
+        "/api/tournaments/create/": {"201", "400", "401", "403", "429", "500"},
+    }
+
+    for path, expected in expected_responses.items():
+        operation = schema["paths"][path]["post"]
+        assert expected <= set(operation["responses"]), path

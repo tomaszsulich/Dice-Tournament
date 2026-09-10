@@ -18,3 +18,7 @@ class PlayerProfileSerializer(serializers.ModelSerializer):
             "id",
             "created_at",
         )
+
+    def create(self, validated_data):
+        user = self.context["request"].user
+        return PlayerProfile.objects.create(user=user, **validated_data)

@@ -157,6 +157,29 @@ def test_score_category_is_closed_and_has_stable_values_and_ui_labels() -> None:
 
 
 @pytest.mark.unit
+def test_school_category_information_explains_x_balance_and_ranges():
+    assert ScoreCategory.ONES.information == (
+        "Target (X): three ones.\nEach missing/extra one: −1/+1.\n"
+        "Range: −3\u00a0to\u00a0+2."
+    )
+
+    assert ScoreCategory.FOURS.information == (
+        "Target (X): three fours.\nEach missing/extra four: −4/+4.\n"
+        "Range: −12\u00a0to\u00a0+8."
+    )
+
+    assert ScoreCategory.SIXES.information == (
+        "Target (X): three sixes.\nEach missing/extra six: −6/+6.\n"
+        "Range: −18\u00a0to\u00a0+12."
+    )
+
+
+@pytest.mark.unit
+def test_every_score_category_has_player_facing_information() -> None:
+    assert all(category.information for category in ScoreCategory)
+
+
+@pytest.mark.unit
 def test_poker_scoring_variants_are_closed_and_stable() -> None:
     assert list(PokerScoringVariant) == [
         PokerScoringVariant.A,
