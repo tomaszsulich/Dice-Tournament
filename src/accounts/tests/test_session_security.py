@@ -14,7 +14,7 @@ from accounts.services.session_activity import (
     record_activity,
     validate_session_family,
 )
-from accounts.tests.factories import UserFactory
+from accounts.tests.factories import PlayerProfileFactory, UserFactory
 
 
 class FrozenClock:
@@ -279,3 +279,43 @@ def test_cookie_refresh_does_not_update_last_activity():
 
     family.refresh_from_db()
     assert family.last_activity_at == original_activity
+
+
+@pytest.mark.integration
+@pytest.mark.postgres
+@pytest.mark.django_db
+def test_cookie_authenticated_profile_edit_requires_csrf():
+    client = APIClient(enforce_csrf_checks=True)
+    user = UserFactory.create(username="profile-player", password="test-password")
+
+    PlayerProfileFactory.create(
+        user=user,
+        display_name="Before",
+        nickname="OldNick",
+    )
+
+    login = client.post(
+        "/api/auth/jwt/create/",
+        {"username": user.username, "password": "test-password"},
+        format="json",
+    )
+
+    assert login.status_code == status.HTTP_200_OK
+
+    no_csrf = client.patch(
+        "/api/profile/",
+        {"display_name": "After"},
+        format="json",
+    )
+
+    assert no_csrf.status_code == status.HTTP_403_FORBIDDEN
+
+    client.credentials(HTTP_X_CSRFTOKEN=client.cookies["csrftoken"].value)
+
+    with_csrf = client.patch(
+        "/api/profile/",
+        {"display_name": "After"},
+        format="json",
+    )
+
+    assert with_csrf.status_code == status.HTTP_200_OK

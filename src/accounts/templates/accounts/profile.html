@@ -1,0 +1,43 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Profile · Dice Tournament</title>
+  <link rel="stylesheet" href="{% static 'accounts/css/auth.css' %}">
+</head>
+
+<body>
+  <main class="auth-shell">
+    <section class="auth-card" aria-labelledby="page-title">
+
+      <header class="auth-heading">
+        <div class="brand-mark" aria-hidden="true">⚄</div>
+        <div><p class="eyebrow">Dice Tournament</p><h1 id="page-title">Your account</h1></div>
+      </header>
+
+      <p id="profile-summary" class="intro">Checking your player&nbsp;profile…</p>
+
+      <dl id="profile-details" class="profile-summary" hidden>
+        <div><dt>Display&nbsp;name</dt><dd id="profile-display-name"></dd></div>
+        <div><dt>Nickname</dt><dd id="profile-nickname">—</dd></div>
+      </dl>
+
+      <p id="form-error" class="form-message error" role="alert" hidden></p>
+
+      <div class="page-actions">
+        <a id="create-profile-link" class="primary-link" href="{% url 'profile-setup' %}" hidden>Create player&nbsp;profile</a>
+        <a id="edit-profile-link" class="primary-link" href="{% url 'profile-edit' %}" hidden>Edit player&nbsp;profile</a>
+        <button id="logout-button" class="secondary-action" type="button">Log&nbsp;out</button>
+      </div>
+
+    </section>
+  </main>
+
+  <script src="{% static 'accounts/js/auth.js' %}" defer></script>
+  <script src="{% static 'accounts/js/profile_overview.js' %}" defer></script>
+</body>
+
+</html>

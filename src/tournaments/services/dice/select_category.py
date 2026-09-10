@@ -25,7 +25,8 @@ from tournaments.domain.dice.scoring import (
     figure_completion_bonus,
     score,
 )
-from tournaments.domain.tournament.types import TournamentStatus
+from tournaments.domain.tournament.rounds import RoundStatus
+from tournaments.domain.tournament.types import ParticipantStatus, TournamentStatus
 from tournaments.models import (
     Game,
     GameParticipant,
@@ -233,7 +234,11 @@ def _require_legal_selection(turn: Turn, user: User) -> None:
     if owner.pk != user.pk:
         raise CategoryForbidden
 
-    if tournament.status != TournamentStatus.ACTIVE:
+    if (
+        tournament.status != TournamentStatus.ACTIVE
+        or participant.game.round.status != RoundStatus.ACTIVE
+        or participant.tournament_participant.status != ParticipantStatus.ACTIVE
+    ):
         raise CategoryUnavailable
 
     if hasattr(turn, "score_entry") or not turn.rolls.exists():

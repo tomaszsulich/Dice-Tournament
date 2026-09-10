@@ -1,0 +1,29 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ status_code }} · Dice Tournament</title>
+  <link rel="stylesheet" href="{% static 'api/css/http_error.css' %}">
+</head>
+
+<body>
+  <main class="error-shell">
+    <section class="error-card" aria-labelledby="error-title">
+
+      <p class="error-code">{{ status_code }}</p>
+      <h1 id="error-title">{{ title }}</h1>
+      <p>{{ message }}</p>
+
+      <div class="error-actions">
+        {% if show_login %}<a class="primary-link" href="{% url 'login' %}?next={{ request_path|urlencode }}">Sign in</a>{% endif %}
+        <button type="button" onclick="history.back()">Go back</button>
+      </div>
+
+    </section>
+  </main>
+</body>
+
+</html>

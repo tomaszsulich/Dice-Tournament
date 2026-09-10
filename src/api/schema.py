@@ -55,6 +55,20 @@ AUTHENTICATION_ERROR_RESPONSE = OpenApiResponse(
     description="Authentication or session error response.",
 )
 
+PERMISSION_ERROR_RESPONSE = OpenApiResponse(
+    response=OpenApiTypes.OBJECT,
+    description="Standard DRF permission or CSRF error response.",
+)
+
+PERMISSION_OR_DOMAIN_ERROR_RESPONSE = OpenApiResponse(
+    response=OpenApiTypes.OBJECT,
+    description=(
+        "Either a standard DRF permission/CSRF error or a domain error response "
+        "with a stable machine-readable code."
+    ),
+    examples=[DOMAIN_ERROR_EXAMPLE],
+)
+
 THROTTLED_RESPONSE = OpenApiResponse(
     response=OpenApiTypes.OBJECT,
     description="Request throttled by DRF.",
@@ -81,6 +95,13 @@ INTERNAL_ERROR_RESPONSE = OpenApiResponse(
 
 AUTHENTICATED_ERROR_RESPONSES = {
     401: AUTHENTICATION_ERROR_RESPONSE,
+    429: THROTTLED_RESPONSE,
+    500: INTERNAL_ERROR_RESPONSE,
+}
+
+AUTHENTICATED_COMMAND_ERROR_RESPONSES = {
+    401: AUTHENTICATION_ERROR_RESPONSE,
+    403: PERMISSION_ERROR_RESPONSE,
     429: THROTTLED_RESPONSE,
     500: INTERNAL_ERROR_RESPONSE,
 }

@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     # Local
     "accounts",
+    "api",
     "tournaments",
 ]
 
@@ -137,6 +138,7 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_THROTTLE_CLASSES": (
         "accounts.throttles.AuthSecurityThrottle",
+        "accounts.throttles.ApiMutationThrottle",
         "accounts.throttles.GameCommandThrottle",
         "accounts.throttles.RegistrationCommandThrottle",
     ),
@@ -144,6 +146,7 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_THROTTLE_RATES": {
         "auth_security": "10/min",
+        "api_mutation": "120/min",
         "game_command": "60/min",
         "registration_command": "30/min",
     },

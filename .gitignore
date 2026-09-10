@@ -17,3 +17,6 @@ __pycache__/
 # Windows
 desktop.ini
 Thumbs.db
+
+# Local authentication artifacts
+cookies.txt

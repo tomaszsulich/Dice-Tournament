@@ -240,3 +240,173 @@ def test_logout_without_refresh_token_returns_400(api_client):
     )
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+
+@pytest.mark.integration
+@pytest.mark.postgres
+@pytest.mark.django_db
+def test_authenticated_user_can_create_optional_player_profile(api_client):
+    user = UserFactory.create()
+    api_client.force_authenticate(user=user)
+
+    response = api_client.post(
+        "/api/profile/",
+        {"display_name": "New Player", "nickname": "DiceFox"},
+        format="json",
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+
+    profile = PlayerProfile.objects.get(user=user)
+
+    assert profile.display_name == "New Player"
+    assert profile.nickname == "DiceFox"
+
+
+@pytest.mark.integration
+@pytest.mark.postgres
+@pytest.mark.django_db
+def test_player_profile_cannot_be_created_twice(api_client):
+    user = UserFactory.create()
+    PlayerProfileFactory.create(user=user)
+    api_client.force_authenticate(user=user)
+
+    response = api_client.post(
+        "/api/profile/",
+        {"display_name": "Another Player", "nickname": ""},
+        format="json",
+    )
+
+    assert response.status_code == status.HTTP_409_CONFLICT
+    assert PlayerProfile.objects.filter(user=user).count() == 1
+
+
+@pytest.mark.integration
+@pytest.mark.postgres
+@pytest.mark.django_db
+def test_authenticated_user_can_edit_own_player_profile(api_client):
+    user = UserFactory.create()
+
+    profile = PlayerProfileFactory.create(
+        user=user,
+        display_name="Before",
+        nickname="OldNick",
+    )
+
+    api_client.force_authenticate(user=user)
+
+    response = api_client.patch(
+        "/api/profile/",
+        {"display_name": "After", "nickname": "NewNick"},
+        format="json",
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+
+    profile.refresh_from_db()
+    assert profile.display_name == "After"
+    assert profile.nickname == "NewNick"
+
+
+@pytest.mark.integration
+@pytest.mark.postgres
+@pytest.mark.django_db
+def test_player_profile_edit_rejects_no_effective_change(api_client):
+    user = UserFactory.create()
+
+    profile = PlayerProfileFactory.create(
+        user=user,
+        display_name="Same Player",
+        nickname="SameNick",
+    )
+
+    api_client.force_authenticate(user=user)
+
+    response = api_client.patch(
+        "/api/profile/",
+        {"display_name": "  Same Player  ", "nickname": "SameNick"},
+        format="json",
+    )
+
+    assert response.status_code == status.HTTP_409_CONFLICT
+    assert response.data["code"] == "PLAYER_PROFILE_UNCHANGED"
+
+    profile.refresh_from_db()
+    assert profile.display_name == "Same Player"
+    assert profile.nickname == "SameNick"
+
+
+@pytest.mark.integration
+@pytest.mark.postgres
+@pytest.mark.django_db
+def test_player_profile_edit_requires_existing_profile(api_client):
+    user = UserFactory.create()
+    api_client.force_authenticate(user=user)
+
+    response = api_client.patch(
+        "/api/profile/",
+        {"display_name": "New Name"},
+        format="json",
+    )
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.integration
+@pytest.mark.postgres
+@pytest.mark.django_db
+def test_player_profile_edit_cannot_target_another_user(api_client):
+    user = UserFactory.create()
+    other_user = UserFactory.create()
+
+    profile = PlayerProfileFactory.create(
+        user=user,
+        display_name="Owner",
+        nickname="OwnerNick",
+    )
+
+    other_profile = PlayerProfileFactory.create(
+        user=other_user,
+        display_name="Other",
+        nickname="OtherNick",
+    )
+
+    api_client.force_authenticate(user=user)
+
+    response = api_client.patch(
+        "/api/profile/",
+        {
+            "display_name": "Changed Owner",
+            "user_id": other_user.pk,
+            "id": other_profile.pk,
+        },
+        format="json",
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+
+    profile.refresh_from_db()
+    other_profile.refresh_from_db()
+
+    assert profile.display_name == "Changed Owner"
+    assert other_profile.display_name == "Other"
+    assert other_profile.nickname == "OtherNick"
+
+
+@pytest.mark.integration
+@pytest.mark.postgres
+@pytest.mark.django_db
+def test_player_profile_edit_rejects_forbidden_nickname(api_client):
+    user = UserFactory.create()
+    profile = PlayerProfileFactory.create(user=user, nickname="Allowed")
+    api_client.force_authenticate(user=user)
+
+    response = api_client.patch(
+        "/api/profile/",
+        {"nickname": "Tournament winner"},
+        format="json",
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    profile.refresh_from_db()
+    assert profile.nickname == "Allowed"

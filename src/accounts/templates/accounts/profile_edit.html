@@ -1,0 +1,41 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Edit player profile · Dice Tournament</title>
+  <link rel="stylesheet" href="{% static 'accounts/css/auth.css' %}">
+</head>
+
+<body>
+  <main class="auth-shell">
+    <section class="auth-card" aria-labelledby="page-title">
+      <header class="auth-heading">
+        <div class="brand-mark" aria-hidden="true">⚄</div>
+
+        <div>
+          <p class="eyebrow">Dice Tournament</p>
+          <h1 id="page-title">Edit player&nbsp;profile</h1>
+        </div>
+
+      </header>
+      <p class="intro">Changes apply to your profile. Existing tournament identity snapshots stay unchanged.</p>
+
+      <form id="profile-edit-form" class="auth-form" novalidate>
+        <label>Display name<input name="display_name" maxlength="150" autocomplete="name" required></label>
+        <label>Nickname <span class="optional">optional</span><input name="nickname" maxlength="50"></label>
+        <p id="form-error" class="form-message error" role="alert" hidden></p>
+        <button class="primary-action" type="submit">Save changes</button>
+      </form>
+
+      <p class="switch-link"><a href="{% url 'profile' %}">Cancel</a></p>
+    </section>
+  </main>
+
+  <script src="{% static 'accounts/js/auth.js' %}" defer></script>
+  <script src="{% static 'accounts/js/profile_edit.js' %}" defer></script>
+</body>
+
+</html>

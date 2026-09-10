@@ -11,9 +11,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from accounts.models import PlayerProfile
 from api.schema import (
+    AUTHENTICATED_COMMAND_ERROR_RESPONSES,
     AUTHENTICATED_ERROR_RESPONSES,
     DOMAIN_ERROR_RESPONSE,
+    PERMISSION_OR_DOMAIN_ERROR_RESPONSE,
     VALIDATION_ERROR_RESPONSE,
     VALIDATION_OR_DOMAIN_ERROR_RESPONSE,
 )
@@ -34,10 +37,15 @@ from tournaments.domain.tournament.types import (
     RegistrationMode,
     TournamentStatus,
 )
-from tournaments.models import Game, Round, Tournament, Turn
+from tournaments.models import Game, Round, Tournament
+from tournaments.selectors.game_state import get_game_snapshot
 from tournaments.serializers.lifecycle import (
     DrawCommandSerializer,
     EmptyLifecycleCommandSerializer,
+)
+from tournaments.serializers.management import (
+    OrganizerParticipantCommandSerializer,
+    TournamentCreateSerializer,
 )
 from tournaments.serializers.participants import TournamentParticipantSerializer
 from tournaments.serializers.registration import (
@@ -48,7 +56,6 @@ from tournaments.serializers.roll import RollCommandSerializer
 from tournaments.serializers.turn_flow import (
     ChooseCategoryCommandSerializer,
     HoldDiceCommandSerializer,
-    TurnStateSerializer,
 )
 from tournaments.services.dice.hold_dice import (
     GameNotFound as HoldGameNotFound,
@@ -56,6 +63,7 @@ from tournaments.services.dice.hold_dice import (
 from tournaments.services.dice.hold_dice import (
     HoldForbidden,
     HoldUnavailable,
+    HoldUnchanged,
     InvalidHoldPayload,
     set_held_dice,
 )
@@ -85,6 +93,7 @@ from tournaments.services.participants import (
     SelfRegistrationForbidden,
     SelfWithdrawalUnavailable,
     TournamentFull,
+    add_participant_by_organizer,
     join_tournament,
     leave_tournament,
 )
@@ -93,7 +102,9 @@ from tournaments.services.round_barrier import (
     get_tournament_ranking,
 )
 from tournaments.services.tournament_lifecycle import (
+    close_registration,
     complete_tournament,
+    create_tournament,
     open_registration,
     start_tournament,
 )
@@ -106,6 +117,40 @@ def _validate_empty_command(request: Request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     return None
+
+
+@extend_schema(
+    operation_id="tournaments_create",
+    request=TournamentCreateSerializer,
+    responses={
+        **AUTHENTICATED_COMMAND_ERROR_RESPONSES,
+        201: TournamentDetailResultSerializer,
+        400: VALIDATION_ERROR_RESPONSE,
+    },
+)
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def tournament_create(request: Request):
+    serializer = TournamentCreateSerializer(data=request.data)
+
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        tournament = create_tournament(
+            organizer=request.user,
+            **serializer.validated_data,
+        )
+    except ValidationError as exc:
+        return Response(
+            getattr(exc, "message_dict", {"detail": exc.messages}),
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    return Response(
+        {"id": tournament.pk, "name": tournament.name, "status": tournament.status},
+        status=status.HTTP_201_CREATED,
+    )
 
 
 @extend_schema(
@@ -164,10 +209,10 @@ def tournament_list(request: Request):
 @extend_schema(
     request=EmptyRegistrationCommandSerializer,
     responses={
-        **AUTHENTICATED_ERROR_RESPONSES,
+        **AUTHENTICATED_COMMAND_ERROR_RESPONSES,
         201: TournamentParticipantSerializer,
         400: VALIDATION_ERROR_RESPONSE,
-        403: DOMAIN_ERROR_RESPONSE,
+        403: PERMISSION_OR_DOMAIN_ERROR_RESPONSE,
         404: DOMAIN_ERROR_RESPONSE,
         409: DOMAIN_ERROR_RESPONSE,
     },
@@ -206,7 +251,7 @@ def join(request: Request, tournament_id: int):
 @extend_schema(
     request=EmptyRegistrationCommandSerializer,
     responses={
-        **AUTHENTICATED_ERROR_RESPONSES,
+        **AUTHENTICATED_COMMAND_ERROR_RESPONSES,
         200: TournamentParticipantSerializer,
         400: VALIDATION_ERROR_RESPONSE,
         404: DOMAIN_ERROR_RESPONSE,
@@ -249,10 +294,10 @@ def leave(request: Request, tournament_id: int):
         )
     ],
     responses={
-        **AUTHENTICATED_ERROR_RESPONSES,
+        **AUTHENTICATED_COMMAND_ERROR_RESPONSES,
         201: RollResultSerializer,
         400: VALIDATION_OR_DOMAIN_ERROR_RESPONSE,
-        403: DOMAIN_ERROR_RESPONSE,
+        403: PERMISSION_OR_DOMAIN_ERROR_RESPONSE,
         404: DOMAIN_ERROR_RESPONSE,
         409: DOMAIN_ERROR_RESPONSE,
     },
@@ -297,10 +342,10 @@ def roll_game(request: Request, game_id: int):
 @extend_schema(
     request=HoldDiceCommandSerializer,
     responses={
-        **AUTHENTICATED_ERROR_RESPONSES,
+        **AUTHENTICATED_COMMAND_ERROR_RESPONSES,
         200: HoldResultSerializer,
         400: VALIDATION_OR_DOMAIN_ERROR_RESPONSE,
-        403: DOMAIN_ERROR_RESPONSE,
+        403: PERMISSION_OR_DOMAIN_ERROR_RESPONSE,
         404: DOMAIN_ERROR_RESPONSE,
         409: DOMAIN_ERROR_RESPONSE,
     },
@@ -326,7 +371,7 @@ def hold_game_dice(request: Request, game_id: int):
         return domain_error(exc.code, status.HTTP_403_FORBIDDEN)
     except InvalidHoldPayload as exc:
         return domain_error(exc.code, status.HTTP_400_BAD_REQUEST)
-    except HoldUnavailable as exc:
+    except (HoldUnavailable, HoldUnchanged) as exc:
         return domain_error(exc.code, status.HTTP_409_CONFLICT)
 
     return Response(response, status=status.HTTP_200_OK)
@@ -344,10 +389,10 @@ def hold_game_dice(request: Request, game_id: int):
         )
     ],
     responses={
-        **AUTHENTICATED_ERROR_RESPONSES,
+        **AUTHENTICATED_COMMAND_ERROR_RESPONSES,
         201: ChooseCategoryResultSerializer,
         400: VALIDATION_OR_DOMAIN_ERROR_RESPONSE,
-        403: DOMAIN_ERROR_RESPONSE,
+        403: PERMISSION_OR_DOMAIN_ERROR_RESPONSE,
         404: DOMAIN_ERROR_RESPONSE,
         409: DOMAIN_ERROR_RESPONSE,
     },
@@ -413,35 +458,10 @@ def game_state(request: Request, game_id: int):
     if not (is_table_participant or is_organizer):
         return domain_error("GAME_FORBIDDEN", status.HTTP_403_FORBIDDEN)
 
-    turn = (
-        Turn.objects.select_related(
-            "game_participant__tournament_participant__player_profile__user",
-            "game_participant__game__round__tournament",
-        )
-        .filter(
-            game_participant__game_id=game_id,
-            completed_at__isnull=True,
-        )
-        .order_by("game_participant__turn_order", "number", "pk")
-        .first()
+    return Response(
+        get_game_snapshot(game=game, user=request.user),
+        status=status.HTTP_200_OK,
     )
-
-    game_complete = (
-        game.game_participants.exists()
-        and not game.game_participants.filter(is_completed=False).exists()
-    )
-
-    data = {
-        "game_id": game_id,
-        "game_complete": game_complete,
-        "turn": (
-            TurnStateSerializer(turn, context={"user": request.user}).data
-            if turn is not None
-            else None
-        ),
-    }
-
-    return Response(data, status=status.HTTP_200_OK)
 
 
 def _organizer_tournament(
@@ -484,10 +504,10 @@ def tournament_detail(request: Request, tournament_id: int):
 @extend_schema(
     request=EmptyLifecycleCommandSerializer,
     responses={
-        **AUTHENTICATED_ERROR_RESPONSES,
+        **AUTHENTICATED_COMMAND_ERROR_RESPONSES,
         200: TournamentLifecycleResultSerializer,
         400: VALIDATION_ERROR_RESPONSE,
-        403: DOMAIN_ERROR_RESPONSE,
+        403: PERMISSION_OR_DOMAIN_ERROR_RESPONSE,
         404: DOMAIN_ERROR_RESPONSE,
         409: DOMAIN_ERROR_RESPONSE,
     },
@@ -518,10 +538,97 @@ def tournament_open_registration(request: Request, tournament_id: int):
 @extend_schema(
     request=EmptyLifecycleCommandSerializer,
     responses={
-        **AUTHENTICATED_ERROR_RESPONSES,
+        **AUTHENTICATED_COMMAND_ERROR_RESPONSES,
         200: TournamentLifecycleResultSerializer,
         400: VALIDATION_ERROR_RESPONSE,
-        403: DOMAIN_ERROR_RESPONSE,
+        403: PERMISSION_OR_DOMAIN_ERROR_RESPONSE,
+        404: DOMAIN_ERROR_RESPONSE,
+        409: DOMAIN_ERROR_RESPONSE,
+    },
+)
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def tournament_close_registration(request: Request, tournament_id: int):
+    tournament, error = _organizer_tournament(request, tournament_id)
+
+    if error is not None:
+        return error
+
+    serializer = EmptyLifecycleCommandSerializer(data=request.data)
+
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        tournament = close_registration(tournament)
+    except ValidationError:
+        return domain_error(
+            "TOURNAMENT_TRANSITION_UNAVAILABLE", status.HTTP_409_CONFLICT
+        )
+
+    return Response({"id": tournament.pk, "status": tournament.status})
+
+
+@extend_schema(
+    request=OrganizerParticipantCommandSerializer,
+    responses={
+        **AUTHENTICATED_COMMAND_ERROR_RESPONSES,
+        201: TournamentParticipantSerializer,
+        400: VALIDATION_ERROR_RESPONSE,
+        403: PERMISSION_OR_DOMAIN_ERROR_RESPONSE,
+        404: DOMAIN_ERROR_RESPONSE,
+        409: DOMAIN_ERROR_RESPONSE,
+    },
+)
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def tournament_add_participant(request: Request, tournament_id: int):
+    tournament, error = _organizer_tournament(request, tournament_id)
+
+    if error is not None:
+        return error
+
+    serializer = OrganizerParticipantCommandSerializer(data=request.data)
+
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        profile = PlayerProfile.objects.get(
+            pk=serializer.validated_data["player_profile_id"]
+        )
+    except PlayerProfile.DoesNotExist:
+        return domain_error("PLAYER_PROFILE_NOT_FOUND", status.HTTP_404_NOT_FOUND)
+
+    try:
+        participant = add_participant_by_organizer(
+            tournament_id=tournament.pk,
+            player_profile=profile,
+            team_label=serializer.validated_data.get("team_label", ""),
+            starting_number=serializer.validated_data.get("starting_number"),
+            seeding=serializer.validated_data.get("seeding"),
+        )
+    except (AlreadyRegistered, RegistrationUnavailable, TournamentFull) as exc:
+        return domain_error(exc.code, status.HTTP_409_CONFLICT)
+    except ValidationError as exc:
+        return Response(
+            getattr(exc, "message_dict", {"detail": exc.messages}),
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    return Response(
+        TournamentParticipantSerializer(participant).data,
+        status=status.HTTP_201_CREATED,
+    )
+
+
+@extend_schema(
+    request=EmptyLifecycleCommandSerializer,
+    responses={
+        **AUTHENTICATED_COMMAND_ERROR_RESPONSES,
+        200: TournamentLifecycleResultSerializer,
+        400: VALIDATION_ERROR_RESPONSE,
+        403: PERMISSION_OR_DOMAIN_ERROR_RESPONSE,
         404: DOMAIN_ERROR_RESPONSE,
         409: DOMAIN_ERROR_RESPONSE,
     },
@@ -552,10 +659,10 @@ def tournament_start(request: Request, tournament_id: int):
 @extend_schema(
     request=EmptyLifecycleCommandSerializer,
     responses={
-        **AUTHENTICATED_ERROR_RESPONSES,
+        **AUTHENTICATED_COMMAND_ERROR_RESPONSES,
         200: TournamentLifecycleResultSerializer,
         400: VALIDATION_ERROR_RESPONSE,
-        403: DOMAIN_ERROR_RESPONSE,
+        403: PERMISSION_OR_DOMAIN_ERROR_RESPONSE,
         404: DOMAIN_ERROR_RESPONSE,
         409: DOMAIN_ERROR_RESPONSE,
     },
@@ -617,10 +724,10 @@ def tournament_ranking(request: Request, tournament_id: int):
 @extend_schema(
     request=EmptyLifecycleCommandSerializer,
     responses={
-        **AUTHENTICATED_ERROR_RESPONSES,
+        **AUTHENTICATED_COMMAND_ERROR_RESPONSES,
         200: RoundBarrierResultSerializer,
         400: VALIDATION_ERROR_RESPONSE,
-        403: DOMAIN_ERROR_RESPONSE,
+        403: PERMISSION_OR_DOMAIN_ERROR_RESPONSE,
         404: DOMAIN_ERROR_RESPONSE,
     },
 )
@@ -657,10 +764,10 @@ def round_barrier(request: Request, round_id: int):
 @extend_schema(
     request=DrawCommandSerializer,
     responses={
-        **AUTHENTICATED_ERROR_RESPONSES,
+        **AUTHENTICATED_COMMAND_ERROR_RESPONSES,
         200: RoundDrawResultSerializer,
         400: VALIDATION_ERROR_RESPONSE,
-        403: DOMAIN_ERROR_RESPONSE,
+        403: PERMISSION_OR_DOMAIN_ERROR_RESPONSE,
         404: DOMAIN_ERROR_RESPONSE,
         409: DOMAIN_ERROR_RESPONSE,
     },

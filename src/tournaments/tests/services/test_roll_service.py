@@ -286,3 +286,20 @@ def test_rollback_does_not_publish_or_keep_roll(roll_setup, monkeypatch):
 
     assert Roll.objects.count() == 0
     assert published == []
+
+
+@pytest.mark.django_db
+def test_roll_rejects_waiting_round_even_when_tournament_is_active(roll_setup):
+    user, game, _turn = roll_setup()
+    game.round.status = "waiting"
+    game.round.save(update_fields=("status",))
+
+    with pytest.raises(RollUnavailable):
+        execute_roll(
+            user=user,
+            game_id=game.pk,
+            payload={},
+            key="waiting-round",
+            rng=FakeRandomizer([1, 2, 3, 4, 5]),
+            publisher=lambda _event, _payload: None,
+        )

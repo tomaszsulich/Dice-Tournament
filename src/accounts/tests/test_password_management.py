@@ -67,6 +67,42 @@ def test_authenticated_user_can_change_password_and_sessions_are_revoked(api_cli
 @pytest.mark.integration
 @pytest.mark.postgres
 @pytest.mark.django_db
+def test_authenticated_user_cannot_change_password_to_current_value(api_client):
+    user = UserFactory.create(username="player1", password="Old-Password-42")
+    encoded_before = user.password
+
+    login = api_client.post(
+        "/api/auth/jwt/create/",
+        {"username": user.username, "password": "Old-Password-42"},
+        format="json",
+    )
+
+    assert login.status_code == status.HTTP_200_OK
+
+    api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access']}")
+
+    response = api_client.post(
+        "/api/auth/users/set-password/",
+        {
+            "current_password": "Old-Password-42",
+            "new_password": "Old-Password-42",
+        },
+        format="json",
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    assert response.data["new_password"] == [
+        "New password must be different from the current password."
+    ]
+
+    user.refresh_from_db()
+    assert user.password == encoded_before
+
+
+@pytest.mark.integration
+@pytest.mark.postgres
+@pytest.mark.django_db
 @override_settings(MAILERS=TEST_MAILERS)
 def test_password_reset_email_confirms_once_and_revokes_sessions(api_client):
     mail.outbox = []

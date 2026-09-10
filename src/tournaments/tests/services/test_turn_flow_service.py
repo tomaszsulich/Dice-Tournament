@@ -5,6 +5,7 @@ from django.utils import timezone
 
 from accounts.tests.factories import PlayerProfileFactory
 from tournaments.domain.dice.categories import SCHOOL_CATEGORIES, ScoreCategory
+from tournaments.domain.tournament.types import ParticipantStatus
 from tournaments.models import (
     GameParticipant,
     IdempotencyRecord,
@@ -17,6 +18,7 @@ from tournaments.models import (
 from tournaments.services.dice.hold_dice import (
     HoldForbidden,
     HoldUnavailable,
+    HoldUnchanged,
     InvalidHoldPayload,
     set_held_dice,
 )
@@ -44,6 +46,7 @@ def _add_second_participant(game):
         player_profile=profile,
         full_name_snapshot="Player Two",
         display_name_snapshot="Player Two",
+        status=ParticipantStatus.ACTIVE,
     )
 
     game_participant = GameParticipant.objects.create(
@@ -110,6 +113,23 @@ def test_roll_keeps_post_roll_snapshot_while_turn_tracks_later_hold_choice(roll_
 
     assert second.values == (1, 6, 3, 6, 6)
     assert second.held_after_roll == (True, False, True, False, False)
+
+
+@pytest.mark.django_db
+def test_hold_rejects_unchanged_state_without_publishing(roll_setup):
+    user, game, turn = roll_setup()
+    _roll(turn)
+    events = []
+
+    with pytest.raises(HoldUnchanged):
+        set_held_dice(
+            user=user,
+            game_id=game.pk,
+            held_flags=(False,) * 5,
+            publisher=_publisher(events),
+        )
+
+    assert events == []
 
 
 @pytest.mark.django_db
