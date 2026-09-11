@@ -35,6 +35,7 @@ from tournaments.models import (
     ScoreResultKind,
     Turn,
 )
+from tournaments.realtime.events import bump_game_state_version
 from tournaments.services.dice.advance_turn import (
     activate_next_turn,
     refresh_participant_completion,
@@ -193,7 +194,12 @@ def select_category(
         if next_turn is not None:
             event_payload["next_turn_id"] = next_turn.pk
 
-        transaction.on_commit(lambda: publisher("table_changed", event_payload))
+        event_payload["state_version"] = bump_game_state_version(game_id)
+
+        transaction.on_commit(
+            lambda: publisher("table_changed", event_payload),
+            robust=True,
+        )
 
         return response
 

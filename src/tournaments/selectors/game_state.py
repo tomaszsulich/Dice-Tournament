@@ -132,6 +132,7 @@ def get_game_snapshot(*, game: Game, user: User) -> dict[str, object]:
 
     return {
         "game_id": game.pk,
+        "state_version": game.state_version,
         "event_mode": game.round.tournament.event_mode,
         "game_complete": bool(participants)
         and all(participant.is_completed for participant in participants),

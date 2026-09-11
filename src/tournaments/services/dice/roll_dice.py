@@ -12,6 +12,7 @@ from tournaments.domain.tournament.types import (
     TournamentStatus,
 )
 from tournaments.models import Game, IdempotencyRecord, Roll, Turn
+from tournaments.realtime.events import bump_game_state_version
 from tournaments.services.idempotency import (
     ROLL_COMMAND,
     canonicalize_payload,
@@ -105,11 +106,19 @@ def execute_roll(
             response=response,
         )
 
+        state_version = bump_game_state_version(game_id)
+
         transaction.on_commit(
             lambda: publisher(
                 "table_changed",
-                {"game_id": game_id, "turn_id": turn.pk, "roll_id": roll.pk},
-            )
+                {
+                    "game_id": game_id,
+                    "turn_id": turn.pk,
+                    "roll_id": roll.pk,
+                    "state_version": state_version,
+                },
+            ),
+            robust=True,
         )
 
         return response

@@ -78,6 +78,7 @@ class GameTurnSnapshotSerializer(serializers.Serializer):
 
 class GameStateResultSerializer(serializers.Serializer):
     game_id = serializers.IntegerField()
+    state_version = serializers.IntegerField()
     event_mode = serializers.CharField()
     game_complete = serializers.BooleanField()
     participation_ongoing = serializers.BooleanField()
