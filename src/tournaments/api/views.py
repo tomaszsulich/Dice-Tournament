@@ -38,6 +38,7 @@ from tournaments.domain.tournament.types import (
     TournamentStatus,
 )
 from tournaments.models import Game, Round, Tournament
+from tournaments.realtime.publisher import publish_realtime_event
 from tournaments.selectors.game_state import get_game_snapshot
 from tournaments.serializers.lifecycle import (
     DrawCommandSerializer,
@@ -325,7 +326,7 @@ def roll_game(request: Request, game_id: int):
             payload=serializer.validated_data,
             key=key,
             rng=SystemRandom(),
-            publisher=lambda _event, _payload: None,
+            publisher=publish_realtime_event,
         )
     except GameNotFound as exc:
         return domain_error(exc.code, status.HTTP_404_NOT_FOUND)
@@ -363,7 +364,7 @@ def hold_game_dice(request: Request, game_id: int):
             user=request.user,
             game_id=game_id,
             held_flags=tuple(serializer.validated_data["held"]),
-            publisher=lambda _event, _payload: None,
+            publisher=publish_realtime_event,
         )
     except HoldGameNotFound as exc:
         return domain_error(exc.code, status.HTTP_404_NOT_FOUND)
@@ -419,7 +420,7 @@ def choose_game_category(request: Request, game_id: int):
             game_id=game_id,
             payload=serializer.validated_data,
             key=key,
-            publisher=lambda _event, _payload: None,
+            publisher=publish_realtime_event,
         )
     except CategoryGameNotFound as exc:
         return domain_error(exc.code, status.HTTP_404_NOT_FOUND)

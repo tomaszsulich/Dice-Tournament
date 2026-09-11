@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+import os
 from datetime import timedelta
 from pathlib import Path
 
@@ -34,6 +35,7 @@ INSTALLED_APPS = [
     # Third-party
     "rest_framework",
     "drf_spectacular",
+    "channels",
     "djoser",
     "rest_framework_simplejwt.token_blacklist",
     # Local
@@ -168,4 +170,13 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "Dice Tournament API",
     "DESCRIPTION": "Authoritative REST contract for Dice Tournament.",
     "VERSION": "1.0.0",
+}
+
+REDIS_URL = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {"hosts": [REDIS_URL]},
+    },
 }

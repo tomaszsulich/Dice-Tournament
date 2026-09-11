@@ -16,6 +16,7 @@ class Game(models.Model):
     allocation_seed = models.BigIntegerField()
     allocation_cost = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
+    state_version = models.PositiveBigIntegerField(default=0)
 
     class Meta:
         constraints = [

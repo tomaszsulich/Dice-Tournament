@@ -6,6 +6,7 @@ from accounts.models import User
 from tournaments.domain.tournament.rounds import RoundStatus
 from tournaments.domain.tournament.types import ParticipantStatus, TournamentStatus
 from tournaments.models import Game, Turn
+from tournaments.realtime.events import bump_game_state_version
 
 type HeldDice = tuple[bool, bool, bool, bool, bool]
 type Publisher = Callable[[str, dict[str, int]], None]
@@ -67,11 +68,18 @@ def set_held_dice(
             "can_roll": True,
         }
 
+        state_version = bump_game_state_version(game_id)
+
         transaction.on_commit(
             lambda: publisher(
                 "table_changed",
-                {"game_id": game_id, "turn_id": turn.pk},
-            )
+                {
+                    "game_id": game_id,
+                    "turn_id": turn.pk,
+                    "state_version": state_version,
+                },
+            ),
+            robust=True,
         )
 
         return response
