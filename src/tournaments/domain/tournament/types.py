@@ -30,6 +30,12 @@ class DecisionTimeLimit(models.IntegerChoices):
     SECONDS_90 = 90, "90 seconds"
 
 
+class ParticipantConnectionStatus(models.TextChoices):
+    CONNECTED = "connected", "Connected"
+    RECONNECTING = "reconnecting", "Reconnecting"
+    DISCONNECTED = "disconnected", "Disconnected"
+
+
 class ParticipantStatus(models.TextChoices):
     REGISTERED = "registered", "Registered"
     ACTIVE = "active", "Active"

@@ -175,6 +175,11 @@ def get_game_snapshot(*, game: Game, user: User) -> dict[str, object]:
                 "rerolls_remaining": max(0, 3 - roll_count) if roll_count else None,
                 "is_current_user": active_user_id == user.pk,
                 "category_required": roll_count >= 3,
+                "action_deadline": (
+                    turn.action_deadline.isoformat()
+                    if turn.action_deadline is not None
+                    else None
+                ),
             }
             if turn
             else None

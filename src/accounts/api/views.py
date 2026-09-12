@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.middleware.csrf import get_token
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
@@ -29,6 +30,23 @@ from api.schema import (
     VALIDATION_ERROR_RESPONSE,
 )
 from common.errors import domain_error
+from tournaments.services.connection_state import active_game_for_user
+
+
+def _active_game_conflict(user_id: int) -> Response | None:
+    game = active_game_for_user(user_id)
+
+    if game is None:
+        return None
+
+    return domain_error(
+        "ACTIVE_GAME_IN_PROGRESS",
+        status.HTTP_409_CONFLICT,
+        details={
+            "table_id": game.pk,
+            "target_url": reverse("participant-table", args=(game.pk,)),
+        },
+    )
 
 
 def _set_auth_cookies(response: Response) -> None:
@@ -131,6 +149,11 @@ def profile(request: Request):
         profile = get_object_or_404(PlayerProfile, user=request.user)
         serializer = PlayerProfileSerializer(profile)
         return Response(serializer.data)
+
+    conflict = _active_game_conflict(request.user.pk)
+
+    if conflict is not None:
+        return conflict
 
     if request.method == "PATCH":
         with transaction.atomic():

@@ -13,6 +13,7 @@ from tournaments.domain.tournament.types import (
 )
 from tournaments.models import Game, IdempotencyRecord, Roll, Turn
 from tournaments.realtime.events import bump_game_state_version
+from tournaments.services.connection_state import decision_deadline_for
 from tournaments.services.idempotency import (
     ROLL_COMMAND,
     canonicalize_payload,
@@ -95,6 +96,11 @@ def execute_roll(
             held_after_roll=held_dice,
         )
 
+        turn.action_deadline = decision_deadline_for(
+            turn.game_participant.game.round.tournament
+        )
+
+        turn.save(update_fields=("action_deadline",))
         response = _serialize_roll(roll)
 
         IdempotencyRecord.objects.create(

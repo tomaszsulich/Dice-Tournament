@@ -11,11 +11,16 @@ import os
 
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.security.websocket import AllowedHostsOriginValidator
+from django.conf import settings
+from django.contrib.staticfiles.handlers import ASGIStaticFilesHandler
 from django.core.asgi import get_asgi_application
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.development")
 
 django_asgi_application = get_asgi_application()
+
+if settings.DEBUG:
+    django_asgi_application = ASGIStaticFilesHandler(django_asgi_application)
 
 from tournaments.realtime.consumers import JwtCookieAuthMiddleware  # noqa: E402
 from tournaments.realtime.routing import websocket_urlpatterns  # noqa: E402

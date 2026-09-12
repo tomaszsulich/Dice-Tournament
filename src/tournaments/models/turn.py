@@ -19,6 +19,7 @@ class Turn(models.Model):
     held_die_4 = models.BooleanField(default=False)
     held_die_5 = models.BooleanField(default=False)
 
+    action_deadline = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:

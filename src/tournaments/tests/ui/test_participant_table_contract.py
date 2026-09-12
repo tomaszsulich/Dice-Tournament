@@ -55,9 +55,25 @@ def test_table_javascript_sends_only_user_intentions():
     assert "turn?.selectable_category_ids?.includes(category.id)" in script
     assert 'snapshot.event_mode === "in_person"' in script
     assert "submitRoll({values})" in script
-    assert "SNAPSHOT_POLL_MS = 1000" in script
-    assert "window.setInterval(pollSnapshot, SNAPSHOT_POLL_MS)" in script
-    assert 'window.addEventListener("focus", pollSnapshot)' in script
+    assert "startRealtime" in script
+    assert "getStateVersion: () => snapshot.state_version" in script
+    assert "applySnapshot: render" in script
+    assert "SNAPSHOT_POLL_MS" not in script
+    assert "window.setInterval(pollSnapshot" not in script
+    assert '"Your\\u00a0turn"' in script
+    assert '"Choose a\\u00a0category"' in script
+    assert '"●\\u00a0Your\\u00a0turn"' not in script
+    assert '"●\\u00a0Choose a\\u00a0category"' not in script
+    assert 'const baseDocumentTitle = document.title.replace(/^●\\s*/, "")' in script
+    assert "`● ${baseDocumentTitle}`" in script
+    assert 'connected: ""' in script
+    assert 'reconnecting: ""' in script
+    assert 'disconnected: "Connection lost. Reconnecting…"' in script
+    assert 'terminal: ""' in script
+    assert 'message === "Session expired. Sign in again."' in script
+    assert "signIn.href = `/login/?next=${next}`" in script
+    assert 'signIn.textContent = "Sign in again."' in script
+    assert 'errorMessage.append("Session expired. ", signIn)' in script
 
     assert "error.message" not in script.replace(
         'error.message === "RELOGIN_REQUIRED"',
@@ -113,3 +129,43 @@ def test_scorecard_css_supports_dynamic_player_columns_and_internal_grid():
     assert "min-width: 8.5rem" in css
     assert "text-overflow: ellipsis" in css
     assert "border-right-color: #c7ccc5" in css
+
+
+@pytest.mark.unit
+def test_reconnect_client_uses_authoritative_snapshot_and_bounded_backoff():
+    script = Path("src/tournaments/static/tournaments/js/reconnect.js").read_text(
+        encoding="utf-8"
+    )
+
+    assert "const BACKOFF_MS = [1000, 2000, 4000, 8000]" in script
+    assert "const DISCONNECTED_AFTER_MS = 30000" in script
+    assert "TABLE_ASSIGNMENT_CHANGED" in script
+    assert "targetSnapshot.game_id !== data.table_id" in script
+    assert "applySnapshot(next)" in script
+    assert "message.state_version <= getStateVersion()" in script
+    assert "window.location.assign(safeTargetUrl(data.target_url))" in script
+    assert "const connection = new WebSocket(websocketUrl(gameId))" in script
+    assert "if (socket === connection)" in script
+    assert "connection.readyState === WebSocket.OPEN" in script
+    assert "socket.close();" not in script
+    assert 'setConnectionState("terminal")' in script
+    assert 'method: "POST"' not in script
+    assert "Idempotency-Key" not in script
+
+
+@pytest.mark.unit
+def test_shared_auth_client_redirects_server_assigned_participant_on_any_account_page():
+    script = Path("src/accounts/static/accounts/js/auth.js").read_text(encoding="utf-8")
+
+    assert "/ws/participant/assignments/" in script
+    assert 'message.type !== "table_assignment_changed"' in script
+    assert "window.location.assign(safeAssignmentTarget(message.target_url))" in script
+    assert "target.origin !== window.location.origin" in script
+    assert "closeCode === 4403" in script
+    assert "closeCode !== 4401" in script
+    assert 'request("/api/profile/")' in script
+    assert "redirectToLogin()" in script
+    assert '"/forgot-password/"' in script
+    assert '"/set-password/"' in script
+    assert "ASSIGNMENT_REDIRECT_EXEMPT_PATHS" in script
+    assert "redirectToActiveGame" in script

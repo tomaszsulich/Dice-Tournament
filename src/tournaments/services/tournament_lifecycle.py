@@ -1,3 +1,5 @@
+from collections.abc import Callable
+
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
@@ -8,6 +10,8 @@ from tournaments.domain.tournament.table_sizes import compute_balanced_table_siz
 from tournaments.domain.tournament.types import ParticipantStatus, TournamentStatus
 from tournaments.models import Tournament, TournamentOrganizer
 from tournaments.services.round_barrier import create_initial_round
+
+type Publisher = Callable[[str, dict[str, int]], None]
 
 
 @transaction.atomic
@@ -50,7 +54,11 @@ def close_registration(tournament: Tournament) -> Tournament:
 
 
 @transaction.atomic
-def start_tournament(tournament: Tournament) -> Tournament:
+def start_tournament(
+    tournament: Tournament,
+    *,
+    publisher: Publisher | None = None,
+) -> Tournament:
     tournament = Tournament.objects.select_for_update().get(pk=tournament.pk)
 
     if tournament.status != TournamentStatus.REGISTRATION:
@@ -86,7 +94,13 @@ def start_tournament(tournament: Tournament) -> Tournament:
 
     tournament.save(update_fields=("status", "starts_at", "registration_closed_at"))
 
-    create_initial_round(tournament)
+    first_round = create_initial_round(tournament)
+
+    if publisher is not None:
+        transaction.on_commit(
+            lambda: publisher("round_transition", {"round_id": first_round.pk})
+        )
+
     return tournament
 
 
