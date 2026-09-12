@@ -19,8 +19,28 @@ from tournaments.api.views import (
     tournament_ranking,
     tournament_start,
 )
+from tournaments.organizer_dashboard_views import (
+    organizer_dashboard_api,
+    participant_comparison_api,
+    participant_comparison_history_api,
+)
 
 urlpatterns = [
+    path(
+        "tournaments/<int:tournament_id>/organizer-dashboard/",
+        organizer_dashboard_api,
+        name="organizer-dashboard-api",
+    ),
+    path(
+        "comparisons/participants/<int:participant_id>/",
+        participant_comparison_api,
+        name="participant-comparison-api",
+    ),
+    path(
+        "comparisons/participants/<int:participant_id>/history/",
+        participant_comparison_history_api,
+        name="participant-comparison-history-api",
+    ),
     path("rounds/<int:round_id>/barrier/", round_barrier, name="round-barrier"),
     path("rounds/<int:round_id>/draw/", round_draw, name="round-draw"),
     path("games/<int:game_id>/roll/", roll_game, name="game-roll"),
