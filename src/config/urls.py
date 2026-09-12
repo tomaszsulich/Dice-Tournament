@@ -32,6 +32,10 @@ from accounts.views import (
     register_page,
     set_password_page,
 )
+from tournaments.organizer_dashboard_views import (
+    organizer_dashboard_page,
+    participant_comparison_page,
+)
 from tournaments.views import participant_table
 
 
@@ -51,6 +55,16 @@ urlpatterns = [
     path("api/", include("accounts.api.urls")),
     path("api/", include("tournaments.api.urls")),
     path("tables/<int:game_id>/", participant_table, name="participant-table"),
+    path(
+        "tournaments/<int:tournament_id>/organizer/",
+        organizer_dashboard_page,
+        name="organizer-dashboard",
+    ),
+    path(
+        "comparisons/participants/<int:participant_id>/",
+        participant_comparison_page,
+        name="participant-comparison",
+    ),
     path(
         "api/schema/",
         SpectacularAPIView.as_view(

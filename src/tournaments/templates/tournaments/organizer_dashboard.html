@@ -1,0 +1,90 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ initial_dashboard.tournament.name }} — organizer dashboard</title>
+    <link rel="stylesheet" href="{% static 'tournaments/css/organizer_dashboard.css' %}">
+</head>
+
+<body>
+    <main class="dashboard" data-tournament-id="{{ initial_dashboard.tournament.id }}">
+        <header class="dashboard__heading">
+
+            <div class="dashboard__title">
+                <span class="dashboard__mark" aria-hidden="true">⚄</span>
+
+                <div>
+                <p class="eyebrow">Organizer&nbsp;dashboard</p>
+                <h1>{{ initial_dashboard.tournament.name }}</h1>
+
+                <p id="round-label" class="dashboard__round">
+                    {% if initial_dashboard.round %}{{ initial_dashboard.round.name }}{% else %}No round yet{% endif %}
+                </p>
+
+                </div>
+            </div>
+            <p id="connection-state" class="connection-state" role="status" aria-live="polite">Connecting…</p>
+        </header>
+
+        <section class="summary" aria-label="Tournament summary">
+            {% for key, value in initial_dashboard.summary.items %}
+                {% if key != "attention" %}
+                <article class="summary__item">
+                    <span>{{ key|capfirst }}</span>
+                    <strong id="summary-{{ key }}">{{ value }}</strong>
+                </article>
+                {% endif %}
+            {% endfor %}
+        </section>
+
+        <div class="dashboard__body">
+            <section class="tables" aria-labelledby="tables-title">
+                <div class="section-heading">
+
+                    <div>
+                        <p class="eyebrow">Live&nbsp;overview</p>
+                        <h2 id="tables-title">All&nbsp;tables</h2>
+                    </div>
+
+                    <label>State
+                        <select id="table-filter">
+                            <option value="all">All</option>
+                            <option value="playing">Playing</option>
+                            <option value="waiting">Waiting</option>
+                            <option value="completed">Completed</option>
+                            <option value="attention">Needs&nbsp;attention</option>
+                        </select>
+                    </label>
+
+                </div>
+                <div id="table-grid" class="table-grid" aria-live="polite"></div>
+            </section>
+
+            <aside class="attention" aria-labelledby="attention-title">
+                <div class="attention__heading">
+                    <div>
+                        <p class="eyebrow">Requires&nbsp;action</p>
+                        <h2 id="attention-title">Attention&nbsp;queue</h2>
+                    </div>
+                    <strong id="attention-count" class="attention__count"
+                            aria-label="Tables requiring attention">{{ initial_dashboard.attention|length }}</strong>
+                </div>
+                <div id="attention-list" class="attention__list"></div>
+            </aside>
+        </div>
+
+        <section id="table-detail" class="detail" aria-labelledby="detail-title" hidden>
+            <button id="detail-close" class="detail__close" type="button" aria-label="Close table detail">×</button>
+            <p class="eyebrow">Selected&nbsp;table</p>
+            <h2 id="detail-title"></h2>
+            <dl id="detail-content"></dl>
+        </section>
+    </main>
+
+    {{ initial_dashboard|json_script:"initial-organizer-dashboard" }}
+    <script type="module" src="{% static 'tournaments/js/organizer_dashboard.js' %}"></script>
+</body>
+</html>

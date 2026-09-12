@@ -1,0 +1,65 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ comparison_options.participant.name }} — tournament comparison</title>
+    <link rel="stylesheet" href="{% static 'tournaments/css/organizer_dashboard.css' %}">
+</head>
+
+<body>
+    <main class="dashboard comparison" data-participant-id="{{ comparison_options.participant.id }}">
+        <header class="dashboard__heading">
+
+            <div>
+                <p class="eyebrow">Completed&nbsp;tournaments</p>
+                <h1>{{ comparison_options.participant.name }}</h1>
+                <p>Compare one to&nbsp;four tournaments. Each average is&nbsp;shown with its number of&nbsp;rounds.</p>
+            </div>
+
+        </header>
+
+        <form id="comparison-form" class="comparison-picker">
+            <fieldset>
+                <legend>Select&nbsp;tournaments</legend>
+
+                <div class="comparison-picker__options">
+                    {% for tournament in comparison_options.tournaments %}
+                        <label>
+                            <input type="checkbox" name="tournament_ids" value="{{ tournament.id }}">
+                            <span>{{ tournament.name }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+
+            </fieldset>
+            <button type="submit">Compare&nbsp;selected</button>
+            <p id="comparison-error" role="alert" aria-live="assertive"></p>
+        </form>
+
+        <section id="comparison-results" hidden>
+            <div class="tables comparison-summary-wrap">
+                <table class="comparison-summary">
+                    <thead><tr><th>Tournament</th><th>Total</th><th>Round&nbsp;average</th><th>Best&nbsp;round</th><th>Rounds&nbsp;played</th></tr></thead>
+                    <tbody id="comparison-summary-body"></tbody>
+                </table>
+            </div>
+            <div id="comparison-grid" class="comparison-grid"></div>
+        </section>
+
+        <dialog id="history-modal" class="history-modal" aria-labelledby="history-title">
+
+            <div class="history-modal__heading">
+                <h2 id="history-title">Roll&nbsp;history</h2>
+                <button id="history-close" type="button" aria-label="Close history">×</button>
+            </div>
+
+            <div id="history-content"></div>
+            <button id="history-more" type="button" hidden>Load&nbsp;more</button>
+        </dialog>
+    </main>
+    <script type="module" src="{% static 'tournaments/js/participant_comparison.js' %}"></script>
+</body>
+</html>
