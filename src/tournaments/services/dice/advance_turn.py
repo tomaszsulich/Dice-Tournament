@@ -2,6 +2,7 @@ from django.db.models import Max
 
 from tournaments.domain.dice.categories import ScoreCategory
 from tournaments.models import GameParticipant, Turn
+from tournaments.services.connection_state import decision_deadline_for
 
 
 def refresh_participant_completion(game_participant: GameParticipant) -> None:
@@ -38,4 +39,5 @@ def activate_next_turn(current_turn: Turn) -> Turn | None:
     return Turn.objects.create(
         game_participant=next_participant,
         number=last_number + 1,
+        action_deadline=decision_deadline_for(game.round.tournament),
     )

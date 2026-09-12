@@ -1,17 +1,22 @@
+from django.urls import reverse
 from djoser.views import UserViewSet
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
+from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from api.schema import (
     AUTHENTICATED_COMMAND_ERROR_RESPONSES,
+    DOMAIN_ERROR_RESPONSE,
     INTERNAL_ERROR_RESPONSE,
     PERMISSION_ERROR_RESPONSE,
     THROTTLED_RESPONSE,
     VALIDATION_ERROR_RESPONSE,
 )
+from common.errors import domain_error
+from tournaments.services.connection_state import active_game_for_user
 
 
 class DiceUserViewSet(UserViewSet):
@@ -34,9 +39,22 @@ class DiceUserViewSet(UserViewSet):
             **AUTHENTICATED_COMMAND_ERROR_RESPONSES,
             204: None,
             400: VALIDATION_ERROR_RESPONSE,
+            409: DOMAIN_ERROR_RESPONSE,
         }
     )
     def set_password(self, request: Request, *args, **kwargs) -> Response:
+        game = active_game_for_user(request.user.pk)
+
+        if game is not None:
+            return domain_error(
+                "ACTIVE_GAME_IN_PROGRESS",
+                status.HTTP_409_CONFLICT,
+                details={
+                    "table_id": game.pk,
+                    "target_url": reverse("participant-table", args=(game.pk,)),
+                },
+            )
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         new_password = serializer.validated_data["new_password"]

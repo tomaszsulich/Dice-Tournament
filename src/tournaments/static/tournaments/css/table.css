@@ -310,6 +310,11 @@ h1 {
     font-weight: 750;
 }
 
+#error-message a {
+    color: inherit;
+    font-weight: inherit;
+}
+
 .scorecard-header {
     align-items: end;
     margin-bottom: .7rem;

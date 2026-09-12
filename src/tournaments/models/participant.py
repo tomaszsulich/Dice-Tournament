@@ -5,6 +5,7 @@ from django.db import models
 from django.utils import timezone
 
 from tournaments.domain.tournament.types import (
+    ParticipantConnectionStatus,
     ParticipantStatus,
     TournamentStatus,
 )
@@ -54,6 +55,15 @@ class TournamentParticipant(models.Model):
         choices=ParticipantStatus,
         default=ParticipantStatus.REGISTERED,
     )
+
+    connection_status = models.CharField(
+        max_length=20,
+        choices=ParticipantConnectionStatus,
+        default=ParticipantConnectionStatus.DISCONNECTED,
+    )
+
+    disconnected_at = models.DateTimeField(null=True, blank=True)
+    active_connection_channel = models.CharField(max_length=255, blank=True)
 
     joined_at = models.DateTimeField(default=timezone.now)
 

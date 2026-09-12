@@ -1,4 +1,5 @@
 import { apiRequest } from "./api.js";
+import { startRealtime } from "./reconnect.js";
 
 const root = document.querySelector(".table-layout");
 const gameId = root.dataset.gameId;
@@ -12,12 +13,12 @@ const logoutDialog = document.getElementById("logout-confirm");
 
 const narrowScreen = window.matchMedia("(max-width: 47.99rem)");
 const dieFaces = ["—", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
+const baseDocumentTitle = document.title.replace(/^●\s*/, "");
 
 let snapshot = JSON.parse(initialSnapshot.textContent);
 let pending = false;
 let activeHelpAnchor = null;
-let snapshotPollInFlight = false;
-const SNAPSHOT_POLL_MS = 1000;
+let realtimeController = null;
 
 function idempotencyKey() {
     return crypto.randomUUID();
@@ -45,6 +46,10 @@ export function render(next) {
                 : "Your\u00a0turn"
             : "Another participant's\u00a0turn"
         : "Table\u00a0finished";
+
+    document.title = turn?.is_current_user
+        ? `● ${baseDocumentTitle}`
+        : baseDocumentTitle;
 
     document.getElementById("rerolls-remaining").textContent =
         turn?.rerolls_remaining ?? "—";
@@ -278,8 +283,13 @@ async function command(path, options) {
 }
 
 async function reloadSnapshot() {
+    if (realtimeController !== null) {
+        await realtimeController.reloadSnapshot();
+        return;
+    }
+
     const response = await apiRequest(`/api/games/${gameId}/state/`);
-    if (response.ok) snapshot = await response.json();
+    if (response.ok) render(await response.json());
 }
 
 function roll() {
@@ -473,22 +483,42 @@ window.addEventListener("resize", () => {
     if (!helpPopover.hidden && activeHelpAnchor) positionPopover(helpPopover, activeHelpAnchor);
 });
 
-async function pollSnapshot() {
-    if (document.hidden || pending || snapshotPollInFlight) return;
+function setConnectionState(state) {
+    const messages = {
+        connected: "",
+        reconnecting: "",
+        disconnected: "Connection lost. Reconnecting…",
+        terminal: "",
+    };
 
-    snapshotPollInFlight = true;
-    try {
-        const response = await apiRequest(`/api/games/${gameId}/state/`);
-        if (response.ok) render(await response.json());
-    } finally {
-        snapshotPollInFlight = false;
-    }
+    document.getElementById("connection-status").textContent = messages[state] ?? "";
 }
 
-window.setInterval(pollSnapshot, SNAPSHOT_POLL_MS);
-document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) pollSnapshot();
-});
-window.addEventListener("focus", pollSnapshot);
+function setConnectionError(message) {
+    const errorMessage = document.getElementById("error-message");
+    errorMessage.replaceChildren();
+
+    if (message === "Session expired. Sign in again.") {
+        const signIn = document.createElement("a");
+        const next = encodeURIComponent(`${window.location.pathname}${window.location.search}`);
+
+        signIn.href = `/login/?next=${next}`;
+        signIn.textContent = "Sign in again.";
+        errorMessage.append("Session expired. ", signIn);
+        return;
+    }
+
+    errorMessage.textContent = message;
+}
 
 render(snapshot);
+
+realtimeController = startRealtime({
+    gameId: Number(gameId),
+    getStateVersion: () => snapshot.state_version,
+    applySnapshot: render,
+    setConnectionState,
+    setConnectionError,
+});
+
+window.addEventListener("pagehide", () => realtimeController.stop());

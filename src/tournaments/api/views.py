@@ -2,6 +2,7 @@ from secrets import SystemRandom
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db.models import Count, F, Q
+from django.urls import reverse
 from django.utils import timezone
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
@@ -37,7 +38,7 @@ from tournaments.domain.tournament.types import (
     RegistrationMode,
     TournamentStatus,
 )
-from tournaments.models import Game, Round, Tournament
+from tournaments.models import Game, Round, Tournament, TournamentParticipant
 from tournaments.realtime.publisher import publish_realtime_event
 from tournaments.selectors.game_state import get_game_snapshot
 from tournaments.serializers.lifecycle import (
@@ -58,6 +59,7 @@ from tournaments.serializers.turn_flow import (
     ChooseCategoryCommandSerializer,
     HoldDiceCommandSerializer,
 )
+from tournaments.services.connection_state import official_game_for_participant
 from tournaments.services.dice.hold_dice import (
     GameNotFound as HoldGameNotFound,
 )
@@ -450,14 +452,41 @@ def game_state(request: Request, game_id: int):
     except Game.DoesNotExist:
         return domain_error("GAME_NOT_FOUND", status.HTTP_404_NOT_FOUND)
 
-    is_table_participant = game.game_participants.filter(
-        tournament_participant__player_profile__user=request.user
-    ).exists()
-
     is_organizer = game.round.tournament.organizers.filter(pk=request.user.pk).exists()
 
-    if not (is_table_participant or is_organizer):
-        return domain_error("GAME_FORBIDDEN", status.HTTP_403_FORBIDDEN)
+    if not is_organizer:
+        participant = (
+            TournamentParticipant.objects.filter(
+                tournament=game.round.tournament,
+                player_profile__user=request.user,
+            )
+            .select_related("player_profile")
+            .first()
+        )
+
+        if participant is None:
+            return domain_error("GAME_FORBIDDEN", status.HTTP_403_FORBIDDEN)
+
+        if participant.status != ParticipantStatus.ACTIVE:
+            return domain_error("PARTICIPATION_INACTIVE", status.HTTP_403_FORBIDDEN)
+
+        official_game = official_game_for_participant(participant)
+
+        if official_game is None:
+            return domain_error("GAME_FORBIDDEN", status.HTTP_403_FORBIDDEN)
+
+        if official_game.pk != game.pk:
+            return Response(
+                {
+                    "code": "TABLE_ASSIGNMENT_CHANGED",
+                    "table_id": official_game.pk,
+                    "target_url": reverse(
+                        "participant-table",
+                        args=(official_game.pk,),
+                    ),
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
 
     return Response(
         get_game_snapshot(game=game, user=request.user),
@@ -648,7 +677,10 @@ def tournament_start(request: Request, tournament_id: int):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        tournament = start_tournament(tournament)
+        tournament = start_tournament(
+            tournament,
+            publisher=publish_realtime_event,
+        )
     except ValidationError:
         return domain_error(
             "TOURNAMENT_TRANSITION_UNAVAILABLE", status.HTTP_409_CONFLICT
@@ -750,7 +782,7 @@ def round_barrier(request: Request, round_id: int):
 
     result = evaluate_round_barrier(
         round_id=round_id,
-        publisher=lambda _event, _payload: None,
+        publisher=publish_realtime_event,
     )
 
     return Response(

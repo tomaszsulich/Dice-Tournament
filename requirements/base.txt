@@ -8,4 +8,5 @@ psycopg
 python-dotenv
 channels
 channels-redis
+redis<8
 daphne

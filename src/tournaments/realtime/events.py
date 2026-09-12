@@ -3,6 +3,7 @@ from django.db.models import F
 from tournaments.models import Game
 
 TABLE_CHANGED = "table.changed"
+TABLE_ASSIGNMENT_CHANGED = "table.assignment_changed"
 
 
 def bump_game_state_version(game_id: int) -> int:

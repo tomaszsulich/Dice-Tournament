@@ -74,6 +74,7 @@ class GameTurnSnapshotSerializer(serializers.Serializer):
     rerolls_remaining = serializers.IntegerField(allow_null=True)
     is_current_user = serializers.BooleanField()
     category_required = serializers.BooleanField()
+    action_deadline = serializers.DateTimeField(allow_null=True)
 
 
 class GameStateResultSerializer(serializers.Serializer):

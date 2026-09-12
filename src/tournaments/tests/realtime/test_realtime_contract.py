@@ -2,6 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 from asgiref.sync import async_to_sync
+from channels.db import database_sync_to_async
 from channels.layers import get_channel_layer
 from channels.testing import WebsocketCommunicator
 from django.db import transaction
@@ -10,14 +11,30 @@ from django.utils import timezone
 
 from accounts.jwt import SessionTokenObtainPairSerializer
 from accounts.models import SessionFamily
-from accounts.tests.factories import UserFactory
-from tournaments.models import TournamentOrganizer
+from accounts.tests.factories import PlayerProfileFactory, UserFactory
+from tournaments.domain.tournament.rounds import RoundStatus
+from tournaments.domain.tournament.types import (
+    EventMode,
+    PokerScoringVariant,
+    RegistrationMode,
+    TournamentStatus,
+)
+from tournaments.models import (
+    Game,
+    GameParticipant,
+    Round,
+    Tournament,
+    TournamentOrganizer,
+    TournamentParticipant,
+)
 from tournaments.realtime.publisher import (
     organizer_group_name,
+    participant_group_name,
     publish_realtime_event,
     table_group_name,
 )
 from tournaments.services.dice.roll_dice import execute_roll
+from tournaments.services.tournament_lifecycle import start_tournament
 from tournaments.tests.helpers import FakeRandomizer
 
 
@@ -40,6 +57,15 @@ def _headers_for(user):
 
 def _anonymous_headers():
     return [(b"origin", b"http://localhost")]
+
+
+async def _connect_then_close_code(communicator: WebsocketCommunicator) -> int:
+    connected, _subprotocol = await communicator.connect()
+    assert connected is True
+
+    output = await communicator.receive_output(timeout=1)
+    assert output["type"] == "websocket.close"
+    return output["code"]
 
 
 @pytest.mark.unit
@@ -161,15 +187,10 @@ def test_anonymous_websocket_is_rejected(asgi_application):
             headers=_anonymous_headers(),
         )
 
-        result = await communicator.connect()
+        return await _connect_then_close_code(communicator)
 
-        if result[0]:
-            await communicator.disconnect()
-        return result
+    close_code = async_to_sync(scenario)()
 
-    connected, close_code = async_to_sync(scenario)()
-
-    assert connected is False
     assert close_code == 4401
 
 
@@ -195,11 +216,10 @@ def test_django_session_cookie_cannot_bypass_hardened_ws_auth(
             headers=headers,
         )
 
-        return await communicator.connect()
+        return await _connect_then_close_code(communicator)
 
-    connected, close_code = async_to_sync(scenario)()
+    close_code = async_to_sync(scenario)()
 
-    assert connected is False
     assert close_code == 4401
 
 
@@ -230,6 +250,51 @@ def test_assigned_participant_can_join_own_table(
 
 
 @pytest.mark.django_db(transaction=True)
+def test_open_socket_closes_when_session_family_expires(
+    roll_setup,
+    asgi_application,
+    monkeypatch,
+):
+    participant, game, _turn = roll_setup()
+    refresh = SessionTokenObtainPairSerializer.get_token(participant)
+
+    access = str(refresh.access_token)
+    family_id = refresh["session_family"]
+
+    headers = [
+        (b"origin", b"http://localhost"),
+        (b"cookie", f"access_token={access}".encode()),
+    ]
+
+    monkeypatch.setattr(
+        "tournaments.realtime.consumers.SESSION_RECHECK_SECONDS",
+        0.01,
+    )
+
+    async def scenario():
+        communicator = WebsocketCommunicator(
+            asgi_application,
+            f"/ws/tables/{game.pk}/",
+            headers=headers,
+        )
+
+        connected, _subprotocol = await communicator.connect()
+        assert connected is True
+
+        await database_sync_to_async(SessionFamily.objects.filter(pk=family_id).update)(
+            revoked_at=timezone.now()
+        )
+
+        output = await communicator.receive_output(timeout=1)
+        return output
+
+    output = async_to_sync(scenario)()
+
+    assert output["type"] == "websocket.close"
+    assert output["code"] == 4401
+
+
+@pytest.mark.django_db(transaction=True)
 def test_revoked_session_family_is_rejected(
     roll_setup,
     asgi_application,
@@ -257,11 +322,10 @@ def test_revoked_session_family_is_rejected(
             headers=headers,
         )
 
-        return await communicator.connect()
+        return await _connect_then_close_code(communicator)
 
-    connected, close_code = async_to_sync(scenario)()
+    close_code = async_to_sync(scenario)()
 
-    assert connected is False
     assert close_code == 4401
 
 
@@ -281,16 +345,190 @@ def test_user_from_another_table_is_rejected(
             headers=headers,
         )
 
-        result = await communicator.connect()
+        return await _connect_then_close_code(communicator)
 
-        if result[0]:
-            await communicator.disconnect()
-        return result
+    close_code = async_to_sync(scenario)()
 
-    connected, close_code = async_to_sync(scenario)()
-
-    assert connected is False
     assert close_code == 4403
+
+
+@pytest.mark.django_db(transaction=True)
+def test_organizer_without_participation_cannot_join_participant_table_socket(
+    roll_setup,
+    asgi_application,
+):
+    _participant, game, _turn = roll_setup()
+    organizer = UserFactory.create()
+
+    TournamentOrganizer.objects.create(
+        tournament=game.round.tournament,
+        user=organizer,
+    )
+
+    headers = _headers_for(organizer)
+
+    async def scenario():
+        communicator = WebsocketCommunicator(
+            asgi_application,
+            f"/ws/tables/{game.pk}/",
+            headers=headers,
+        )
+
+        return await _connect_then_close_code(communicator)
+
+    close_code = async_to_sync(scenario)()
+
+    assert close_code == 4403
+
+
+@pytest.mark.django_db(transaction=True)
+def test_participant_assignment_socket_redirects_from_non_table_page(
+    roll_setup,
+    asgi_application,
+):
+    participant, game, _turn = roll_setup()
+    headers = _headers_for(participant)
+
+    async def scenario():
+        communicator = WebsocketCommunicator(
+            asgi_application,
+            "/ws/participant/assignments/",
+            headers=headers,
+        )
+
+        connected, _subprotocol = await communicator.connect()
+        assert connected is True
+
+        event = await communicator.receive_json_from()
+
+        await communicator.disconnect()
+        return event
+
+    event = async_to_sync(scenario)()
+
+    assert event == {
+        "type": "table_assignment_changed",
+        "table_id": game.pk,
+        "state_version": game.state_version,
+        "target_url": f"/tables/{game.pk}/",
+    }
+
+
+@pytest.mark.django_db(transaction=True)
+def test_assignment_socket_waits_for_future_assignment_while_participant_is_elsewhere(
+    roll_setup,
+    asgi_application,
+):
+    participant, game, _turn = roll_setup()
+    tournament_participant = game.game_participants.get().tournament_participant
+
+    game.round.status = RoundStatus.WAITING
+    game.round.save(update_fields=("status",))
+    headers = _headers_for(participant)
+
+    async def scenario():
+        communicator = WebsocketCommunicator(
+            asgi_application,
+            "/ws/participant/assignments/",
+            headers=headers,
+        )
+
+        connected, _subprotocol = await communicator.connect()
+        assert connected is True
+
+        layer = get_channel_layer()
+
+        await layer.group_send(
+            participant_group_name(tournament_participant.pk),
+            {
+                "type": "table.assignment_changed",
+                "table_id": game.pk,
+                "state_version": 3,
+                "target_url": f"/tables/{game.pk}/",
+            },
+        )
+
+        event = await communicator.receive_json_from()
+        await communicator.disconnect()
+        return event
+
+    event = async_to_sync(scenario)()
+
+    assert event == {
+        "type": "table_assignment_changed",
+        "table_id": game.pk,
+        "state_version": 3,
+        "target_url": f"/tables/{game.pk}/",
+    }
+
+
+@pytest.mark.django_db(transaction=True)
+def test_registered_participant_waiting_off_table_is_redirected_when_tournament_starts(
+    asgi_application,
+):
+    profile = PlayerProfileFactory.create()
+    other_profile = PlayerProfileFactory.create()
+
+    tournament = Tournament.objects.create(
+        name="Assignment Start Tournament",
+        status=TournamentStatus.REGISTRATION,
+        registration_mode=RegistrationMode.ORGANIZER_ONLY,
+        min_participants=2,
+        max_participants=4,
+        timezone="Europe/Warsaw",
+        group_rounds=2,
+        table_size=2,
+        poker_scoring_variant=PokerScoringVariant.A,
+        event_mode=EventMode.REMOTE,
+    )
+
+    participant = TournamentParticipant.objects.create(
+        tournament=tournament,
+        player_profile=profile,
+        full_name_snapshot="Waiting Player",
+        display_name_snapshot="Waiting Player",
+        starting_number=1,
+    )
+
+    TournamentParticipant.objects.create(
+        tournament=tournament,
+        player_profile=other_profile,
+        full_name_snapshot="Other Player",
+        display_name_snapshot="Other Player",
+        starting_number=2,
+    )
+
+    headers = _headers_for(profile.user)
+
+    async def scenario():
+        communicator = WebsocketCommunicator(
+            asgi_application,
+            "/ws/participant/assignments/",
+            headers=headers,
+        )
+
+        connected, _subprotocol = await communicator.connect()
+        assert connected is True
+
+        await database_sync_to_async(start_tournament)(
+            tournament,
+            publisher=publish_realtime_event,
+        )
+
+        event = await communicator.receive_json_from()
+        await communicator.disconnect()
+        return event
+
+    event = async_to_sync(scenario)()
+    participant.refresh_from_db()
+    assigned_game = participant.game_participations.get().game
+
+    assert event == {
+        "type": "table_assignment_changed",
+        "table_id": assigned_game.pk,
+        "state_version": assigned_game.state_version,
+        "target_url": f"/tables/{assigned_game.pk}/",
+    }
 
 
 @pytest.mark.django_db(transaction=True)
@@ -308,15 +546,10 @@ def test_participant_cannot_join_organizer_group(
             headers=headers,
         )
 
-        result = await communicator.connect()
+        return await _connect_then_close_code(communicator)
 
-        if result[0]:
-            await communicator.disconnect()
-        return result
+    close_code = async_to_sync(scenario)()
 
-    connected, close_code = async_to_sync(scenario)()
-
-    assert connected is False
     assert close_code == 4403
 
 
@@ -371,3 +604,48 @@ def test_organizer_receives_same_table_event_on_multiple_devices(
 
     assert first_event == expected
     assert second_event == expected
+
+
+@pytest.mark.django_db(transaction=True)
+def test_round_transition_publishes_server_derived_assignment(roll_setup):
+    user, first_game, _turn = roll_setup()
+    participant = first_game.game_participants.get().tournament_participant
+
+    layer = get_channel_layer()
+    channel_name = "test.assignment.receiver"
+
+    first_game.round.status = RoundStatus.COMPLETED
+    first_game.round.save(update_fields=("status",))
+
+    next_round = Round.objects.create(
+        tournament=first_game.round.tournament,
+        number=2,
+        status=RoundStatus.ACTIVE,
+    )
+
+    next_game = Game.objects.create(
+        round=next_round,
+        display_number=1,
+        allocation_seed=2,
+        allocation_cost=0,
+    )
+
+    GameParticipant.objects.create(
+        game=next_game,
+        tournament_participant=participant,
+        turn_order=1,
+    )
+
+    async_to_sync(layer.group_add)(participant_group_name(participant.pk), channel_name)
+
+    publish_realtime_event("round_transition", {"round_id": next_round.pk})
+    event = async_to_sync(layer.receive)(channel_name)
+
+    assert event == {
+        "type": "table.assignment_changed",
+        "table_id": next_game.pk,
+        "state_version": 0,
+        "target_url": f"/tables/{next_game.pk}/",
+    }
+
+    assert participant.player_profile.user_id == user.pk

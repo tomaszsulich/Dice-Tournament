@@ -6,7 +6,6 @@ factory-boy
 faker
 pytest
 pytest-django
-pytest-mock
 
 # Development / code quality
 pre-commit

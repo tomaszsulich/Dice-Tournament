@@ -30,6 +30,7 @@ from tournaments.models import (
     TournamentParticipant,
     Turn,
 )
+from tournaments.services.connection_state import decision_deadline_for
 from tournaments.services.ranking import CompletedResult, RankingRow, build_ranking
 
 type Publisher = Callable[[str, dict[str, int]], None]
@@ -104,7 +105,12 @@ def _create_games_from_allocation(
         )
 
         first_participant = min(game_participants, key=lambda item: item.turn_order)
-        Turn.objects.create(game_participant=first_participant, number=1)
+
+        Turn.objects.create(
+            game_participant=first_participant,
+            number=1,
+            action_deadline=decision_deadline_for(round_.tournament),
+        )
 
 
 def _create_allocated_round(

@@ -8,6 +8,9 @@ SAFE_ERROR_MESSAGES = {
     "TOURNAMENT_FULL": "Tournament is full.",
     "PLAYER_PROFILE_EXISTS": "Player profile already exists.",
     "PLAYER_PROFILE_UNCHANGED": "Player profile is already up to date.",
+    "ACTIVE_GAME_IN_PROGRESS": (
+        "Finish your active game before changing account details."
+    ),
 }
 
 

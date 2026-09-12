@@ -62,6 +62,7 @@
     const payload = await response.json().catch(() => ({}));
 
     if (!response.ok) {
+      if (DiceAuth.redirectToActiveGame(payload)) return;
 
       if (payload.code === "PLAYER_PROFILE_UNCHANGED") {
         error.textContent = "Change at least one profile field before saving.";
