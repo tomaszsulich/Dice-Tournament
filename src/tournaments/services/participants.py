@@ -110,6 +110,15 @@ def _occupied_places(tournament: Tournament) -> int:
     ).count()
 
 
+def _enqueue_tournament_invitation(participant_id: int) -> None:
+    from tournaments.tasks.notifications import send_tournament_invitation
+
+    transaction.on_commit(
+        lambda: send_tournament_invitation.delay(participant_id),
+        robust=True,
+    )
+
+
 @transaction.atomic
 def join_tournament(*, tournament_id: int, user: User) -> TournamentParticipant:
     player_profile = _get_player_profile(user)
@@ -220,13 +229,16 @@ def add_participant_by_organizer(
         raise TournamentFull
 
     if existing is None:
-        return create_participant(
+        participant = create_participant(
             tournament=tournament,
             player_profile=player_profile,
             team_label=team_label,
             starting_number=starting_number,
             seeding=seeding,
         )
+
+        _enqueue_tournament_invitation(participant.pk)
+        return participant
 
     existing.status = ParticipantStatus.REGISTERED
     existing.joined_at = timezone.now()
@@ -242,4 +254,5 @@ def add_participant_by_organizer(
     existing.full_clean()
     existing.save()
 
+    _enqueue_tournament_invitation(existing.pk)
     return existing

@@ -14,7 +14,10 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+from celery.schedules import crontab
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
+from kombu import Queue
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -120,6 +123,11 @@ STATIC_URL = "static/"
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
+DEFAULT_FROM_EMAIL = os.getenv(
+    "DEFAULT_FROM_EMAIL",
+    "noreply@dice-tournament.local",
+)
+
 MAILERS = {
     "default": {
         "BACKEND": "django.core.mail.backends.console.EmailBackend",
@@ -131,6 +139,7 @@ DJOSER = {
     "PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND": False,
     "TOKEN_MODEL": None,
 }
+
 
 # DRF and JWT configuration
 
@@ -172,6 +181,9 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
 }
 
+
+# Redis and Channels
+
 REDIS_URL = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")
 
 CHANNEL_LAYERS = {
@@ -180,3 +192,64 @@ CHANNEL_LAYERS = {
         "CONFIG": {"hosts": [REDIS_URL]},
     },
 }
+
+
+# Celery
+
+CELERY_BROKER_URL = os.getenv(
+    "CELERY_BROKER_URL",
+    "redis://127.0.0.1:6379/1",
+)
+
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_TASK_IGNORE_RESULT = True
+
+CELERY_TIMEZONE = "UTC"
+CELERY_TASK_DEFAULT_QUEUE = "maintenance"
+CELERY_TASK_CREATE_MISSING_QUEUES = False
+
+CELERY_TASK_QUEUES = (
+    Queue("notifications", exchange="notifications", routing_key="notifications"),
+    Queue("maintenance", exchange="maintenance", routing_key="maintenance"),
+)
+
+CELERY_TASK_ROUTES = {
+    "tournaments.tasks.notifications.send_tournament_invitation": {
+        "queue": "notifications",
+    },
+    "tournaments.tasks.maintenance.cleanup_expired_idempotency_records": {
+        "queue": "maintenance",
+    },
+    "tournaments.tasks.maintenance.flush_expired_tokens": {
+        "queue": "maintenance",
+    },
+}
+
+CELERY_BEAT_SCHEDULE = {
+    "cleanup-expired-idempotency-records": {
+        "task": ("tournaments.tasks.maintenance.cleanup_expired_idempotency_records"),
+        "schedule": crontab(hour=2, minute=0),
+        "options": {"queue": "maintenance"},
+    },
+    "flush-expired-jwt-tokens": {
+        "task": "tournaments.tasks.maintenance.flush_expired_tokens",
+        "schedule": crontab(hour=2, minute=15),
+        "options": {"queue": "maintenance"},
+    },
+}
+
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+
+
+# Idempotency
+
+try:
+    IDEMPOTENCY_RETENTION_HOURS = int(os.getenv("IDEMPOTENCY_RETENTION_HOURS", "24"))
+except ValueError as exc:
+    raise ImproperlyConfigured(
+        "IDEMPOTENCY_RETENTION_HOURS must be an integer."
+    ) from exc
+
+if IDEMPOTENCY_RETENTION_HOURS <= 0:
+    raise ImproperlyConfigured("IDEMPOTENCY_RETENTION_HOURS must be greater than zero.")

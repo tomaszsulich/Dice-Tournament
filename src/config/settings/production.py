@@ -1,6 +1,8 @@
 import os
 from urllib.parse import urlparse
 
+from django.core.exceptions import ImproperlyConfigured
+
 from .base import *
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -10,6 +12,32 @@ SECRET_KEY = os.environ["SECRET_KEY"]
 DEBUG = False
 
 ALLOWED_HOSTS = os.environ["ALLOWED_HOSTS"].split(",")
+
+
+def _env_bool(name: str, default: str = "false") -> bool:
+    return os.getenv(name, default).strip().lower() in {"1", "true", "yes", "on"}
+
+
+_smtp_use_tls = _env_bool("SMTP_USE_TLS", "true")
+_smtp_use_ssl = _env_bool("SMTP_USE_SSL")
+
+if _smtp_use_tls and _smtp_use_ssl:
+    raise ImproperlyConfigured("SMTP_USE_TLS and SMTP_USE_SSL cannot both be enabled.")
+
+MAILERS = {
+    "default": {
+        "BACKEND": "django.core.mail.backends.smtp.EmailBackend",
+        "OPTIONS": {
+            "host": os.environ["SMTP_HOST"],
+            "port": int(os.getenv("SMTP_PORT", "587")),
+            "username": os.getenv("SMTP_USERNAME", ""),
+            "password": os.getenv("SMTP_PASSWORD", ""),
+            "use_tls": _smtp_use_tls,
+            "use_ssl": _smtp_use_ssl,
+            "timeout": int(os.getenv("SMTP_TIMEOUT", "10")),
+        },
+    },
+}
 
 
 # Database
