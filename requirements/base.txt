@@ -6,7 +6,8 @@ djoser
 drf-spectacular
 psycopg
 python-dotenv
+celery
+daphne
 channels
 channels-redis
 redis<8
-daphne

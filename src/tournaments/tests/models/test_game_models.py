@@ -24,7 +24,7 @@ from tournaments.models import (
 from tournaments.serializers import GameSerializer
 
 
-def build_tournament(name: str = "Dice Game Tournament") -> Tournament:
+def build_tournament(name: str = "Dice Game Tournament"):
     return Tournament.objects.create(
         name=name,
         status=TournamentStatus.ACTIVE,
