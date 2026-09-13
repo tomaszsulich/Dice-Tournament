@@ -16,7 +16,6 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.http import HttpRequest, JsonResponse
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.authentication import SessionAuthentication
@@ -32,16 +31,12 @@ from accounts.views import (
     register_page,
     set_password_page,
 )
+from config.health import health_live, health_ready
 from tournaments.organizer_dashboard_views import (
     organizer_dashboard_page,
     participant_comparison_page,
 )
 from tournaments.views import participant_table
-
-
-def health_live(_request: HttpRequest):
-    return JsonResponse({"status": "ok"})
-
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -89,4 +84,5 @@ urlpatterns = [
         name="swagger-ui",
     ),
     path("health/live/", health_live),
+    path("health/ready/", health_ready),
 ]
