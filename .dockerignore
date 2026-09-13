@@ -1,0 +1,31 @@
+# Version controls
+.git
+.github
+
+# Virtual environment and environment variables
+.venv/
+.env
+
+# Python
+__pycache__/
+**/__pycache__/
+*.py[cod]
+
+# Ruff
+.ruff_cache/
+
+# Pytest and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Celery runtime artifacts
+celerybeat-schedule*
+celerybeat.pid
+
+# Local authentication artifacts
+cookies.txt
+
+# Windows
+desktop.ini
+Thumbs.db
