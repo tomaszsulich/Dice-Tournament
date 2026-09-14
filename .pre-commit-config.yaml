@@ -1,4 +1,11 @@
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+
   - repo: local
     hooks:
       - id: ruff-check
@@ -13,8 +20,9 @@ repos:
         language: system
         pass_filenames: false
 
-      - id: project-smoke-test
-        name: Project smoke test
-        entry: python -m pytest tests/test_project_boot.py
+      - id: fast-unit-tests
+        name: Fast unit tests
+        entry: python -m pytest
+        args: ["-q", "-m", "unit and not slow"]
         language: system
         pass_filenames: false

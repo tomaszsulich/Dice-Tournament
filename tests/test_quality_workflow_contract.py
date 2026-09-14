@@ -1,0 +1,56 @@
+from pathlib import Path
+
+import pytest
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+
+@pytest.mark.unit
+def test_pre_commit_runs_required_fast_quality_checks():
+    config = (PROJECT_ROOT / ".pre-commit-config.yaml").read_text(encoding="utf-8")
+
+    for hook_id in (
+        "trailing-whitespace",
+        "end-of-file-fixer",
+        "check-yaml",
+        "ruff-check",
+        "ruff-format-check",
+        "fast-unit-tests",
+    ):
+        assert f"id: {hook_id}" in config
+
+    assert '"-m"', "unit and not slow" in config
+
+
+@pytest.mark.unit
+def test_ci_checks_migrations_postgresql_full_tests_and_coverage():
+    workflow = (PROJECT_ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+
+    assert "permissions:" in workflow
+    assert "contents: read" in workflow
+    assert "persist-credentials: false" in workflow
+    assert "postgres:" in workflow
+    assert "@postgres:5432" in workflow
+    assert "POSTGRES_SERVICE_HOST: postgres" in workflow
+    assert "makemigrations --check --dry-run" in workflow
+    assert "python -m ruff check ." in workflow
+    assert "python -m ruff format --check ." in workflow
+    assert "python -m coverage run -m pytest" in workflow
+    assert "python -m coverage report" in workflow
+    assert "printenv" not in workflow
+    assert "echo $SECRET_KEY" not in workflow
+    assert "echo ${SECRET_KEY}" not in workflow
+
+
+@pytest.mark.unit
+def test_quality_configuration_declares_slow_marker_and_ignores_coverage_artifacts():
+    pytest_config = (PROJECT_ROOT / "pytest.ini").read_text(encoding="utf-8")
+    gitignore = (PROJECT_ROOT / ".gitignore").read_text(encoding="utf-8")
+    coverage_config = (PROJECT_ROOT / ".coveragerc").read_text(encoding="utf-8")
+
+    assert "--strict-markers" in pytest_config
+    assert "slow:" in pytest_config
+    assert ".coverage" in gitignore
+    assert "htmlcov/" in gitignore
+    assert "branch = True" in coverage_config
+    assert "*/migrations/*" in coverage_config

@@ -1,4 +1,8 @@
+import pytest
+
 from tournaments.services.ranking import CompletedResult, build_ranking
+
+pytestmark = pytest.mark.unit
 
 
 def test_ranking_orders_by_total_score_before_round_scores():

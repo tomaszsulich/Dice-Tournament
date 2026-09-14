@@ -7,6 +7,8 @@ from tournaments.domain.tournament.allocation.types import (
     AllocationParticipant,
 )
 
+pytestmark = pytest.mark.unit
+
 
 def _participants(count):
     return tuple(
@@ -17,7 +19,11 @@ def _participants(count):
 
 @pytest.mark.parametrize(
     "count",
-    [16, 64, 128],
+    [
+        16,
+        pytest.param(64, marks=pytest.mark.slow),
+        pytest.param(128, marks=pytest.mark.slow),
+    ],
 )
 def test_generate_group_allocation_preserves_balanced_legal_groups(
     count,

@@ -5,6 +5,8 @@ import pytest
 from tournaments.domain.tournament.tie_break import controlled_draw, top_material_tie
 from tournaments.services.ranking import RankingRow
 
+pytestmark = pytest.mark.unit
+
 
 class FakeChoice:
     def choice(self, values: Sequence[int]) -> int:

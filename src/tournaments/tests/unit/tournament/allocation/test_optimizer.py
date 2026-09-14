@@ -1,6 +1,8 @@
 from itertools import combinations
 from random import Random
 
+import pytest
+
 from tournaments.domain.tournament.allocation.baskets import (
     build_equal_ranking_baskets,
     snake_assignment,
@@ -15,6 +17,8 @@ from tournaments.domain.tournament.allocation.optimizer import (
 from tournaments.domain.tournament.allocation.types import (
     AllocationParticipant,
 )
+
+pytestmark = pytest.mark.unit
 
 
 def _setup(count=8):

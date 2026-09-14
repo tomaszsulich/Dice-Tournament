@@ -1,3 +1,5 @@
+import pytest
+
 from tournaments.domain.tournament.allocation.cost import (
     evaluate_candidate,
 )
@@ -5,6 +7,8 @@ from tournaments.domain.tournament.allocation.types import (
     AllocationCandidate,
     AllocationParticipant,
 )
+
+pytestmark = pytest.mark.unit
 
 
 def test_evaluate_candidate_uses_configured_conflict_weights():
