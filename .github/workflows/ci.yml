@@ -1,5 +1,8 @@
 name: CI
 
+permissions:
+  contents: read
+
 on:
   push:
     branches:
@@ -12,8 +15,10 @@ on:
 
 jobs:
   checks:
-    name: Code quality and Django checks
+    name: Tests and code quality
     runs-on: ubuntu-latest
+    container:
+      image: python:3.12-bookworm
 
     services:
       postgres:
@@ -22,26 +27,22 @@ jobs:
           POSTGRES_DB: dice_tournament
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U postgres -d dice_tournament"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
 
     env:
-      SECRET_KEY: ci-only-secret-key
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/dice_tournament
+      SECRET_KEY: ci-${{ github.run_id }}-${{ github.run_attempt }}
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/dice_tournament
+      POSTGRES_SERVICE_HOST: postgres
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
-
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v7
         with:
-          python-version: "3.12"
+          persist-credentials: false
 
       - name: Install dependencies
         run: |
@@ -53,11 +54,17 @@ jobs:
           python -m ruff check .
           python -m ruff format --check .
 
-      - name: Run Django system check
+      - name: Check Django configuration
         run: python src/manage.py check
+
+      - name: Check for missing migrations
+        run: python src/manage.py makemigrations --check --dry-run
 
       - name: Apply database migrations
         run: python src/manage.py migrate --noinput
 
-      - name: Run project smoke test
-        run: python -m pytest tests/test_project_boot.py
+      - name: Run full test suite with coverage
+        run: python -m coverage run -m pytest
+
+      - name: Report coverage
+        run: python -m coverage report

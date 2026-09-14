@@ -11,6 +11,8 @@ from tournaments.domain.tournament.table_sizes import (
     compute_balanced_table_sizes,
 )
 
+pytestmark = pytest.mark.unit
+
 
 @pytest.mark.parametrize(
     ("participants", "expected_sizes"),
@@ -67,6 +69,7 @@ def test_compute_balanced_table_sizes_rejects_illegal_preferred_size(
         )
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     ("participants", "preferred_size"),
     list(

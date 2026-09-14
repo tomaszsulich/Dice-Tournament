@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from django.db import connection
 
@@ -7,3 +9,12 @@ from django.db import connection
 @pytest.mark.django_db
 def test_database_uses_postgresql():
     assert connection.vendor == "postgresql"
+
+    expected_service_host = os.getenv("POSTGRES_SERVICE_HOST")
+
+    if expected_service_host:
+        assert connection.settings_dict["HOST"] == expected_service_host
+
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT 1")
+        assert cursor.fetchone() == (1,)

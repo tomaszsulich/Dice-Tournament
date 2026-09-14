@@ -8,6 +8,8 @@ from tournaments.domain.tournament.allocation.types import (
     AllocationParticipant,
 )
 
+pytestmark = pytest.mark.unit
+
 
 def _participants(count):
     return tuple(

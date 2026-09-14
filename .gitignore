@@ -14,6 +14,12 @@ __pycache__/
 # Pytest
 .pytest_cache/
 
+# Coverage
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
 # Celery
 celerybeat-schedule*
 celerybeat.pid
