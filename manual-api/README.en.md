@@ -1,6 +1,6 @@
-# Manual API
-
 [Polski](README.md) | **English**
+
+# Manual API verification
 
 This directory contains HTTP requests for manually testing the Dice Tournament API.
 

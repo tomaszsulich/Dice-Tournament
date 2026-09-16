@@ -5,6 +5,7 @@
   const details = document.getElementById("profile-details");
   const createLink = document.getElementById("create-profile-link");
   const editLink = document.getElementById("edit-profile-link");
+  const historyLink = document.getElementById("history-link");
   const error = document.getElementById("form-error");
   const logoutButton = document.getElementById("logout-button");
 
@@ -35,6 +36,7 @@
     document.getElementById("profile-nickname").textContent = profile.nickname || "—";
     details.hidden = false;
     editLink.hidden = false;
+    historyLink.hidden = false;
   }
 
   logoutButton.addEventListener("click", async () => {

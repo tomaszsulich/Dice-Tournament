@@ -9,7 +9,12 @@ from tournaments.domain.tournament.types import (
     ParticipantStatus,
     TournamentStatus,
 )
-from tournaments.models import Game, Tournament, TournamentParticipant
+from tournaments.models import (
+    Game,
+    GameParticipant,
+    Tournament,
+    TournamentParticipant,
+)
 
 RECONNECT_GRACE = timedelta(seconds=30)
 
@@ -44,19 +49,75 @@ def official_game_for_participant(
 
 def active_game_for_user(user_id: int) -> Game | None:
     """Return the user's current active official tournament table, if any."""
-    participants = TournamentParticipant.objects.filter(
-        player_profile__user_id=user_id,
-        status=ParticipantStatus.ACTIVE,
-        tournament__status=TournamentStatus.ACTIVE,
-    ).order_by("pk")
+    return (
+        Game.objects.filter(
+            game_participants__tournament_participant__player_profile__user_id=(
+                user_id
+            ),
+            game_participants__tournament_participant__status=(
+                ParticipantStatus.ACTIVE
+            ),
+            round__tournament__status=TournamentStatus.ACTIVE,
+            round__status=RoundStatus.ACTIVE,
+        )
+        .select_related("round__tournament")
+        .order_by(
+            "game_participants__tournament_participant_id",
+            "-round__number",
+            "-pk",
+        )
+        .first()
+    )
 
-    for participant in participants:
-        game = official_game_for_participant(participant)
+
+def assignment_context_for_user(
+    user_id: int,
+) -> tuple[list[int], list[tuple[int, int]]]:
+    """Return watched participations and their latest active assignments."""
+    participant_ids = list(
+        TournamentParticipant.objects.filter(
+            player_profile__user_id=user_id,
+            status__in=(
+                ParticipantStatus.REGISTERED,
+                ParticipantStatus.ACTIVE,
+            ),
+        )
+        .order_by("pk")
+        .values_list("pk", flat=True)
+    )
+
+    if not participant_ids:
+        return [], []
+
+    latest_games: dict[int, Game] = {}
+
+    assignments = (
+        GameParticipant.objects.filter(
+            tournament_participant_id__in=participant_ids,
+        )
+        .select_related("game__round")
+        .order_by(
+            "tournament_participant_id",
+            "-game__round__number",
+            "-game_id",
+        )
+    )
+
+    for assignment in assignments:
+        latest_games.setdefault(
+            assignment.tournament_participant_id,
+            assignment.game,
+        )
+
+    active_assignments = []
+
+    for participant_id in participant_ids:
+        game = latest_games.get(participant_id)
 
         if game is not None and game.round.status == RoundStatus.ACTIVE:
-            return game
+            active_assignments.append((game.pk, game.state_version))
 
-    return None
+    return participant_ids, active_assignments
 
 
 @transaction.atomic

@@ -1,6 +1,9 @@
+import pytest
 from django.http import HttpResponse
 
 from accounts.middleware import SessionActivityMiddleware
+
+pytestmark = pytest.mark.unit
 
 
 def test_successful_authenticated_unsafe_action_records_activity(rf, monkeypatch):

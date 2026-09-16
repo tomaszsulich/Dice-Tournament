@@ -1,7 +1,7 @@
 import pytest
 from django.core.exceptions import ValidationError
 
-from accounts.tests.factories import PlayerProfileFactory
+from accounts.factories import PlayerProfileFactory
 from tournaments.domain.tournament.rounds import RoundStatus, RoundType
 from tournaments.domain.tournament.types import (
     EventMode,
@@ -16,6 +16,8 @@ from tournaments.services.tournament_lifecycle import (
     open_registration,
     start_tournament,
 )
+
+pytestmark = [pytest.mark.integration, pytest.mark.postgres]
 
 
 @pytest.fixture

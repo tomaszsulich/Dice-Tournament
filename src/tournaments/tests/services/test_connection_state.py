@@ -5,18 +5,76 @@ from django.utils import timezone
 
 from tournaments.domain.tournament.rounds import RoundStatus
 from tournaments.domain.tournament.types import (
+    EventMode,
     ParticipantConnectionStatus,
     ParticipantStatus,
+    PokerScoringVariant,
+    RegistrationMode,
+    TournamentStatus,
 )
-from tournaments.models import Game, GameParticipant, Round, TournamentParticipant
+from tournaments.models import (
+    Game,
+    GameParticipant,
+    Round,
+    Tournament,
+    TournamentParticipant,
+)
 from tournaments.services.connection_state import (
     RECONNECT_GRACE,
+    active_game_for_user,
+    assignment_context_for_user,
     decision_deadline_for,
     mark_connected,
     mark_reconnecting,
     official_game_for_participant,
     refresh_connection_status,
 )
+
+pytestmark = [pytest.mark.integration, pytest.mark.postgres]
+
+
+def _add_active_assignment(user, number: int) -> tuple[TournamentParticipant, Game]:
+    tournament = Tournament.objects.create(
+        name=f"Connection Tournament {number}",
+        status=TournamentStatus.ACTIVE,
+        registration_mode=RegistrationMode.ORGANIZER_ONLY,
+        min_participants=2,
+        max_participants=4,
+        timezone="Europe/Warsaw",
+        group_rounds=2,
+        table_size=2,
+        poker_scoring_variant=PokerScoringVariant.A,
+        event_mode=EventMode.REMOTE,
+    )
+
+    participant = TournamentParticipant.objects.create(
+        tournament=tournament,
+        player_profile=user.player_profile,
+        full_name_snapshot="Player One",
+        display_name_snapshot="Player One",
+        status=ParticipantStatus.ACTIVE,
+    )
+
+    round_ = Round.objects.create(
+        tournament=tournament,
+        number=1,
+        status=RoundStatus.ACTIVE,
+    )
+
+    game = Game.objects.create(
+        round=round_,
+        display_number=1,
+        allocation_seed=number,
+        allocation_cost=0,
+    )
+
+    GameParticipant.objects.create(
+        game=game,
+        tournament_participant=participant,
+        turn_order=1,
+    )
+
+    return participant, game
 
 
 @pytest.mark.django_db
@@ -123,6 +181,42 @@ def test_official_assignment_is_latest_server_created_table(roll_setup):
     )
 
     assert official_game_for_participant(participant) == next_game
+
+
+@pytest.mark.django_db
+def test_active_game_lookup_query_count_is_independent_of_participation_count(
+    roll_setup,
+    django_assert_num_queries,
+):
+    user, first_game, _turn = roll_setup()
+
+    for number in range(2, 6):
+        _add_active_assignment(user, number)
+
+    with django_assert_num_queries(1):
+        game = active_game_for_user(user.pk)
+
+    assert game == first_game
+
+
+@pytest.mark.django_db
+def test_assignment_context_query_count_is_independent_of_participation_count(
+    roll_setup,
+    django_assert_num_queries,
+):
+    user, first_game, _turn = roll_setup()
+    first_participant = first_game.game_participants.get().tournament_participant
+    expected = [(first_participant.pk, first_game.pk)]
+
+    for number in range(2, 6):
+        participant, game = _add_active_assignment(user, number)
+        expected.append((participant.pk, game.pk))
+
+    with django_assert_num_queries(2):
+        participant_ids, assignments = assignment_context_for_user(user.pk)
+
+    assert participant_ids == [participant_id for participant_id, _game_id in expected]
+    assert assignments == [(game_id, 0) for _participant_id, game_id in expected]
 
 
 @pytest.mark.django_db

@@ -172,7 +172,7 @@ def _resolve_draw(
     *,
     current_round: Round,
     material_tie: MaterialTie,
-    organizer: User,
+    organizer: User | None,
     draw_reason: str,
 ):
     tournament = current_round.tournament

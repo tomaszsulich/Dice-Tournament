@@ -161,7 +161,7 @@ class ChanceStrategy:
         self,
         context: ScoringContext,
         _selection: ScoreSelection,
-    ):
+    ) -> ScoringResult:
         return PointsResult(points=context.dice.total)
 
 

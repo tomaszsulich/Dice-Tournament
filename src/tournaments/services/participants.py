@@ -9,6 +9,7 @@ from tournaments.domain.tournament.types import (
     TournamentStatus,
 )
 from tournaments.models import Tournament, TournamentParticipant
+from tournaments.tasks.notifications import send_tournament_invitation
 
 
 class TournamentRegistrationError(Exception):
@@ -50,6 +51,7 @@ def build_full_name_snapshot(player_profile: PlayerProfile) -> str:
 
 
 def create_participant(
+    *,
     tournament: Tournament,
     player_profile: PlayerProfile,
     team_label: str = "",
@@ -111,8 +113,6 @@ def _occupied_places(tournament: Tournament) -> int:
 
 
 def _enqueue_tournament_invitation(participant_id: int) -> None:
-    from tournaments.tasks.notifications import send_tournament_invitation
-
     transaction.on_commit(
         lambda: send_tournament_invitation.delay(participant_id),
         robust=True,
@@ -242,17 +242,28 @@ def add_participant_by_organizer(
 
     existing.status = ParticipantStatus.REGISTERED
     existing.joined_at = timezone.now()
-
     existing.withdrawn_at = None
+
     existing.withdrawn_by = None
     existing.withdrawal_reason = ""
-
     existing.team_label = team_label
+
     existing.starting_number = starting_number
     existing.seeding = seeding
-
     existing.full_clean()
-    existing.save()
+
+    existing.save(
+        update_fields=(
+            "status",
+            "joined_at",
+            "withdrawn_at",
+            "withdrawn_by",
+            "withdrawal_reason",
+            "team_label",
+            "starting_number",
+            "seeding",
+        )
+    )
 
     _enqueue_tournament_invitation(existing.pk)
     return existing

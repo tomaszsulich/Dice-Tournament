@@ -11,6 +11,7 @@ x-app-environment: &app-environment
 x-app-base: &app-base
   build:
     context: .
+    target: production
   environment: *app-environment
   restart: unless-stopped
 
@@ -32,6 +33,8 @@ services:
 
   redis:
     image: redis:7
+    ports:
+      - "127.0.0.1:${REDIS_HOST_PORT:-6379}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -52,10 +55,31 @@ services:
       redis:
         condition: service_healthy
 
+  seed-demo:
+    <<: *app-base
+    build:
+      context: .
+      target: development
+    restart: "no"
+    environment:
+      <<: *app-environment
+      ALLOW_DEMO_SEED: ${ALLOW_DEMO_SEED:-false}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-}
+    command: ["true"]
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    profiles:
+      - tools
+
   web:
     <<: *app-base
     ports:
-      - "8000:8000"
+      - "${WEB_HOST_PORT:-8000}:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -88,7 +112,7 @@ services:
         "notifications",
         "--concurrency=2",
         "-n",
-        "notifications@h",
+        "notifications@%h",
         "--loglevel=INFO",
       ]
     depends_on:
@@ -102,7 +126,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "celery -A config inspect ping -d notifications@{HOSTNAME} --timeout=5 | grep -q pong",
+          "celery -A config inspect ping -d notifications@$${HOSTNAME} --timeout=5 | grep -q pong",
         ]
       interval: 15s
       timeout: 8s
@@ -121,7 +145,7 @@ services:
         "maintenance",
         "--concurrency=2",
         "-n",
-        "maintenance@h",
+        "maintenance@%h",
         "--loglevel=INFO",
       ]
     depends_on:

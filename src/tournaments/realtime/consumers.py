@@ -14,7 +14,6 @@ from accounts.services.session_activity import (
     SessionRejected,
     validate_session_family,
 )
-from tournaments.domain.tournament.rounds import RoundStatus
 from tournaments.domain.tournament.types import ParticipantStatus
 from tournaments.models import Game, Tournament, TournamentParticipant
 from tournaments.realtime.publisher import (
@@ -24,6 +23,7 @@ from tournaments.realtime.publisher import (
 )
 from tournaments.services.connection_state import (
     RECONNECT_GRACE,
+    assignment_context_for_user,
     mark_connected,
     mark_reconnecting,
     official_game_for_participant,
@@ -348,30 +348,7 @@ class ParticipantAssignmentConsumer(SessionAwareWebsocketConsumer):
     def _assignment_context(
         self, user_id: int
     ) -> tuple[list[int], list[tuple[int, int]]]:
-        participants = list(
-            TournamentParticipant.objects.filter(
-                player_profile__user_id=user_id,
-                status__in=(
-                    ParticipantStatus.REGISTERED,
-                    ParticipantStatus.ACTIVE,
-                ),
-            )
-            .select_related("player_profile")
-            .order_by("pk")
-        )
-
-        participant_ids = [participant.pk for participant in participants]
-        assignments: list[tuple[int, int]] = []
-
-        for participant in participants:
-            game = official_game_for_participant(participant)
-
-            if game is None or game.round.status != RoundStatus.ACTIVE:
-                continue
-
-            assignments.append((game.pk, game.state_version))
-
-        return participant_ids, assignments
+        return assignment_context_for_user(user_id)
 
 
 class OrganizerConsumer(SessionAwareWebsocketConsumer):

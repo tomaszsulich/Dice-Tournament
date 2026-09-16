@@ -1,7 +1,7 @@
 import pytest
 
+from accounts.factories import PlayerProfileFactory
 from accounts.serializers import PlayerProfileSerializer
-from accounts.tests.factories import PlayerProfileFactory
 
 
 @pytest.mark.unit

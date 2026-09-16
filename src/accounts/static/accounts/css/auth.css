@@ -281,6 +281,10 @@ a {
     margin-top: 1.25rem;
 }
 
+.page-actions [hidden] {
+    display: none;
+}
+
 .primary-link,
 .secondary-action {
     min-height: 2.7rem;

@@ -8,7 +8,7 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from accounts.tests.factories import PlayerProfileFactory
+from accounts.factories import PlayerProfileFactory
 from tournaments.domain.tournament.types import (
     EventMode,
     ParticipantStatus,
@@ -17,6 +17,8 @@ from tournaments.domain.tournament.types import (
     TournamentStatus,
 )
 from tournaments.models import Tournament, TournamentParticipant
+
+pytestmark = [pytest.mark.integration, pytest.mark.postgres]
 
 
 def build_tournament(**overrides):

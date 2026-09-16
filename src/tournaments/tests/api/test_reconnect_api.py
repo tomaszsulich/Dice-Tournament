@@ -1,8 +1,8 @@
 import pytest
 from rest_framework import status
 
+from accounts.factories import UserFactory
 from accounts.jwt import SessionTokenObtainPairSerializer
-from accounts.tests.factories import UserFactory
 from tournaments.domain.tournament.rounds import RoundStatus
 from tournaments.domain.tournament.types import ParticipantStatus
 from tournaments.models import (
@@ -14,6 +14,8 @@ from tournaments.models import (
     Turn,
 )
 from tournaments.services.connection_state import decision_deadline_for
+
+pytestmark = [pytest.mark.integration, pytest.mark.postgres]
 
 
 @pytest.mark.django_db

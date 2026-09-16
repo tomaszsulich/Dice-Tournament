@@ -4,6 +4,8 @@ from rest_framework import status
 from tournaments.domain.tournament.types import EventMode
 from tournaments.models import Roll
 
+pytestmark = [pytest.mark.integration, pytest.mark.postgres]
+
 
 @pytest.mark.django_db
 def test_roll_api_requires_authentication(api_client, roll_setup):

@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.12-slim AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -11,6 +11,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements/base.txt requirements/base.txt
+
 RUN python -m pip install --no-cache-dir --upgrade pip \
     && python -m pip install --no-cache-dir -r requirements/base.txt
 
@@ -26,3 +27,15 @@ EXPOSE 8000
 
 ENTRYPOINT ["/app/docker/entrypoint.sh"]
 CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "config.asgi:application"]
+
+
+FROM runtime AS development
+
+USER root
+
+RUN python -m pip install --no-cache-dir -r requirements/dev.txt
+
+USER appuser
+
+
+FROM runtime AS production

@@ -1,6 +1,6 @@
 import pytest
 
-from accounts.tests.factories import PlayerProfileFactory
+from accounts.factories import PlayerProfileFactory
 from tournaments.domain.tournament.rounds import RoundStatus
 from tournaments.domain.tournament.types import (
     EventMode,
@@ -28,7 +28,7 @@ def roll_setup(db):
             name="Roll Tournament",
             status=TournamentStatus.ACTIVE,
             registration_mode=RegistrationMode.ORGANIZER_ONLY,
-            min_participants=1,
+            min_participants=2,
             max_participants=4,
             timezone="Europe/Warsaw",
             group_rounds=2,

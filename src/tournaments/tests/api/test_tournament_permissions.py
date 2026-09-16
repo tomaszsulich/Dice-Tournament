@@ -2,13 +2,15 @@ import pytest
 from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory, force_authenticate
 
-from accounts.tests.factories import UserFactory
+from accounts.factories import UserFactory
 from tournaments.domain.tournament.types import (
     EventMode,
     RegistrationMode,
 )
 from tournaments.models import Tournament, TournamentOrganizer
 from tournaments.permissions import IsTournamentOrganizer
+
+pytestmark = [pytest.mark.integration, pytest.mark.postgres]
 
 
 @pytest.fixture

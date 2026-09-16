@@ -2,8 +2,8 @@ import pytest
 from django.contrib.auth import get_user_model
 from rest_framework import status
 
+from accounts.factories import PlayerProfileFactory, UserFactory
 from accounts.models import PlayerProfile
-from accounts.tests.factories import PlayerProfileFactory, UserFactory
 
 
 @pytest.mark.integration

@@ -2,8 +2,8 @@ import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
 
+from accounts.factories import UserFactory
 from accounts.models import PlayerProfile, User
-from accounts.tests.factories import UserFactory
 from tournaments.domain.tournament.rounds import RoundStatus
 from tournaments.domain.tournament.types import (
     EventMode,
@@ -23,6 +23,8 @@ from tournaments.models import (
     Turn,
 )
 from tournaments.selectors.organizer_dashboard import get_organizer_dashboard
+
+pytestmark = [pytest.mark.integration, pytest.mark.postgres]
 
 
 def _dashboard_setup(table_count: int = 1):
@@ -170,3 +172,118 @@ def test_dashboard_page_contains_one_detail_panel_and_one_global_queue():
     assert content.count('id="table-detail"') == 1
     assert content.count('id="attention-list"') == 1
     assert "Incident" not in content
+
+
+@pytest.mark.django_db
+def test_waiting_and_completed_summary_counters_are_distinct_table_states():
+    organizer, tournament = _dashboard_setup()
+    game = Game.objects.get(round__tournament=tournament)
+
+    game.game_participants.update(
+        is_completed=True,
+        raw_score=100,
+        final_score=100,
+    )
+
+    waiting_snapshot = get_organizer_dashboard(
+        actor=organizer,
+        tournament_id=tournament.pk,
+    )
+
+    assert waiting_snapshot["tables"][0]["state"] == "waiting"
+    assert waiting_snapshot["summary"]["waiting"] == 1
+    assert waiting_snapshot["summary"]["completed"] == 0
+
+    tournament.rounds.update(status=RoundStatus.COMPLETED)
+
+    completed_snapshot = get_organizer_dashboard(
+        actor=organizer,
+        tournament_id=tournament.pk,
+    )
+
+    assert completed_snapshot["tables"][0]["state"] == "completed"
+    assert completed_snapshot["summary"]["completed"] == 1
+    assert completed_snapshot["summary"]["waiting"] == 0
+
+
+@pytest.mark.django_db
+def test_waiting_for_first_roll_keeps_the_phrase_together():
+    organizer, tournament = _dashboard_setup()
+
+    snapshot = get_organizer_dashboard(
+        actor=organizer,
+        tournament_id=tournament.pk,
+    )
+
+    assert snapshot["tables"][0]["last_action"] == (
+        "Waiting for\u00a0the\u00a0first\u00a0roll"
+    )
+
+
+@pytest.mark.django_db
+def test_completed_table_without_gameplay_has_neutral_last_action():
+    organizer, tournament = _dashboard_setup()
+    game = Game.objects.get(round__tournament=tournament)
+    game.game_participants.update(is_completed=True)
+    tournament.rounds.update(status=RoundStatus.COMPLETED)
+
+    snapshot = get_organizer_dashboard(
+        actor=organizer,
+        tournament_id=tournament.pk,
+    )
+
+    assert snapshot["tables"][0]["last_action"] == "No\u00a0recorded\u00a0action"
+
+
+@pytest.mark.django_db
+def test_completed_dashboard_lists_profiles_for_comparison_navigation():
+    organizer, tournament = _dashboard_setup(table_count=2)
+    tournament.status = TournamentStatus.COMPLETED
+    tournament.save(update_fields=("status",))
+
+    snapshot = get_organizer_dashboard(
+        actor=organizer,
+        tournament_id=tournament.pk,
+    )
+
+    assert snapshot["comparison_participants"] == [
+        {
+            "profile_id": participant.player_profile_id,
+            "display_name": participant.display_name_snapshot,
+            "nickname": participant.nickname_snapshot,
+        }
+        for participant in tournament.tournament_participants.order_by(
+            "starting_number",
+            "display_name_snapshot",
+            "pk",
+        )
+    ]
+
+
+@pytest.mark.django_db
+def test_active_dashboard_does_not_offer_comparison_navigation():
+    organizer, tournament = _dashboard_setup()
+
+    snapshot = get_organizer_dashboard(
+        actor=organizer,
+        tournament_id=tournament.pk,
+    )
+
+    assert snapshot["comparison_participants"] == []
+
+
+@pytest.mark.django_db
+def test_attention_queue_keeps_participant_name_together():
+    organizer, tournament = _dashboard_setup()
+
+    TournamentParticipant.objects.filter(tournament=tournament).update(
+        display_name_snapshot="Jan Kowalski",
+        connection_status=ParticipantConnectionStatus.DISCONNECTED,
+    )
+
+    snapshot = get_organizer_dashboard(
+        actor=organizer,
+        tournament_id=tournament.pk,
+    )
+
+    assert snapshot["attention"][0]["reasons"] == ["Disconnected: Jan\u00a0Kowalski"]

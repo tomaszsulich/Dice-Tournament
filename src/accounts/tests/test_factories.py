@@ -1,7 +1,7 @@
 import pytest
 from django.contrib.auth import get_user_model
 
-from accounts.tests.factories import UserFactory
+from accounts.factories import UserFactory
 
 
 @pytest.mark.unit

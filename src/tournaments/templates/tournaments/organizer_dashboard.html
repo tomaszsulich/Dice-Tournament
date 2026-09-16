@@ -40,13 +40,34 @@
             {% endfor %}
         </section>
 
+        {% if initial_dashboard.comparison_participants %}
+        <section class="dashboard-comparison" aria-labelledby="comparison-navigation-title">
+            <div>
+                <p class="eyebrow">Completed&nbsp;tournament</p>
+                <h2 id="comparison-navigation-title">Participant comparison</h2>
+            </div>
+
+            <form id="comparison-navigation">
+                <select id="comparison-participant" aria-label="Participant" required>
+                    <option value="">Select participant</option>
+                    {% for participant in initial_dashboard.comparison_participants %}
+                    <option value="{{ participant.profile_id }}">
+                        {{ participant.display_name }}{% if participant.nickname %} ({{ participant.nickname }}){% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+                <button type="submit">Open comparison</button>
+            </form>
+        </section>
+        {% endif %}
+
         <div class="dashboard__body">
             <section class="tables" aria-labelledby="tables-title">
                 <div class="section-heading">
 
                     <div>
-                        <p class="eyebrow">Live&nbsp;overview</p>
-                        <h2 id="tables-title">All&nbsp;tables</h2>
+                        <p class="eyebrow">Tournament&nbsp;overview</p>
+                        <h2 id="tables-title">Tables by&nbsp;round</h2>
                     </div>
 
                     <label>State

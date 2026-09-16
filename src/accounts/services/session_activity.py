@@ -1,5 +1,5 @@
 import uuid
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from django.db import transaction
 from django.utils import timezone
@@ -11,7 +11,7 @@ SESSION_INACTIVITY_TIMEOUT = timedelta(minutes=30)
 
 
 class Clock:
-    def now(self):
+    def now(self) -> datetime:
         return timezone.now()
 
 

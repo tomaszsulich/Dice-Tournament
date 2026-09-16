@@ -1,4 +1,7 @@
+import pytest
 from django.conf import settings
+
+pytestmark = pytest.mark.unit
 
 
 def test_celery_uses_two_explicit_queues_and_routes_background_tasks():
@@ -51,3 +54,8 @@ def test_gameplay_services_are_not_celery_routes():
         for task_name in routed_tasks
         for fragment in forbidden_fragments
     )
+
+
+def test_celery_runs_eagerly_without_a_real_broker():
+    assert settings.CELERY_TASK_ALWAYS_EAGER is True
+    assert settings.CELERY_TASK_EAGER_PROPAGATES is True

@@ -1,6 +1,6 @@
 import pytest
 
-from accounts.tests.factories import PlayerProfileFactory
+from accounts.factories import PlayerProfileFactory
 from tournaments.domain.tournament.types import (
     EventMode,
 )
@@ -16,6 +16,8 @@ from tournaments.services.dice.roll_dice import (
 )
 from tournaments.services.idempotency import IdempotencyConflict
 from tournaments.tests.helpers import FakeRandomizer
+
+pytestmark = [pytest.mark.integration, pytest.mark.postgres]
 
 
 @pytest.mark.django_db

@@ -2,7 +2,7 @@ import pytest
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 
-from accounts.tests.factories import UserFactory
+from accounts.factories import UserFactory
 from tournaments.domain.tournament.types import (
     EventMode,
     PokerScoringVariant,
@@ -10,6 +10,8 @@ from tournaments.domain.tournament.types import (
     TournamentStatus,
 )
 from tournaments.models import Tournament, TournamentOrganizer
+
+pytestmark = [pytest.mark.integration, pytest.mark.postgres]
 
 
 def build_tournament(**overrides):

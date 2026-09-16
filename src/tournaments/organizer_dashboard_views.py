@@ -12,6 +12,7 @@ from tournaments.selectors.participant_comparison import (
     InvalidComparison,
     compare_participant,
     get_comparison_options,
+    get_own_history_options,
     get_participant_history_page,
 )
 
@@ -49,11 +50,41 @@ def organizer_dashboard_api(request: Request, tournament_id: int):
 @permission_classes([IsAuthenticated])
 def participant_comparison_page(request: Request, participant_id: int) -> HttpResponse:
     options = get_comparison_options(actor=request.user, participant_id=participant_id)
+    available_tournament_ids = {
+        tournament["id"] for tournament in options["tournaments"]
+    }
+
+    try:
+        requested_tournament_id = int(request.query_params.get("tournament_id", ""))
+    except ValueError:
+        requested_tournament_id = None
+
+    initial_tournament_id = (
+        requested_tournament_id
+        if requested_tournament_id in available_tournament_ids
+        else None
+    )
 
     return render(
         request._request,
         "tournaments/participant_comparison.html",
-        {"comparison_options": options},
+        {
+            "comparison_options": options,
+            "initial_tournament_id": initial_tournament_id,
+        },
+    )
+
+
+@extend_schema(exclude=True)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def participant_history_page(request: Request) -> HttpResponse:
+    options = get_own_history_options(actor=request.user)
+
+    return render(
+        request._request,
+        "tournaments/participant_history.html",
+        {"history_options": options},
     )
 
 
@@ -103,6 +134,13 @@ def participant_comparison_api(request: Request, participant_id: int):
             required=True,
         ),
         OpenApiParameter(
+            name="round_id",
+            type=OpenApiTypes.INT,
+            location=OpenApiParameter.QUERY,
+            required=False,
+            description="Optional round ID within the selected tournament.",
+        ),
+        OpenApiParameter(
             name="page",
             type=OpenApiTypes.INT,
             location=OpenApiParameter.QUERY,
@@ -122,11 +160,30 @@ def participant_comparison_history_api(request: Request, participant_id: int):
             status=400,
         )
 
+    raw_round_id = request.query_params.get("round_id")
+    round_id = None
+
+    if raw_round_id not in (None, ""):
+        try:
+            round_id = int(raw_round_id)
+        except ValueError:
+            round_id = 0
+
+        if round_id <= 0:
+            return Response(
+                {
+                    "code": "INVALID_COMPARISON",
+                    "detail": "Round ID must be a positive integer.",
+                },
+                status=400,
+            )
+
     return Response(
         get_participant_history_page(
             actor=request.user,
             participant_id=participant_id,
             tournament_id=tournament_id,
             page_number=request.query_params.get("page", 1),
+            round_id=round_id,
         )
     )

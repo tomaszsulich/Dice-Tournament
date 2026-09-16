@@ -35,7 +35,7 @@ def find_idempotency_record(
     game_id: int,
     key: str,
     command: str = ROLL_COMMAND,
-):
+) -> IdempotencyRecord | None:
     return IdempotencyRecord.objects.filter(
         user=user,
         game_id=game_id,

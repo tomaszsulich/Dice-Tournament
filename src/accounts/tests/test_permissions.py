@@ -6,7 +6,7 @@ from rest_framework.test import APIRequestFactory, force_authenticate
 from rest_framework.views import APIView
 
 from accounts.api.permissions import IsOwner
-from accounts.tests.factories import PlayerProfileFactory, UserFactory
+from accounts.factories import PlayerProfileFactory, UserFactory
 
 
 class RequestStub:
