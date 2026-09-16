@@ -18,10 +18,10 @@ class TableSizePlan:
 
 
 def compute_balanced_table_sizes(
-    n: int,
+    participant_count: int,
     preferred_size: int,
 ) -> TableSizePlan:
-    if n > MAX_ACTIVE_PARTICIPANTS:
+    if participant_count > MAX_ACTIVE_PARTICIPANTS:
         raise TableSizePlanningError(
             f"Active participants cannot exceed {MAX_ACTIVE_PARTICIPANTS}."
         )
@@ -32,24 +32,24 @@ def compute_balanced_table_sizes(
             f"{MIN_TABLE_SIZE} and {MAX_TABLE_SIZE}."
         )
 
-    if n < MIN_TABLE_SIZE:
+    if participant_count < MIN_TABLE_SIZE:
         raise TableSizePlanningError(
             "Participants cannot be partitioned into legal tables."
         )
 
-    if n <= MAX_TABLE_SIZE:
+    if participant_count <= MAX_TABLE_SIZE:
         return TableSizePlan(
-            total=n,
-            sizes=(n,),
+            total=participant_count,
+            sizes=(participant_count,),
             table_count=1,
         )
 
-    table_count = ceil(n / preferred_size)
+    table_count = ceil(participant_count / preferred_size)
 
-    while n // table_count < MIN_TABLE_SIZE:
+    while participant_count // table_count < MIN_TABLE_SIZE:
         table_count -= 1
 
-    base_size, remainder = divmod(n, table_count)
+    base_size, remainder = divmod(participant_count, table_count)
 
     sizes = (base_size + 1,) * remainder + (base_size,) * (table_count - remainder)
 
@@ -57,14 +57,14 @@ def compute_balanced_table_sizes(
         min(sizes) < MIN_TABLE_SIZE
         or max(sizes) > MAX_TABLE_SIZE
         or max(sizes) - min(sizes) > 1
-        or sum(sizes) != n
+        or sum(sizes) != participant_count
     ):
         raise TableSizePlanningError(
             "Participants cannot be partitioned into legal tables."
         )
 
     return TableSizePlan(
-        total=n,
+        total=participant_count,
         sizes=sizes,
         table_count=table_count,
     )

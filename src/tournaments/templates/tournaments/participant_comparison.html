@@ -10,7 +10,9 @@
 </head>
 
 <body>
-    <main class="dashboard comparison" data-participant-id="{{ comparison_options.participant.id }}">
+    <main class="dashboard comparison"
+          data-participant-id="{{ comparison_options.participant.id }}"
+          {% if initial_tournament_id %}data-initial-tournament-id="{{ initial_tournament_id }}"{% endif %}>
         <header class="dashboard__heading">
 
             <div>
@@ -28,7 +30,8 @@
                 <div class="comparison-picker__options">
                     {% for tournament in comparison_options.tournaments %}
                         <label>
-                            <input type="checkbox" name="tournament_ids" value="{{ tournament.id }}">
+                            <input type="checkbox" name="tournament_ids" value="{{ tournament.id }}"
+                                   {% if tournament.id == initial_tournament_id %}checked{% endif %}>
                             <span>{{ tournament.name }}</span>
                         </label>
                     {% endfor %}
@@ -54,6 +57,13 @@
             <div class="history-modal__heading">
                 <h2 id="history-title">Roll&nbsp;history</h2>
                 <button id="history-close" type="button" aria-label="Close history">×</button>
+            </div>
+
+            <div class="history-modal__filters">
+                <label for="history-round">Round</label>
+                <select id="history-round">
+                    <option value="">All rounds</option>
+                </select>
             </div>
 
             <div id="history-content"></div>

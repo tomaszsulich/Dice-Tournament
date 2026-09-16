@@ -3,9 +3,11 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from accounts.tests.factories import PlayerProfileFactory
+from accounts.factories import PlayerProfileFactory
 from tournaments.domain.dice.categories import ScoreCategory
 from tournaments.models import Roll, ScoreEntry, ScoreResultKind
+
+pytestmark = [pytest.mark.integration, pytest.mark.postgres]
 
 
 @pytest.mark.django_db

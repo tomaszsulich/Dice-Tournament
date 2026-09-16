@@ -6,8 +6,8 @@ from django.test import override_settings
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from accounts.factories import UserFactory
 from accounts.models import SessionFamily
-from accounts.tests.factories import UserFactory
 
 TEST_MAILERS = {
     "default": {

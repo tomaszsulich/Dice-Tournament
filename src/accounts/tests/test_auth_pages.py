@@ -1,11 +1,14 @@
 from html import unescape
+from pathlib import Path
 
 import pytest
 from django.urls import reverse
 
-from accounts.tests.factories import UserFactory
+from accounts.factories import UserFactory
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db
 def test_login_page_is_public(client):
     response = client.get(reverse("login"))
@@ -14,6 +17,8 @@ def test_login_page_is_public(client):
     assert "Create an\u00a0account" in unescape(response.content.decode())
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db
 def test_registration_page_explains_optional_player_profile(client):
     response = client.get(reverse("register"))
@@ -25,6 +30,8 @@ def test_registration_page_explains_optional_player_profile(client):
     assert "Needed to\u00a0join and play in\u00a0tournaments." in rendered
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db
 def test_profile_setup_page_is_public_shell(client):
     response = client.get(reverse("profile-setup"))
@@ -34,6 +41,8 @@ def test_profile_setup_page_is_public_shell(client):
     assert "Create player\u00a0profile" in rendered
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db
 def test_password_reset_page_keeps_reset_credentials_out_of_visible_form(client):
     response = client.get(reverse("password-reset"))
@@ -44,6 +53,8 @@ def test_password_reset_page_keeps_reset_credentials_out_of_visible_form(client)
     assert b'name="token"' not in response.content
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db
 def test_set_password_page_does_not_render_uid_or_token_fields(client):
     response = client.get(
@@ -59,6 +70,8 @@ def test_set_password_page_does_not_render_uid_or_token_fields(client):
     assert b"example-token" not in response.content
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db
 def test_api_docs_accept_authenticated_staff_django_session(client):
     staff = UserFactory.create(is_staff=True)
@@ -69,6 +82,8 @@ def test_api_docs_accept_authenticated_staff_django_session(client):
     assert response.status_code == 200
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db
 def test_browser_facing_unauthorized_page_is_human_readable(client):
     response = client.get(
@@ -81,6 +96,8 @@ def test_browser_facing_unauthorized_page_is_human_readable(client):
     assert b"Authentication credentials were not provided" not in response.content
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db
 def test_profile_overview_does_not_require_player_profile_at_template_boundary(client):
     response = client.get(reverse("profile"))
@@ -93,8 +110,6 @@ def test_profile_overview_does_not_require_player_profile_at_template_boundary(c
 
 @pytest.mark.unit
 def test_login_redirects_to_account_overview_instead_of_forcing_profile_setup():
-    from pathlib import Path
-
     script = Path("src/accounts/static/accounts/js/login.js").read_text(
         encoding="utf-8"
     )
@@ -103,6 +118,8 @@ def test_login_redirects_to_account_overview_instead_of_forcing_profile_setup():
     assert 'DiceAuth.safeNext() || "/profile/setup/"' not in script
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db
 def test_profile_edit_page_is_browser_shell(client):
     response = client.get(reverse("profile-edit"))
@@ -116,8 +133,6 @@ def test_profile_edit_page_is_browser_shell(client):
 
 @pytest.mark.unit
 def test_profile_edit_ui_rejects_same_values_before_patch():
-    from pathlib import Path
-
     script = Path("src/accounts/static/accounts/js/profile_edit.js").read_text(
         encoding="utf-8"
     )

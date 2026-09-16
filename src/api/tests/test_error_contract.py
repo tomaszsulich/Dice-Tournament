@@ -4,7 +4,7 @@ import pytest
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
 
-from accounts.tests.factories import UserFactory
+from accounts.factories import UserFactory
 from api.exception_handler import api_exception_handler
 from common.errors import domain_error
 

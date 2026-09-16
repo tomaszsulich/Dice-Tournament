@@ -361,6 +361,15 @@ Dane testowe powstają z fabryk, a ORM nie jest mockowany. Atrapy są stosowane
 na granicach losowości, czasu, poczty i usług zewnętrznych. Raport pokrycia
 wskazuje luki, lecz nie narzuca sztucznego celu 100%.
 
+Developmentowy scenariusz `seed_demo --scenario completed` tworzy od dwóch do
+czterech zakończonych turniejów współdzielących te same `PlayerProfile`. Każdy
+uczestnik ma w obu rundach źródłowe `Turn`, `Roll`, zatrzymania i decyzje dla
+wszystkich 18 kategorii. Liczba rzutów w turze oraz pozostała zawartość świata
+są powtarzalne dla `Random(seed)`, natomiast liczba utworzonych turniejów jest
+celowo losowana niezależnie, aby kolejne uruchomienia mogły prezentować różne
+rozmiary Porównywarki. Seed gwarantuje przy tym reprezentatywne wyniki Szkółki
+i figur, zamiast polegać wyłącznie na szczęśliwym rozkładzie pseudolosowym.
+
 ## 15. Obserwowalność i audyt operacyjny
 
 Logi mają poziomy, identyfikator korelacji i bezpieczny kontekst turnieju, stołu

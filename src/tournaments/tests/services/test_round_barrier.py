@@ -5,7 +5,7 @@ import pytest
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import close_old_connections
 
-from accounts.tests.factories import PlayerProfileFactory
+from accounts.factories import PlayerProfileFactory
 from tournaments.domain.tournament.rounds import RoundStatus, RoundType
 from tournaments.domain.tournament.types import (
     EventMode,
@@ -24,6 +24,8 @@ from tournaments.models import (
     TournamentParticipant,
 )
 from tournaments.services.round_barrier import BarrierResult, evaluate_round_barrier
+
+pytestmark = [pytest.mark.integration, pytest.mark.postgres]
 
 type ActiveTournament = tuple[Tournament, list[TournamentParticipant]]
 
@@ -252,6 +254,7 @@ def test_final_round_without_material_tie_is_tournament_ready(active_tournament)
     assert tournament.rounds.count() == 2
 
 
+@pytest.mark.concurrency
 @pytest.mark.django_db(transaction=True)
 def test_concurrent_barrier_calls_create_one_next_round():
     """Two workers crossing the barrier together must not create two round #2 rows."""

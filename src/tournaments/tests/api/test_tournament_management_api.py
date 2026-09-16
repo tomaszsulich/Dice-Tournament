@@ -2,7 +2,7 @@ import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from accounts.tests.factories import PlayerProfileFactory, UserFactory
+from accounts.factories import PlayerProfileFactory, UserFactory
 from tournaments.domain.tournament.types import (
     EventMode,
     PokerScoringVariant,
@@ -10,6 +10,8 @@ from tournaments.domain.tournament.types import (
     TournamentStatus,
 )
 from tournaments.models import Tournament, TournamentOrganizer
+
+pytestmark = [pytest.mark.integration, pytest.mark.postgres]
 
 
 def make_tournament(**overrides):

@@ -9,9 +9,9 @@ from django.db import transaction
 from django.test import Client
 from django.utils import timezone
 
+from accounts.factories import PlayerProfileFactory, UserFactory
 from accounts.jwt import SessionTokenObtainPairSerializer
 from accounts.models import SessionFamily
-from accounts.tests.factories import PlayerProfileFactory, UserFactory
 from tournaments.domain.tournament.rounds import RoundStatus
 from tournaments.domain.tournament.types import (
     EventMode,
@@ -76,6 +76,8 @@ def test_realtime_event_contract_is_minimal():
     assert "state" not in event
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db(transaction=True)
 def test_committed_roll_advances_version_and_calls_injected_publisher(roll_setup):
     user, game, _turn = roll_setup()
@@ -101,6 +103,8 @@ def test_committed_roll_advances_version_and_calls_injected_publisher(roll_setup
     assert payload["state_version"] == 1
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db(transaction=True)
 def test_rollback_reverts_state_version_and_does_not_publish(roll_setup):
     user, game, _turn = roll_setup()
@@ -124,6 +128,8 @@ def test_rollback_reverts_state_version_and_does_not_publish(roll_setup):
     publisher.assert_not_called()
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db(transaction=True)
 def test_delivery_failure_after_commit_does_not_undo_saved_roll(roll_setup):
     user, game, turn = roll_setup()
@@ -147,6 +153,8 @@ def test_delivery_failure_after_commit_does_not_undo_saved_roll(roll_setup):
     failing_publisher.assert_called_once()
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db(transaction=True)
 def test_publisher_targets_table_and_organizer_groups(roll_setup):
     _user, game, _turn = roll_setup()
@@ -178,6 +186,9 @@ def test_publisher_targets_table_and_organizer_groups(roll_setup):
     assert organizer_event == expected
 
 
+@pytest.mark.websocket
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db(transaction=True)
 def test_anonymous_websocket_is_rejected(asgi_application):
     async def scenario():
@@ -194,6 +205,9 @@ def test_anonymous_websocket_is_rejected(asgi_application):
     assert close_code == 4401
 
 
+@pytest.mark.websocket
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db(transaction=True)
 def test_django_session_cookie_cannot_bypass_hardened_ws_auth(
     roll_setup,
@@ -223,6 +237,9 @@ def test_django_session_cookie_cannot_bypass_hardened_ws_auth(
     assert close_code == 4401
 
 
+@pytest.mark.websocket
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db(transaction=True)
 def test_assigned_participant_can_join_own_table(
     roll_setup,
@@ -249,6 +266,9 @@ def test_assigned_participant_can_join_own_table(
     assert connected is True
 
 
+@pytest.mark.websocket
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db(transaction=True)
 def test_open_socket_closes_when_session_family_expires(
     roll_setup,
@@ -294,6 +314,9 @@ def test_open_socket_closes_when_session_family_expires(
     assert output["code"] == 4401
 
 
+@pytest.mark.websocket
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db(transaction=True)
 def test_revoked_session_family_is_rejected(
     roll_setup,
@@ -329,6 +352,9 @@ def test_revoked_session_family_is_rejected(
     assert close_code == 4401
 
 
+@pytest.mark.websocket
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db(transaction=True)
 def test_user_from_another_table_is_rejected(
     roll_setup,
@@ -352,6 +378,9 @@ def test_user_from_another_table_is_rejected(
     assert close_code == 4403
 
 
+@pytest.mark.websocket
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db(transaction=True)
 def test_organizer_without_participation_cannot_join_participant_table_socket(
     roll_setup,
@@ -381,6 +410,9 @@ def test_organizer_without_participation_cannot_join_participant_table_socket(
     assert close_code == 4403
 
 
+@pytest.mark.websocket
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db(transaction=True)
 def test_participant_assignment_socket_redirects_from_non_table_page(
     roll_setup,
@@ -414,6 +446,9 @@ def test_participant_assignment_socket_redirects_from_non_table_page(
     }
 
 
+@pytest.mark.websocket
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db(transaction=True)
 def test_assignment_socket_waits_for_future_assignment_while_participant_is_elsewhere(
     roll_setup,
@@ -462,6 +497,9 @@ def test_assignment_socket_waits_for_future_assignment_while_participant_is_else
     }
 
 
+@pytest.mark.websocket
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db(transaction=True)
 def test_registered_participant_waiting_off_table_is_redirected_when_tournament_starts(
     asgi_application,
@@ -531,6 +569,9 @@ def test_registered_participant_waiting_off_table_is_redirected_when_tournament_
     }
 
 
+@pytest.mark.websocket
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db(transaction=True)
 def test_participant_cannot_join_organizer_group(
     roll_setup,
@@ -553,6 +594,9 @@ def test_participant_cannot_join_organizer_group(
     assert close_code == 4403
 
 
+@pytest.mark.websocket
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db(transaction=True)
 def test_organizer_receives_same_table_event_on_multiple_devices(
     roll_setup,
@@ -606,6 +650,8 @@ def test_organizer_receives_same_table_event_on_multiple_devices(
     assert second_event == expected
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db(transaction=True)
 def test_round_transition_publishes_server_derived_assignment(roll_setup):
     user, first_game, _turn = roll_setup()

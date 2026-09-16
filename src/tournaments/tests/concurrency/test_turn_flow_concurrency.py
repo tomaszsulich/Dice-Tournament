@@ -8,6 +8,8 @@ from tournaments.domain.dice.categories import ScoreCategory
 from tournaments.models import Roll, ScoreEntry, Turn
 from tournaments.services.dice.select_category import select_category
 
+pytestmark = [pytest.mark.integration, pytest.mark.postgres, pytest.mark.concurrency]
+
 
 @pytest.mark.django_db(transaction=True)
 def test_two_concurrent_category_retries_score_and_advance_once(roll_setup):

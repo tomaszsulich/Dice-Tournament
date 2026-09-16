@@ -1,9 +1,11 @@
 from datetime import timedelta
 
 import pytest
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
-from accounts.tests.factories import PlayerProfileFactory, UserFactory
+from accounts.factories import PlayerProfileFactory, UserFactory
 from tournaments.domain.tournament.types import (
     EventMode,
     ParticipantStatus,
@@ -19,9 +21,12 @@ from tournaments.services.participants import (
     RegistrationUnavailable,
     SelfWithdrawalUnavailable,
     TournamentFull,
+    add_participant_by_organizer,
     join_tournament,
     leave_tournament,
 )
+
+pytestmark = [pytest.mark.integration, pytest.mark.postgres]
 
 
 def build_tournament(**overrides):
@@ -231,6 +236,51 @@ def test_join_reactivates_withdrawn_participant_without_replacing_record():
         ).count()
         == 1
     )
+
+
+@pytest.mark.django_db
+def test_organizer_reactivation_does_not_rewrite_identity_snapshots():
+    tournament = build_tournament(
+        registration_mode=RegistrationMode.ORGANIZER_ONLY,
+    )
+
+    profile = PlayerProfileFactory.create(
+        display_name="Current display name",
+        nickname="CurrentNickname",
+    )
+
+    TournamentParticipant.objects.create(
+        tournament=tournament,
+        player_profile=profile,
+        full_name_snapshot="Original Player",
+        display_name_snapshot="Original display name",
+        nickname_snapshot="OriginalNickname",
+        status=ParticipantStatus.WITHDRAWN,
+    )
+
+    with CaptureQueriesContext(connection) as queries:
+        reactivated = add_participant_by_organizer(
+            tournament_id=tournament.pk,
+            player_profile=profile,
+            team_label="North",
+            starting_number=7,
+            seeding=3,
+        )
+
+    participant_updates = [
+        query["sql"]
+        for query in queries.captured_queries
+        if query["sql"].lstrip().upper().startswith("UPDATE")
+        and "tournaments_tournamentparticipant" in query["sql"]
+    ]
+
+    assert len(participant_updates) == 1
+    assert "full_name_snapshot" not in participant_updates[0]
+    assert "display_name_snapshot" not in participant_updates[0]
+    assert "nickname_snapshot" not in participant_updates[0]
+    assert reactivated.full_name_snapshot == "Original Player"
+    assert reactivated.display_name_snapshot == "Original display name"
+    assert reactivated.nickname_snapshot == "OriginalNickname"
 
 
 @pytest.mark.django_db

@@ -2,8 +2,8 @@ import pytest
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 
+from accounts.factories import PlayerProfileFactory, UserFactory
 from accounts.models import PlayerProfile
-from accounts.tests.factories import PlayerProfileFactory, UserFactory
 
 
 @pytest.mark.integration

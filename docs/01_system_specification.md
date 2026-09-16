@@ -1103,6 +1103,13 @@ Kolejność implementacji:
 11. wersja 1.0: audyt, alarmy, anulowanie, retencja oraz korekty;
 12. V2: trwałe drużyny i przekrojowe porównanie drużynowe.
 
+Scenariusz demonstracyjny `completed` stanowi celowy wyjątek od dopuszczalnej
+w produkcie sytuacji, w której uczestnik ma tylko jeden zakończony turniej.<br>
+Tworzy od dwóch do czterech zakończonych turniejów dla tych samych profili
+graczy, aby podstawową Porównywarkę dało się zawsze zweryfikować ręcznie.<br>
+Nie zmienia to kontraktu produktu: organizator nadal może wybrać od jednego
+do maksymalnie czterech dostępnych turniejów.
+
 Każdy punkt kończy się działającym endpointem lub przepływem, testem poprawnego przypadku, testem odmowy oraz aktualizacją OpenAPI i README. Nie rozpoczyna się kolejnego rozszerzenia technologicznego, dopóki wcześniejszy przekrój nie działa od żądania do bazy.
 
 ---

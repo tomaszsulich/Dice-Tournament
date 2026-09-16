@@ -12,6 +12,14 @@ let stopped = false;
 
 const reconnectDelays = [1000, 2000, 4000, 8000];
 
+
+function personName(name) {
+    const span = document.createElement("span");
+    span.className = "person-name";
+    span.textContent = name;
+    return span;
+}
+
 function websocketUrl() {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     return `${protocol}//${window.location.host}/ws/tournaments/${tournamentId}/organizers/`;
@@ -115,7 +123,11 @@ function showDetail(tableId) {
 
     const rows = [
         ["State", table.state],
-        ["Current\u00a0participant", table.current_participant?.name ?? "—"],
+        ["Round", table.round.name || `Round ${table.round.number}`],
+        [
+            "Current\u00a0participant",
+            table.current_participant ? personName(table.current_participant.name) : "—",
+        ],
         ["Turn\u00a0/\u00a0roll", table.turn_number ? `${table.turn_number}\u00a0/\u00a0${table.roll_number}` : "—"],
         ["Last\u00a0action", table.last_action],
         ["Attention", table.attention_reasons.join(" · ") || "No"],
@@ -125,7 +137,10 @@ function showDetail(tableId) {
         const dt = document.createElement("dt");
         const dd = document.createElement("dd");
         dt.textContent = term;
-        dd.textContent = value;
+
+        if (value instanceof Node) dd.append(value);
+        else dd.textContent = value;
+
         return [dt, dd];
     }));
 
@@ -238,6 +253,16 @@ function connect() {
 }
 
 document.getElementById("table-filter").addEventListener("change", () => renderCards());
+
+document.getElementById("comparison-navigation")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const profileId = document.getElementById("comparison-participant").value;
+    if (profileId) {
+        window.location.assign(
+            `/comparisons/participants/${profileId}/?tournament_id=${tournamentId}`,
+        );
+    }
+});
 
 document.getElementById("detail-close").addEventListener("click", () => {
     document.getElementById("table-detail").hidden = true;

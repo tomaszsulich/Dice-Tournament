@@ -19,6 +19,7 @@ from tournaments.domain.tournament.table_sizes import (
 
 
 def generate_group_allocation(
+    *,
     participants: Sequence[AllocationParticipant],
     preferred_size: int,
     repeated_pairs: Collection[RepeatedPair],

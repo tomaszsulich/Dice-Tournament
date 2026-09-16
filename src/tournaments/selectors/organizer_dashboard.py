@@ -8,7 +8,10 @@ from django.utils import timezone
 
 from accounts.models import User
 from tournaments.domain.tournament.rounds import RoundStatus
-from tournaments.domain.tournament.types import ParticipantConnectionStatus
+from tournaments.domain.tournament.types import (
+    ParticipantConnectionStatus,
+    TournamentStatus,
+)
 from tournaments.models import Game, GameParticipant, Tournament, Turn
 
 
@@ -19,7 +22,7 @@ def _scoped_tournament(*, actor: User, tournament_id: int) -> Tournament:
         raise Http404 from exc
 
 
-def _last_action(game: Game) -> tuple[str, datetime | None]:
+def _last_action(game: Game, *, complete: bool) -> tuple[str, datetime | None]:
     roll_at = game.latest_roll_at
     score_at = game.latest_score_at
 
@@ -29,7 +32,10 @@ def _last_action(game: Game) -> tuple[str, datetime | None]:
     if roll_at is not None:
         return "Roll\u00a0accepted", roll_at
 
-    return "Waiting for the\u00a0first roll", None
+    if complete:
+        return "No\u00a0recorded\u00a0action", None
+
+    return "Waiting for\u00a0the\u00a0first\u00a0roll", None
 
 
 def _current_turn(game: Game) -> Turn | None:
@@ -50,6 +56,10 @@ def _current_turn(game: Game) -> Turn | None:
     )
 
 
+def _nonbreaking_name(value: str) -> str:
+    return "\u00a0".join(value.split())
+
+
 def _attention_reasons(game: Game, turn: Turn | None, now: datetime) -> list[str]:
     reasons: list[str] = []
 
@@ -59,14 +69,14 @@ def _attention_reasons(game: Game, turn: Turn | None, now: datetime) -> list[str
         return reasons
 
     disconnected = [
-        participant.tournament_participant.display_name_snapshot
+        _nonbreaking_name(participant.tournament_participant.display_name_snapshot)
         for participant in game.dashboard_participants
         if participant.tournament_participant.connection_status
         == ParticipantConnectionStatus.DISCONNECTED
     ]
 
     reconnecting = [
-        participant.tournament_participant.display_name_snapshot
+        _nonbreaking_name(participant.tournament_participant.display_name_snapshot)
         for participant in game.dashboard_participants
         if participant.tournament_participant.connection_status
         == ParticipantConnectionStatus.RECONNECTING
@@ -97,7 +107,7 @@ def _serialize_game(game: Game, now: datetime) -> dict[str, object]:
     )
 
     waiting = complete and game.round.status == RoundStatus.ACTIVE
-    last_action, last_action_at = _last_action(game)
+    last_action, last_action_at = _last_action(game, complete=complete)
     reasons = _attention_reasons(game, turn, now)
 
     if waiting:
@@ -152,7 +162,7 @@ def _serialize_game(game: Game, now: datetime) -> dict[str, object]:
 
 
 def get_organizer_dashboard(*, actor: User, tournament_id: int) -> dict[str, object]:
-    """Return a bounded-query snapshot for every table in the current round."""
+    """Return the current tables and completed context needed by the live overview."""
     tournament = _scoped_tournament(actor=actor, tournament_id=tournament_id)
     current_round = tournament.rounds.order_by("-number", "-pk").first()
 
@@ -176,8 +186,19 @@ def get_organizer_dashboard(*, actor: User, tournament_id: int) -> dict[str, obj
             )
         )
 
+        round_scope = Q(round=current_round)
+
+        if current_round.status == RoundStatus.ACTIVE:
+            # A completed table and a table waiting at the active round barrier
+            # are different states. Keeping completed rounds in the active dashboard
+            # makes that distinction visible without inventing a per-game status.
+            round_scope |= Q(
+                round__tournament=tournament,
+                round__status=RoundStatus.COMPLETED,
+            )
+
         games = list(
-            Game.objects.filter(round=current_round)
+            Game.objects.filter(round_scope)
             .select_related("round", "round__tournament")
             .annotate(
                 participant_count=Count("game_participants", distinct=True),
@@ -213,6 +234,22 @@ def get_organizer_dashboard(*, actor: User, tournament_id: int) -> dict[str, obj
         if card["requires_attention"]
     ]
 
+    comparison_participants = []
+
+    if tournament.status == TournamentStatus.COMPLETED:
+        comparison_participants = [
+            {
+                "profile_id": participant.player_profile_id,
+                "display_name": participant.display_name_snapshot,
+                "nickname": participant.nickname_snapshot,
+            }
+            for participant in tournament.tournament_participants.order_by(
+                "starting_number",
+                "display_name_snapshot",
+                "pk",
+            )
+        ]
+
     return {
         "tournament": {
             "id": tournament.pk,
@@ -232,12 +269,11 @@ def get_organizer_dashboard(*, actor: User, tournament_id: int) -> dict[str, obj
         "summary": {
             "tables": len(cards),
             "playing": sum(card["state"] == "playing" for card in cards),
-            "completed": sum(
-                card["state"] in {"completed", "waiting"} for card in cards
-            ),
+            "completed": sum(card["state"] == "completed" for card in cards),
             "waiting": sum(card["state"] == "waiting" for card in cards),
             "attention": len(attention),
         },
         "tables": cards,
         "attention": attention,
+        "comparison_participants": comparison_participants,
     }

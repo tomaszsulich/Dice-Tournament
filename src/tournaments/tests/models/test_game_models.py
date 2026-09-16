@@ -2,8 +2,8 @@ import pytest
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 
+from accounts.factories import UserFactory
 from accounts.models import PlayerProfile
-from accounts.tests.factories import UserFactory
 from tournaments.domain.dice.categories import ScoreCategory
 from tournaments.domain.tournament.types import (
     EventMode,
@@ -22,6 +22,8 @@ from tournaments.models import (
     Turn,
 )
 from tournaments.serializers import GameSerializer
+
+pytestmark = [pytest.mark.integration, pytest.mark.postgres]
 
 
 def build_tournament(name: str = "Dice Game Tournament"):

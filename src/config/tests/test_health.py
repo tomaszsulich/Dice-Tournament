@@ -3,6 +3,8 @@ from django.test import Client
 
 from config import health
 
+pytestmark = pytest.mark.unit
+
 
 @pytest.fixture
 def client():

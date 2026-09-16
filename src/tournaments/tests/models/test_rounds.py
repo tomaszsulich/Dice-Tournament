@@ -20,6 +20,8 @@ from tournaments.services.rounds import (
     start_round,
 )
 
+pytestmark = [pytest.mark.integration, pytest.mark.postgres]
+
 
 @pytest.fixture
 def tournament(db):

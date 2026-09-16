@@ -8,6 +8,8 @@ from tournaments.models import Roll
 from tournaments.services.dice.roll_dice import execute_roll
 from tournaments.tests.helpers import FakeRandomizer
 
+pytestmark = [pytest.mark.integration, pytest.mark.postgres, pytest.mark.concurrency]
+
 
 @pytest.mark.django_db(transaction=True)
 def test_two_concurrent_retries_create_exactly_one_roll(roll_setup):

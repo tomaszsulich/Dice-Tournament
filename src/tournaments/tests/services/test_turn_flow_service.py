@@ -3,7 +3,7 @@ import importlib
 import pytest
 from django.utils import timezone
 
-from accounts.tests.factories import PlayerProfileFactory
+from accounts.factories import PlayerProfileFactory
 from tournaments.domain.dice.categories import SCHOOL_CATEGORIES, ScoreCategory
 from tournaments.domain.tournament.types import ParticipantStatus
 from tournaments.models import (
@@ -15,6 +15,7 @@ from tournaments.models import (
     TournamentParticipant,
     Turn,
 )
+from tournaments.services.dice import select_category as exported_select
 from tournaments.services.dice.hold_dice import (
     HoldForbidden,
     HoldUnavailable,
@@ -66,11 +67,14 @@ def _roll(turn, values=(1, 2, 3, 4, 5), number=1):
     )
 
 
+@pytest.mark.unit
 def test_completion_bonus_requires_chance() -> None:
     assert BONUS_REQUIRED_CATEGORIES == frozenset(ScoreCategory) - SCHOOL_CATEGORIES
     assert ScoreCategory.CHANCE in BONUS_REQUIRED_CATEGORIES
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db
 def test_roll_keeps_post_roll_snapshot_while_turn_tracks_later_hold_choice(roll_setup):
     user, game, turn = roll_setup()
@@ -115,6 +119,8 @@ def test_roll_keeps_post_roll_snapshot_while_turn_tracks_later_hold_choice(roll_
     assert second.held_after_roll == (True, False, True, False, False)
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db
 def test_hold_rejects_unchanged_state_without_publishing(roll_setup):
     user, game, turn = roll_setup()
@@ -132,6 +138,8 @@ def test_hold_rejects_unchanged_state_without_publishing(roll_setup):
     assert events == []
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db
 def test_hold_requires_exactly_five_real_booleans(roll_setup):
     user, game, turn = roll_setup()
@@ -147,6 +155,8 @@ def test_hold_requires_exactly_five_real_booleans(roll_setup):
         )
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db
 def test_hold_is_rejected_before_first_and_after_third_roll(roll_setup):
     user, game, turn = roll_setup()
@@ -171,6 +181,8 @@ def test_hold_is_rejected_before_first_and_after_third_roll(roll_setup):
         )
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db
 def test_other_user_cannot_change_active_turn_holds(roll_setup):
     _user, game, turn = roll_setup()
@@ -186,6 +198,8 @@ def test_other_user_cannot_change_active_turn_holds(roll_setup):
         )
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db
 def test_category_requires_at_least_one_roll(roll_setup):
     user, game, _turn = roll_setup()
@@ -200,6 +214,8 @@ def test_category_requires_at_least_one_roll(roll_setup):
         )
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db
 def test_other_user_cannot_choose_active_turn_category(roll_setup):
     _user, game, turn = roll_setup()
@@ -216,6 +232,8 @@ def test_other_user_cannot_choose_active_turn_category(roll_setup):
         )
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db
 def test_category_uses_last_roll_and_first_hand_multiplier(roll_setup):
     user, game, turn = roll_setup()
@@ -248,6 +266,8 @@ def test_category_uses_last_roll_and_first_hand_multiplier(roll_setup):
     assert turn.completed_at is not None
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db
 def test_school_zero_and_figure_strike_off_keep_distinct_persistence(roll_setup):
     user, game, turn = roll_setup()
@@ -279,13 +299,13 @@ def test_school_zero_and_figure_strike_off_keep_distinct_persistence(roll_setup)
     assert figure["score_entry"]["value"] is None
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db
 def test_category_retry_replays_without_scoring_twice(roll_setup, monkeypatch):
     user, game, turn = roll_setup()
     _roll(turn, values=(1, 2, 3, 4, 5))
     calls = 0
-
-    from tournaments.services.dice import select_category as exported_select
 
     module = importlib.import_module("tournaments.services.dice.select_category")
     original_score = module.score
@@ -314,6 +334,8 @@ def test_category_retry_replays_without_scoring_twice(roll_setup, monkeypatch):
     assert IdempotencyRecord.objects.filter(command="CHOOSE_CATEGORY").count() == 1
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db
 def test_used_category_is_rejected_explicitly(roll_setup):
     user, game, initial_turn = roll_setup()
@@ -347,6 +369,8 @@ def test_used_category_is_rejected_explicitly(roll_setup):
     assert exc_info.value.code == "CATEGORY_ALREADY_USED"
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db
 def test_pair_subselection_is_passed_to_scoring_strategy(roll_setup):
     user, game, turn = roll_setup()
@@ -372,6 +396,8 @@ def test_pair_subselection_is_passed_to_scoring_strategy(roll_setup):
     assert response["score_entry"]["value"] == 20
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db
 def test_turn_advances_in_cyclic_turn_order_and_resets_holds(roll_setup):
     user_one, game, turn_one = roll_setup()
@@ -408,6 +434,8 @@ def test_turn_advances_in_cyclic_turn_order_and_resets_holds(roll_setup):
     assert next_one.number == 2
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db
 def test_last_category_completes_participant_and_game(roll_setup):
     user, game, active_turn = roll_setup()
@@ -460,6 +488,8 @@ def test_last_category_completes_participant_and_game(roll_setup):
     assert response["next_turn_id"] is None
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db
 def test_category_rollback_keeps_turn_and_queue_unchanged(roll_setup, monkeypatch):
     user, game, turn = roll_setup()

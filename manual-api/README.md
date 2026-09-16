@@ -1,6 +1,6 @@
-# Manual API
-
 **Polski** | [English](README.en.md)
+
+# Ręczna weryfikacja API
 
 Ten katalog zawiera ręczne requesty HTTP służące do testowania API projektu Dice Tournament.
 

@@ -14,6 +14,8 @@ from tournaments.tasks.maintenance import (
     flush_expired_tokens,
 )
 
+pytestmark = [pytest.mark.integration, pytest.mark.postgres]
+
 
 @pytest.mark.django_db
 def test_cleanup_expired_idempotency_records_only_deletes_technical_records(roll_setup):

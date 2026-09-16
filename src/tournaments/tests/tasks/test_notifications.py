@@ -3,7 +3,7 @@ import smtplib
 import pytest
 from django.db import transaction
 
-from accounts.tests.factories import PlayerProfileFactory
+from accounts.factories import PlayerProfileFactory
 from tournaments.domain.tournament.types import (
     EventMode,
     ParticipantStatus,
@@ -39,6 +39,8 @@ def build_tournament():
     )
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db
 def test_invitation_delivery_reloads_participant_and_uses_injected_mailer():
     tournament = build_tournament()
@@ -63,6 +65,8 @@ def test_invitation_delivery_reloads_participant_and_uses_injected_mailer():
     assert mailer.sent == [("player@example.com", "Celery Cup")]
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db
 def test_invitation_delivery_skips_no_longer_applicable_participant():
     tournament = build_tournament()
@@ -107,6 +111,8 @@ def test_invitation_delivery_skips_no_longer_applicable_participant():
     assert mailer.sent == []
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db(transaction=True)
 def test_organizer_registration_enqueues_invitation_only_after_commit(monkeypatch):
     tournament = build_tournament()
@@ -127,6 +133,8 @@ def test_organizer_registration_enqueues_invitation_only_after_commit(monkeypatc
     assert queued == [participant.pk]
 
 
+@pytest.mark.integration
+@pytest.mark.postgres
 @pytest.mark.django_db(transaction=True)
 def test_organizer_registration_rollback_does_not_enqueue_invitation(monkeypatch):
     tournament = build_tournament()
@@ -155,6 +163,7 @@ def test_organizer_registration_rollback_does_not_enqueue_invitation(monkeypatch
     ).exists()
 
 
+@pytest.mark.unit
 def test_invitation_task_retries_retryable_smtp_failure(monkeypatch):
     class RetryRaised(Exception):
         pass
@@ -180,6 +189,7 @@ def test_invitation_task_retries_retryable_smtp_failure(monkeypatch):
     assert notifications.send_tournament_invitation.max_retries == 3
 
 
+@pytest.mark.unit
 def test_invitation_task_retries_transient_smtp_response(monkeypatch):
     class RetryRaised(Exception):
         pass
@@ -204,6 +214,7 @@ def test_invitation_task_retries_transient_smtp_response(monkeypatch):
     assert captured == {"exc": error, "countdown": 2}
 
 
+@pytest.mark.unit
 def test_invitation_task_does_not_retry_permanent_smtp_failure(monkeypatch):
     error = smtplib.SMTPDataError(550, b"message rejected")
     retry_called = False
@@ -225,5 +236,6 @@ def test_invitation_task_does_not_retry_permanent_smtp_failure(monkeypatch):
     assert retry_called is False
 
 
+@pytest.mark.unit
 def test_retry_backoff_is_bounded_for_three_retries():
     assert [notifications._retry_countdown(retry) for retry in range(3)] == [2, 4, 8]

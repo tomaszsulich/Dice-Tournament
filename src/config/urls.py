@@ -35,6 +35,7 @@ from config.health import health_live, health_ready
 from tournaments.organizer_dashboard_views import (
     organizer_dashboard_page,
     participant_comparison_page,
+    participant_history_page,
 )
 from tournaments.views import participant_table
 
@@ -50,6 +51,7 @@ urlpatterns = [
     path("api/", include("accounts.api.urls")),
     path("api/", include("tournaments.api.urls")),
     path("tables/<int:game_id>/", participant_table, name="participant-table"),
+    path("history/", participant_history_page, name="participant-history"),
     path(
         "tournaments/<int:tournament_id>/organizer/",
         organizer_dashboard_page,

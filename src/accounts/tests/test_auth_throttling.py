@@ -7,7 +7,7 @@ from rest_framework import status
 from rest_framework.parsers import JSONParser
 from rest_framework.request import Request
 
-from accounts.tests.factories import UserFactory
+from accounts.factories import UserFactory
 from accounts.throttles import ApiMutationThrottle, AuthSecurityThrottle
 
 TEST_REST_FRAMEWORK = {
@@ -119,6 +119,7 @@ def test_password_reset_throttling_returns_429(api_client, monkeypatch):
     assert response.status_code == status.HTTP_429_TOO_MANY_REQUESTS
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize(
     "path",
     [
@@ -147,6 +148,7 @@ def test_all_sensitive_auth_paths_are_throttled(path, rf):
     assert throttle.get_cache_key(request, None) is not None
 
 
+@pytest.mark.unit
 def test_api_mutation_throttle_covers_profile_write(rf):
     user = UserFactory.build(pk=123)
     request = Request(rf.post("/api/profile/", {}, content_type="application/json"))
@@ -157,6 +159,7 @@ def test_api_mutation_throttle_covers_profile_write(rf):
     assert throttle.get_cache_key(request, None) is not None
 
 
+@pytest.mark.unit
 def test_api_mutation_throttle_skips_safe_profile_read(rf):
     user = UserFactory.build(pk=123)
     request = Request(rf.get("/api/profile/"))

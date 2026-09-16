@@ -7,6 +7,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 
+from accounts.factories import PlayerProfileFactory, UserFactory
 from accounts.models import SessionFamily
 from accounts.services.session_activity import (
     SessionRejected,
@@ -14,7 +15,6 @@ from accounts.services.session_activity import (
     record_activity,
     validate_session_family,
 )
-from accounts.tests.factories import PlayerProfileFactory, UserFactory
 
 
 class FrozenClock:

@@ -47,17 +47,17 @@ def test_generate_group_allocation_is_reproducible_for_same_seed():
     participants = _participants(16)
 
     first = generate_group_allocation(
-        participants,
-        6,
-        set(),
-        42,
+        participants=participants,
+        preferred_size=6,
+        repeated_pairs=set(),
+        allocation_seed=42,
     )
 
     second = generate_group_allocation(
-        participants,
-        6,
-        set(),
-        42,
+        participants=participants,
+        preferred_size=6,
+        repeated_pairs=set(),
+        allocation_seed=42,
     )
 
     assert first == second
@@ -74,8 +74,8 @@ def test_generate_group_allocation_rejects_duplicate_participant_ids():
         match="Participant ids must be unique",
     ):
         generate_group_allocation(
-            participants,
-            6,
-            set(),
-            1,
+            participants=participants,
+            preferred_size=6,
+            repeated_pairs=set(),
+            allocation_seed=1,
         )
