@@ -63,8 +63,12 @@ jobs:
       - name: Apply database migrations
         run: python src/manage.py migrate --noinput
 
-      - name: Run full test suite with coverage
-        run: python -m coverage run -m pytest
+      - name: Run regular test suite with coverage
+        run: python -m coverage run -m pytest -m "not slow"
+
+      - name: Run slow integration tests without coverage
+        run: python -m pytest -q -m slow
+        timeout-minutes: 30
 
       - name: Report coverage
         run: python -m coverage report
