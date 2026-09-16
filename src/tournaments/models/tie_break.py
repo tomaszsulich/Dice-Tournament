@@ -32,5 +32,13 @@ class TieBreakDecision(models.Model):
     reason = models.CharField(max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("round",),
+                name="unique_tie_break_decision_per_round",
+            ),
+        ]
+
     def __str__(self):
         return f"{self.tournament} — tie-break #{self.pk}"

@@ -19,7 +19,8 @@ def test_pre_commit_runs_required_fast_quality_checks():
     ):
         assert f"id: {hook_id}" in config
 
-    assert '"-m"', "unit and not slow" in config
+    assert '"-m"' in config
+    assert '"unit and not slow"' in config
 
 
 @pytest.mark.unit
@@ -40,6 +41,33 @@ def test_ci_checks_migrations_postgresql_full_tests_and_coverage():
     assert "printenv" not in workflow
     assert "echo $SECRET_KEY" not in workflow
     assert "echo ${SECRET_KEY}" not in workflow
+
+    completed_test = (
+        "src/tournaments/tests/test_seed_demo.py::"
+        "test_seed_demo_supports_each_mvp_scenario[completed]"
+    )
+
+    regular_step = workflow.split(
+        "- name: Run regular test suite with coverage",
+        1,
+    )[1].split(
+        "- name: Run completed demo scenario without coverage",
+        1,
+    )[0]
+
+    isolated_step = workflow.split(
+        "- name: Run completed demo scenario without coverage",
+        1,
+    )[1].split(
+        "- name: Report coverage",
+        1,
+    )[0]
+
+    assert '-m "not slow"' not in regular_step
+    assert f'--deselect="{completed_test}"' in regular_step
+    assert "python -m pytest -q" in isolated_step
+    assert f'"{completed_test}"' in isolated_step
+    assert "--deselect" not in isolated_step
 
 
 @pytest.mark.unit

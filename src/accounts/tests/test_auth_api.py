@@ -34,6 +34,27 @@ def test_account_registration_creates_user_without_player_profile(api_client):
 @pytest.mark.integration
 @pytest.mark.postgres
 @pytest.mark.django_db
+def test_unscoped_djoser_account_crud_routes_are_not_exposed(api_client):
+    user = UserFactory.create(username="unchanged-user", email="before@example.com")
+    api_client.force_authenticate(user=user)
+
+    response = api_client.patch(
+        "/api/auth/users/me/",
+        {"username": "changed-user", "email": "after@example.com"},
+        format="json",
+    )
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    user.refresh_from_db()
+
+    assert user.username == "unchanged-user"
+    assert user.email == "before@example.com"
+
+
+@pytest.mark.integration
+@pytest.mark.postgres
+@pytest.mark.django_db
 def test_login_returns_access_and_refresh(api_client):
     user = UserFactory.create(
         username="player1",

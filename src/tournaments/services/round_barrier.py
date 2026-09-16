@@ -234,8 +234,27 @@ def evaluate_round_barrier(
 
         tournament = current_round.tournament
 
-        if force_draw and current_round.number < tournament.group_rounds:
-            raise ValidationError("A draw is unavailable before the final group round.")
+        if force_draw and (
+            organizer is None
+            or not TournamentOrganizer.objects.filter(
+                tournament=tournament,
+                user=organizer,
+            ).exists()
+        ):
+            raise PermissionDenied("Only an organizer can authorize a draw.")
+
+        existing_decision = current_round.tie_break_decisions.first()
+
+        if existing_decision is not None:
+            return BarrierResult(
+                state="drawn",
+                round_id=current_round.pk,
+                tied_participant_ids=tuple(existing_decision.candidate_participant_ids),
+                selected_participant_id=existing_decision.selected_participant_id,
+            )
+
+        if force_draw and current_round.type != RoundType.OVERTIME:
+            raise ValidationError("A draw is available only after an overtime tie.")
 
         if (
             current_round.games.filter(

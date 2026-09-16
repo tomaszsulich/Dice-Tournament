@@ -23,7 +23,11 @@ from tournaments.models import (
     TournamentOrganizer,
     TournamentParticipant,
 )
-from tournaments.services.round_barrier import BarrierResult, evaluate_round_barrier
+from tournaments.services.round_barrier import (
+    BarrierResult,
+    evaluate_round_barrier,
+    get_tournament_ranking,
+)
 
 pytestmark = [pytest.mark.integration, pytest.mark.postgres]
 
@@ -321,18 +325,33 @@ def test_organizer_draw_is_durable_when_overtime_is_declared_impossible(
     first.save(update_fields=("status",))
 
     final = add_round(tournament, participants, 2, (20, 10, 5))
+    final.status = RoundStatus.COMPLETED
+    final.save(update_fields=("status",))
 
-    result = evaluate_round_barrier(
-        round_id=final.pk,
-        publisher=lambda _event, _payload: None,
-        organizer=organizer,
-        draw_reason="  Further overtime cannot be conducted.  ",
-        force_draw=True,
+    overtime = add_round(
+        tournament,
+        participants[:2],
+        3,
+        (15, 15),
+        round_type=RoundType.OVERTIME,
     )
+
+    kwargs = {
+        "round_id": overtime.pk,
+        "publisher": lambda _event, _payload: None,
+        "organizer": organizer,
+        "draw_reason": "  Further overtime cannot be conducted.  ",
+        "force_draw": True,
+    }
+
+    result = evaluate_round_barrier(**kwargs)
+    repeated = evaluate_round_barrier(**kwargs)
 
     decision = TieBreakDecision.objects.get()
 
     assert result.state == "drawn"
+    assert repeated == result
+    assert TieBreakDecision.objects.count() == 1
     assert decision.selected_participant_id in decision.candidate_participant_ids
 
     assert set(decision.candidate_participant_ids) == {
@@ -351,7 +370,13 @@ def test_draw_requires_tournament_organizer(active_tournament):
     first.status = RoundStatus.COMPLETED
     first.save(update_fields=("status",))
 
-    final = add_round(tournament, participants, 2, (20, 10, 5))
+    final = add_round(
+        tournament,
+        participants[:2],
+        3,
+        (15, 15),
+        round_type=RoundType.OVERTIME,
+    )
 
     with pytest.raises(PermissionDenied):
         evaluate_round_barrier(
@@ -375,7 +400,13 @@ def test_draw_requires_nonblank_reason(active_tournament):
     first.status = RoundStatus.COMPLETED
     first.save(update_fields=("status",))
 
-    final = add_round(tournament, participants, 2, (20, 10, 5))
+    final = add_round(
+        tournament,
+        participants[:2],
+        3,
+        (15, 15),
+        round_type=RoundType.OVERTIME,
+    )
 
     with pytest.raises(ValidationError):
         evaluate_round_barrier(
@@ -387,3 +418,45 @@ def test_draw_requires_nonblank_reason(active_tournament):
         )
 
     assert not TieBreakDecision.objects.exists()
+
+
+def test_draw_is_unavailable_before_an_overtime_tie(active_tournament):
+    tournament, participants = active_tournament
+    organizer = PlayerProfileFactory.create().user
+    TournamentOrganizer.objects.create(tournament=tournament, user=organizer)
+    final = add_round(tournament, participants, 2, (20, 20, 5))
+
+    with pytest.raises(ValidationError, match="only after an overtime tie"):
+        evaluate_round_barrier(
+            round_id=final.pk,
+            publisher=lambda _event, _payload: None,
+            organizer=organizer,
+            draw_reason="Overtime is impossible.",
+            force_draw=True,
+        )
+
+    assert not TieBreakDecision.objects.exists()
+
+
+def test_group_ranking_uses_canonical_raw_scores(active_tournament):
+    tournament, participants = active_tournament
+    round_ = add_round(tournament, participants, 1, (40, 30, 20))
+
+    game_participants = list(
+        round_.games.get().game_participants.order_by("turn_order")
+    )
+
+    game_participants[0].final_score = -10
+    game_participants[1].final_score = 80
+    game_participants[0].save(update_fields=("final_score",))
+    game_participants[1].save(update_fields=("final_score",))
+
+    ranking = get_tournament_ranking(tournament.pk)
+
+    assert [row.participant_id for row in ranking] == [
+        participants[0].pk,
+        participants[1].pk,
+        participants[2].pk,
+    ]
+
+    assert [row.total_score for row in ranking] == [40, 30, 20]
