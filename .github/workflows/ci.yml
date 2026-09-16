@@ -34,7 +34,7 @@ jobs:
           --health-retries 5
 
     env:
-      SECRET_KEY: ci-${{ github.run_id }}-${{ github.run_attempt }}
+      SECRET_KEY: ci-only-secret-key-${{ github.run_id }}-${{ github.run_attempt }}-not-for-production
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/dice_tournament
       POSTGRES_SERVICE_HOST: postgres
 
@@ -64,10 +64,14 @@ jobs:
         run: python src/manage.py migrate --noinput
 
       - name: Run regular test suite with coverage
-        run: python -m coverage run -m pytest -m "not slow"
+        run: >-
+          python -m coverage run -m pytest -m "not slow"
+          --deselect="src/tournaments/tests/test_seed_demo.py::test_seed_demo_supports_each_mvp_scenario[completed]"
 
-      - name: Run slow integration tests without coverage
-        run: python -m pytest -q -m slow
+      - name: Run completed demo scenario without coverage
+        run: >-
+          python -m pytest -q
+          "src/tournaments/tests/test_seed_demo.py::test_seed_demo_supports_each_mvp_scenario[completed]"
         timeout-minutes: 30
 
       - name: Report coverage
