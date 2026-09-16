@@ -65,7 +65,7 @@ jobs:
 
       - name: Run regular test suite with coverage
         run: >-
-          python -m coverage run -m pytest -m "not slow"
+          python -m coverage run -m pytest
           --deselect="src/tournaments/tests/test_seed_demo.py::test_seed_demo_supports_each_mvp_scenario[completed]"
 
       - name: Run completed demo scenario without coverage

@@ -1,4 +1,3 @@
-import djoser.urls
 import djoser.urls.jwt
 from django.urls import include, path
 
@@ -9,20 +8,6 @@ from .views import (
     logout,
     profile,
 )
-
-_OVERRIDDEN_DJOSER_URL_NAMES = {
-    "user-list",
-    "user-set-password",
-    "user-reset-password",
-    "user-reset-password-confirm",
-}
-
-_DJOSER_URLPATTERNS = [
-    pattern
-    for pattern in djoser.urls.urlpatterns
-    if getattr(pattern, "name", None) not in _OVERRIDDEN_DJOSER_URL_NAMES
-]
-
 
 urlpatterns = [
     path(
@@ -48,7 +33,6 @@ urlpatterns = [
         DiceUserViewSet.as_view({"post": "reset_password_confirm"}),
         name="user-reset-password-confirm",
     ),
-    path("auth/", include(_DJOSER_URLPATTERNS)),
     path("auth/", include(djoser.urls.jwt)),
     path("profile/", profile),
 ]

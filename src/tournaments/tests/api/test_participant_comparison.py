@@ -115,6 +115,30 @@ def test_comparison_accepts_one_or_four_tournaments(comparison_setup, count):
         assert item["tournament"]["timezone"] == "Europe/Warsaw"
 
 
+def test_comparison_uses_canonical_raw_scores(comparison_setup):
+    organizer, profile, tournaments = comparison_setup
+
+    result_row = GameParticipant.objects.get(
+        tournament_participant__tournament=tournaments[0],
+        tournament_participant__player_profile=profile,
+    )
+
+    result_row.final_score = 999
+    result_row.save(update_fields=("final_score",))
+
+    result = compare_participant(
+        actor=organizer,
+        participant_id=profile.pk,
+        tournament_ids=[tournaments[0].pk],
+    )
+
+    comparison = result["comparisons"][0]
+
+    assert comparison["total"] == result_row.raw_score
+    assert comparison["best_round"] == result_row.raw_score
+    assert comparison["rounds"][0]["score"] == result_row.raw_score
+
+
 @pytest.mark.parametrize("ids", [[], [1, 2, 3, 4, 5], [1, 1]])
 def test_comparison_rejects_zero_five_and_duplicate_ids(comparison_setup, ids):
     organizer, profile, tournaments = comparison_setup

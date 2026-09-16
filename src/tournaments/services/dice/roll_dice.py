@@ -67,6 +67,7 @@ def execute_roll(
         return replay_or_raise_conflict(existing, fingerprint)
 
     with transaction.atomic():
+        _lock_game(game_id)
         turn = _lock_current_turn(game_id)
         existing = find_idempotency_record(user=user, game_id=game_id, key=key)
 
@@ -130,11 +131,14 @@ def execute_roll(
         return response
 
 
-def _lock_current_turn(game_id: int) -> Turn:
-    game_exists = Game.objects.filter(pk=game_id).exists()
-    if not game_exists:
-        raise GameNotFound
+def _lock_game(game_id: int) -> None:
+    try:
+        Game.objects.select_for_update().only("pk").get(pk=game_id)
+    except Game.DoesNotExist as exc:
+        raise GameNotFound from exc
 
+
+def _lock_current_turn(game_id: int) -> Turn:
     turn = (
         Turn.objects.select_for_update()
         .select_related(
