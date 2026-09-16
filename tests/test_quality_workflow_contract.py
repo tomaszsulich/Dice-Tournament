@@ -55,6 +55,14 @@ def test_ci_checks_migrations_postgresql_full_tests_and_coverage():
         1,
     )[0]
 
+    regular_command = " ".join(regular_step.split())
+
+    assert (
+        f'python -m coverage run -m pytest --deselect="{completed_test}"'
+    ) in regular_command
+
+    assert '-m "not slow"' not in regular_step
+
     isolated_step = workflow.split(
         "- name: Run completed demo scenario without coverage",
         1,
