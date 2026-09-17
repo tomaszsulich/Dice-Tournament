@@ -44,5 +44,5 @@ pytest -vv --durations=0 "src/tournaments/tests/test_seed_demo.py::test_seed_dem
 pytest -q --deselect="src/tournaments/tests/test_seed_demo.py::test_seed_demo_supports_each_mvp_scenario[completed]"
 ```
 
-Takie dwa uruchomienia łącznie stanowią pełną weryfikację tylko wtedy, gdy pominięty przypadek przeszedł osobno w tym samym cyklu sprawdzania. 
-Sam wynik z `deselected` nie zastępuje wyniku pełnego testu.
+Takie dwa uruchomienia łącznie stanowią pełną weryfikację tylko wtedy, gdy pominięty przypadek przeszedł osobno<br>
+w tym samym cyklu sprawdzania. Sam wynik z `deselected` nie zastępuje wyniku pełnego testu.
