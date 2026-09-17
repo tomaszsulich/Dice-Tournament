@@ -30,7 +30,7 @@ Szczegóły decyzji i świadomych odrzuceń opisuje [dokument decyzji](docs/dec
 ## Architektura w skrócie
 
 Backend stanowią Django, Django REST Framework i PostgreSQL.
-Daphne obsługuje ASGI, Channels dostarcza aktualizacje WebSocket przez Redis, a Celery wykonuje zadania poboczne.
+Daphne obsługuje ASGI, Channels dostarcza aktualizacje WebSocket przez Redis, a Celery wykonuje zadania poboczne.<br>
 HTML, CSS i JavaScript są serwowane przez Django.<br>
 Logika turnieju i logika kości pozostają rozdzielone w obrębie aplikacji `tournaments`.
 
@@ -50,11 +50,12 @@ Więcej informacji:
 - opcjonalnie Docker z Docker Compose.
 
 Polecenia w tym README zakładają, że bieżącym katalogiem jest główny katalog repozytorium. 
-Jedynym wyjątkiem jest uruchomienie Daphne w wariancie lokalnym: `config.asgi` jest importowane z katalogu `src`, dlatego przed tym poleceniem trzeba przejść do `src`.
+Jedynym wyjątkiem jest uruchomienie Daphne w wariancie lokalnym: `config.asgi` jest importowane z katalogu `src`,<br>
+dlatego przed tym poleceniem trzeba przejść do `src`.
 
 ## Local development
 
-Ten wariant uruchamia Python, Django, Daphne i PostgreSQL lokalnie.
+Ten wariant uruchamia Python, Django, Daphne i PostgreSQL lokalnie.<br>
 Redis może działać lokalnie albo jako jedyna usługa uruchomiona przez Docker.
 
 ### 1. Środowisko Pythona
@@ -191,7 +192,7 @@ Nie uruchamiaj Compose smoke równolegle z innym stosem używającym tych samych
 Konto jest neutralne: organizatorem zostaje przez relację z konkretnym turniejem,<br>
 a uczestnikiem przez własny `PlayerProfile` i udział.<br>
 Superuser ma uprawnienia systemowe, ale nie staje się automatycznie organizatorem turnieju.<br>
-Mutacje domenowe są autoryzowane po stronie backendu, a rozgrywka korzysta z transakcji, blokad i kluczy idempotencji.<br>
+Mutacje domenowe są autoryzowane po stronie backendu, a rozgrywka korzysta z transakcji, blokad i kluczy idempotencji.
 Szczegóły opisuje [docs/security.md](docs/security.md).
 
 ## Roadmapa
