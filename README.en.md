@@ -2,10 +2,9 @@
 
 # Dice Tournament
 
-Dice Tournament is a Django application for running group-stage dice tournaments.
+Dice Tournament is a Django application for running group-stage dice tournaments.<br>
 Organizers configure events, manage entrants and monitor every table live.<br>
-Players take their own turns and can revisit a complete roll history
-after a tournament has finished.
+Players take their own turns and can revisit a complete roll history after a tournament has finished.
 
 The MVP supports up to 128 active entrants, remote and in-person play, concurrent tables, group rankings, overtime rounds<br>
 and comparisons across one to four completed tournaments.
@@ -26,8 +25,8 @@ and comparisons across one to four completed tournaments.
 
 ## Deliberate MVP boundary
 
-This release delivers a complete group-stage tournament. Knockout brackets,
-persistent teams, public results, a full audit subsystem and exports are later work.<br>
+This release delivers a complete group-stage tournament.<br>
+Knockout brackets, persistent teams, public results, a full audit subsystem and exports are later work.<br>
 See [decisions](docs/decisions.en.md) for the trade-offs and features that were intentionally left out.
 
 ## Architecture at a glance
@@ -54,8 +53,7 @@ Read more:
 - optionally Docker with Docker Compose.
 
 Commands below start in the repository root.<br>
-Local Daphne is the one exception: `config.asgi` is imported from `src`,
-so change into that directory before starting the server.
+Local Daphne is the one exception: `config.asgi` is imported from `src`, so change into that directory before starting the server.
 
 ## Local development
 
@@ -71,8 +69,8 @@ uv sync --frozen
 Copy-Item .env.example .env
 ```
 
-The committed `uv.lock` is the dependency source of truth for local development,
-Docker and CI. Regenerate it only as part of a deliberate `pyproject.toml` dependency update.
+The committed `uv.lock` is the dependency source of truth for local development, Docker and CI.<br>
+Regenerate it only as part of a deliberate `pyproject.toml` dependency update.
 
 Give `.env` a fresh `SECRET_KEY` and valid local PostgreSQL credentials.<br>
 To use demo data, also set `ALLOW_DEMO_SEED=true` and `DEMO_PASSWORD`.<br>
@@ -80,16 +78,16 @@ Never commit the resulting `.env` file.
 
 ### 2. Start PostgreSQL and Redis
 
-Create the database and user described by `DATABASE_URL`. Redis must be running
-before using the WebSocket-enabled UI. If Redis is not installed locally, run:
+Create the database and user described by `DATABASE_URL`.
+Redis must be running before using the WebSocket-enabled UI.<br>
+If Redis is not installed locally, run:
 
 ```powershell
 docker compose up -d redis
 ```
 
 That exposes Redis at `127.0.0.1:6379` by default.<br>
-If a full Docker stack or another process already owns the port, set `REDIS_HOST_PORT` for Compose
-and use the matching port<br>
+If a full Docker stack or another process already owns the port, set `REDIS_HOST_PORT` for Compose and use the matching port<br>
 in local `REDIS_URL` and `CELERY_BROKER_URL`.<br>
 A local web process and the Docker web service cannot share a host port either;
 change `WEB_HOST_PORT` when both environments are needed.
@@ -118,7 +116,7 @@ celery -A config --workdir=src beat --loglevel=INFO
 
 ## Docker development
 
-This route starts separate containers for Daphne, PostgreSQL, Redis, two Celery workers and Beat.
+This route starts separate containers for Daphne, PostgreSQL, Redis, two Celery workers and Beat.<br>
 It does not require host Python or PostgreSQL.
 
 ```powershell
@@ -140,7 +138,7 @@ Removing the PostgreSQL volume is destructive and is not part of the normal shut
 
 ## Demo data
 
-Seeding is accepted only with `DEBUG=True` and `ALLOW_DEMO_SEED=true`.
+Seeding is accepted only with `DEBUG=True` and `ALLOW_DEMO_SEED=true`.<br>
 Supported sizes are `16`, `64` and `128`; the command help lists the available scenarios.
 
 Local command:
@@ -156,7 +154,7 @@ docker compose --profile tools run --rm seed-demo python src/manage.py seed_demo
 ```
 
 `--reset` replaces only the matching demo namespace.<br>
-`--reset-database` clears all local application data and restarts PostgreSQL identities;
+`--reset-database` clears all local application data and restarts PostgreSQL identities;<br>
 use it only when that destructive development action is intended.<br>
 Demo passwords are local secrets and must not appear in committed evidence.
 
@@ -173,7 +171,7 @@ The API contract is summarized in [docs/api.en.md](docs/api.en.md).
 
 ## Tests and quality checks
 
-Regular pytest does not require Docker.
+Regular pytest does not require Docker.<br>
 Test settings still use PostgreSQL, while Channels and Celery switch to deterministic in-process test backends.
 
 ```powershell
@@ -184,21 +182,19 @@ python src/manage.py check
 python src/manage.py makemigrations --check --dry-run
 ```
 
-CI runs the complete suite with coverage except for one expensive `completed` demo case,
-which runs separately without coverage.<br>
+CI runs the complete suite with coverage except for one expensive `completed` demo case, which runs separately without coverage.<br>
 The Compose smoke test is an explicit opt-in:
 
 ```powershell
 pytest -m compose_smoke --run-compose-smoke
 ```
 
-Do not run the Compose smoke test alongside another stack that owns the same
-ports.
+Do not run the Compose smoke test alongside another stack that owns the same ports.
 
 ## Roles and security
 
-Accounts are neutral. A user becomes an organizer through a relation to a specific tournament
-and a player through a `PlayerProfile` participation.<br>
+Accounts are neutral.<br>
+A user becomes an organizer through a relation to a specific tournament and a player through a `PlayerProfile` participation.<br>
 Superusers have system-wide administration privileges but do not automatically become tournament organizers.<br>
 The backend authorizes every domain mutation; gameplay uses transactions, row locks and idempotency keys.<br>
 See [docs/security.en.md](docs/security.en.md) for the threat boundaries.
