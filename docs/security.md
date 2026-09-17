@@ -9,8 +9,8 @@ Identyfikatory oraz wartości przesłane przez klienta nie nadają mu relacji z 
 WebSocket nie wykonuje komend domenowych.
 
 Konto nie ma globalnej roli organizatora.<br>
-Uprawnienie wynika z `TournamentOrganizer`;
-uczestnictwo z `TournamentParticipant` połączonego z własnym `PlayerProfile`.<br>
+Uprawnienie wynika z `TournamentOrganizer`; uczestnictwo z `TournamentParticipant`<br>
+połączonego z własnym `PlayerProfile`.<br>
 Superuser jest administratorem systemowym, a nie automatycznym organizatorem dowolnego turnieju.
 
 ## Uwierzytelnienie i sesje
@@ -25,9 +25,9 @@ Superuser jest administratorem systemowym, a nie automatycznym organizatorem dow
 
 ## Autoryzacja
 
-Każdy endpoint sprawdza relację aktora z konkretnym obiektem.
+Każdy endpoint sprawdza relację aktora z konkretnym obiektem.<br>
 Uczestnik może wykonać komendę wyłącznie w swojej aktywnej turze.<br>
-Organizator działa tylko w turniejach, do których został przypisany.
+Organizator działa tylko w turniejach, do których został przypisany.<br>
 Historia uczestnika jest dostępna po zakończeniu i tylko właścicielowi;<br>
 przekrojowa Porównywarka jest narzędziem organizatora lub administratora.
 
@@ -37,7 +37,7 @@ Nie zastępuje panelu organizatora i nie nadaje automatycznie relacji domenowych
 ## Integralność i współbieżność
 
 Mutacje są atomowe. Blokady wierszy i constraints chronią ostatnie miejsce,
-cykl życia, kolejną rundę, aktywną turę, kategorię oraz pojedynczą decyzję tie-break.<br>
+cykl życia, kolejną rundę, aktywną turę, kategorię oraz pojedynczą decyzję tie-break.
 Komendy tury używają jednej kolejności locków `Game → Turn`.
 
 Rzut i wybór kategorii korzystają z idempotency key.
@@ -51,9 +51,9 @@ API odrzuca zapis identycznych danych tam, gdzie byłby semantic no-op.
 
 ## Ochrona przed nadużyciami
 
-Osobne throttles obejmują logowanie, refresh, reset hasła, mutacje API, komendy
-gry i zapisy. Walidatory haseł Django pozostają aktywne.<br>
-Błędy nie zwracają sekretów ani danych obcego użytkownika.
+Osobne throttles obejmują logowanie, refresh, reset hasła, mutacje API, komendy gry i zapisy.<br>
+Walidatory haseł Django pozostają aktywne.<br>
+Błędy nie zwracają sekretów ani danych obcego użytkownika.<br>
 Brak zasobu i brak uprawnienia mogą być celowo nierozróżnialne przez `404`.
 
 ## Sekrety i dane demonstracyjne
@@ -75,7 +75,7 @@ Aktualizacje zależności oraz deployment pozostają świadomą operacją utrzym
 
 ## Świadome ograniczenia MVP
 
-MVP nie implementuje WebAuthn, publicznego API wyników, pełnego `AuditEvent`,
+MVP nie implementuje WebAuthn, publicznego API wyników, pełnego `AuditEvent`,<br>
 retencji anulowanych turniejów ani workflow korekt.<br>
 Brak tych funkcji nie może być kompensowany słabszym endpointem administracyjnym.<br>
 Ich dodanie wymaga osobnego modelu zagrożeń i przeglądu uprawnień.

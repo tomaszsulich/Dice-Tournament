@@ -2,8 +2,7 @@
 
 # MVP test matrix
 
-This matrix shows which MVP requirements and risks are covered by automated
-tests and where focused additions close genuine gaps in coverage.
+This matrix shows which MVP requirements and risks are covered by automated tests and where focused additions close genuine gaps in coverage.
 
 | Contract | Primary automated coverage |
 | --- | --- |

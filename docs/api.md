@@ -7,7 +7,8 @@ Polski | [English](api.en.md)
 Autorytatywną, generowaną dokumentacją HTTP jest schema OpenAPI pod `/api/schema/`.
 Swagger UI działa pod `/api/docs/`.<br>
 Oba widoki wymagają konta administratora systemowego.
-Pliki w [`manual-api/`](../manual-api/README.md) zawierają przykładowe żądania, ale nie zastępują schematu ani testów.
+Pliki w [`manual-api/`](../manual-api/README.md) zawierają przykładowe żądania,<br>
+ale nie zastępują schematu ani testów.
 
 ## Uwierzytelnienie
 

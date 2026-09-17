@@ -4,9 +4,8 @@
 
 ## Document status
 
-This is a compact decision record for the completed MVP.
-The canonical plans under [`docs/plans/`](plans/01_system_specification.en.md)
-remain the primary definition of product scope.
+This is a compact decision record for the completed MVP.<br>
+The canonical plans under [`docs/plans/`](plans/01_system_specification.en.md) remain the primary definition of product scope.
 
 ## Accepted decisions
 
@@ -17,7 +16,7 @@ Domain modules, services and selectors provide separation without premature micr
 
 ### PostgreSQL everywhere meaningful
 
-Development, tests and production rely on row locks, constraints and real concurrency semantics.
+Development, tests and production rely on row locks, constraints and real concurrency semantics.<br>
 SQLite is not an equivalent environment for those contracts.
 
 ### REST owns state; WebSockets deliver it
@@ -28,14 +27,13 @@ This avoids a second mutation path.
 
 ### Relationship-based roles
 
-An account is neutral. Organizer and player access are relationships to a specific tournament.
+An account is neutral. Organizer and player access are relationships to a specific tournament.<br>
 A global organizer flag would grant excessive authority.
 
 ### One profile, many entries, durable snapshots
 
 `PlayerProfile` is reused rather than copied into each tournament.<br>
-The entry stores only the name snapshot needed for history,
-so later profile edits cannot rewrite past events.
+The entry stores only the name snapshot needed for history, so later profile edits cannot rewrite past events.
 
 ### Complete `Roll` snapshots
 
@@ -44,24 +42,23 @@ Replay never has to reconstruct state from deltas.
 
 ### Raw-score ranking
 
-Group ranking and comparison aggregate `raw_score`.
+Group ranking and comparison aggregate `raw_score`.<br>
 `final_score` does not replace that contract and remains available for future settlement mechanics.
 
 ### Explicit controlled draw
 
-Overtime repeats for players who remain tied. A draw is an auditable organizer command in `OVERTIME`
-when another game is objectively impossible.<br>
+Overtime repeats for players who remain tied.<br>
+A draw is an auditable organizer command in `OVERTIME` when another game is objectively impossible.<br>
 The stored decision is durable and replayed on retry.
 
 ### Celery stays outside gameplay
 
-Notifications and maintenance are asynchronous.
-Rolls, holds, scoring and turn advancement remain synchronous
-so the user immediately receives a binding result.
+Notifications and maintenance are asynchronous.<br>
+Rolls, holds, scoring and turn advancement remain synchronous so the user immediately receives a binding result.
 
 ### Two explicit development routes
 
-Host-local development uses local Python, Daphne and PostgreSQL and may borrow Docker Redis.
+Host-local development uses local Python, Daphne and PostgreSQL and may borrow Docker Redis.<br>
 Docker development starts the complete Compose stack.<br>
 The README keeps these routes separate and explains port collisions.
 

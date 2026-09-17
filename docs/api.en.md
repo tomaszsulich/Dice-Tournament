@@ -7,7 +7,7 @@
 The generated OpenAPI schema at `/api/schema/` is the authoritative HTTP reference.
 Swagger UI is available at `/api/docs/`.<br>
 Both are restricted to system administrators.
-Files under [`manual-api/`](../manual-api/README.en.md) provide runnable examples;
+Files under [`manual-api/`](../manual-api/README.en.md) provide runnable examples;<br>
 they do not replace the schema or automated contract tests.
 
 ## Authentication
