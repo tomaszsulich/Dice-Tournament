@@ -1,4 +1,4 @@
-Polski | [English](security.en.md)
+Polski | [English](https://github.com/tomaszsulich/Dice-Tournament/blob/main/docs/security.en.md)
 
 # Bezpieczeństwo
 
