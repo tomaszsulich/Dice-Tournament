@@ -4,10 +4,9 @@ Polski | [English](README.en.md)
 
 Dice Tournament to aplikacja Django do prowadzenia grupowych turniejów gry w kości.
 Organizator przygotowuje turniej, zarządza uczestnikami i obserwuje wszystkie stoły w czasie rzeczywistym.
-Uczestnik rozgrywa własne tury, a po zakończeniu turnieju może wrócić do pełnej historii rzutów.
+Uczestnik rozgrywa własne tury, a po zakończeniu turnieju może wrócić do pełnej historii rzutów.
 
-MVP obsługuje do 128 aktywnych uczestników, zdalne i stacjonarne wydarzenia, równoległą grę przy stołach, ranking grupowy, dogrywki<br>
-oraz porównanie od jednego do czterech zakończonych turniejów.
+MVP obsługuje do 128 aktywnych uczestników, zdalne i stacjonarne wydarzenia, równoległą grę przy stołach, ranking grupowy, dogrywki oraz porównanie od jednego do czterech zakończonych turniejów.
 
 ## Najważniejsze funkcje
 
@@ -25,13 +24,14 @@ oraz porównanie od jednego do czterech zakończonych turniejów.
 
 ## Granice MVP
 
-MVP obejmuje kompletny turniej grupowy. Faza pucharowa, trwałe drużyny, publiczne wyniki, pełny rejestr audytowy i eksporty należą do kolejnych wersji.
+MVP obejmuje kompletny turniej grupowy. Faza pucharowa, trwałe drużyny, publiczne wyniki, pełny rejestr audytowy i eksporty należą do kolejnych wersji.
 Szczegóły decyzji i świadomych odrzuceń opisuje [dokument decyzji](docs/decisions.md).
 
 ## Architektura w skrócie
 
-Backend stanowią Django, Django REST Framework i PostgreSQL. Daphne obsługuje ASGI, Channels dostarcza aktualizacje WebSocket przez Redis,<br>
-a Celery wykonuje zadania poboczne. HTML, CSS i JavaScript są serwowane przez Django.<br>
+Backend stanowią Django, Django REST Framework i PostgreSQL.
+Daphne obsługuje ASGI, Channels dostarcza aktualizacje WebSocket przez Redis, a Celery wykonuje zadania poboczne.
+HTML, CSS i JavaScript są serwowane przez Django.<br>
 Logika turnieju i logika kości pozostają rozdzielone w obrębie aplikacji `tournaments`.
 
 Więcej informacji:
@@ -66,13 +66,15 @@ uv sync --frozen
 Copy-Item .env.example .env
 ```
 
-`uv.lock` jest źródłem wersji zależności dla środowiska lokalnego, Dockera i CI. Aktualizuj go świadomie tylko razem ze zmianą zależności w `pyproject.toml`.
+`uv.lock` jest źródłem wersji zależności dla środowiska lokalnego, Dockera i CI.<br>
+Aktualizuj go świadomie tylko razem ze zmianą zależności w `pyproject.toml`.
 
 Ustaw w `.env` własny `SECRET_KEY`, dane lokalnego PostgreSQL i — jeśli ma być używany seed — `ALLOW_DEMO_SEED=true` oraz `DEMO_PASSWORD`. Nie commituj `.env`.
 
 ### 2. PostgreSQL i Redis
 
-Utwórz bazę oraz użytkownika zgodne z `DATABASE_URL`. Redis musi działać przed uruchomieniem frontu z WebSocketami.
+Utwórz bazę oraz użytkownika zgodne z `DATABASE_URL`.<br>
+Redis musi działać przed uruchomieniem frontu z WebSocketami.<br>
 Jeżeli nie masz lokalnego Redisa, uruchom:
 
 ```powershell
@@ -80,9 +82,10 @@ docker compose up -d redis
 ```
 
 Domyślnie Redis jest wtedy dostępny pod `127.0.0.1:6379`.<br>
-Jeżeli równolegle działa pełny stos Docker albo inna usługa zajmuje ten port, ustaw inny `REDIS_HOST_PORT` dla Compose<br>
-i odpowiedni port w lokalnych `REDIS_URL` oraz `CELERY_BROKER_URL`.<br>
-Lokalny i dockerowy web również nie mogą korzystać z tego samego portu hosta; dla Compose można zmienić `WEB_HOST_PORT`.
+Jeżeli równolegle działa pełny stos Docker albo inna usługa zajmuje ten port,<br>
+ustaw inny `REDIS_HOST_PORT` dla Compose i odpowiedni port w lokalnych `REDIS_URL` oraz `CELERY_BROKER_URL`.<br>
+Lokalny i dockerowy web również nie mogą korzystać z tego samego portu hosta;<br>
+dla Compose można zmienić `WEB_HOST_PORT`.
 
 ### 3. Migracje i serwer
 
@@ -93,7 +96,7 @@ Set-Location src
 daphne -b 127.0.0.1 -p 8000 config.asgi:application
 ```
 
-Po starcie otwórz `http://127.0.0.1:8000/login/`. Zatrzymaj serwer przez `Ctrl+C`,
+Po starcie otwórz `http://127.0.0.1:8000/login/`. Zatrzymaj serwer przez `Ctrl+C`,<br>
 a następnie wróć do katalogu repozytorium poleceniem `Set-Location ..`.
 
 ### 4. Opcjonalni workerzy
@@ -108,7 +111,7 @@ celery -A config --workdir=src beat --loglevel=INFO
 
 ## Docker development
 
-Ten wariant uruchamia oddzielne kontenery dla Daphne, PostgreSQL, Redisa, dwóch workerów Celery i Beat.
+Ten wariant uruchamia oddzielne kontenery dla Daphne, PostgreSQL, Redisa, dwóch workerów Celery i Beat.<br>
 Nie wymaga lokalnego Pythona ani lokalnej bazy.
 
 ```powershell
@@ -130,7 +133,7 @@ Usunięcie wolumenu PostgreSQL jest operacją destrukcyjną i nie należy do zwy
 
 ## Dane demonstracyjne
 
-Seed działa wyłącznie przy `DEBUG=True` i `ALLOW_DEMO_SEED=true`.
+Seed działa wyłącznie przy `DEBUG=True` i `ALLOW_DEMO_SEED=true`.<br>
 Obsługuje rozmiary `16`, `64`, `128` oraz scenariusze dostępne w pomocy komendy.
 
 Lokalnie:
@@ -146,7 +149,7 @@ docker compose --profile tools run --rm seed-demo python src/manage.py seed_demo
 ```
 
 `--reset` zastępuje tylko odpowiadający namespace demo.<br>
-`--reset-database` czyści całą lokalną bazę aplikacji i restartuje sekwencje PostgreSQL;
+`--reset-database` czyści całą lokalną bazę aplikacji i restartuje sekwencje PostgreSQL;<br>
 używaj go wyłącznie świadomie w środowisku developerskim.<br>
 Hasła demo są lokalne i nie powinny trafiać do dowodów ani logów publikowanych w repozytorium.
 
@@ -162,7 +165,8 @@ Schema i Swagger wymagają konta administratora systemowego. Pełny opis kontrak
 
 ## Testy i jakość
 
-Zwykły pytest nie wymaga Dockera. Ustawienia testowe zachowują PostgreSQL jako bazę, a Channels i Celery przełączają na deterministyczne implementacje testowe.
+Zwykły pytest nie wymaga Dockera. Ustawienia testowe zachowują PostgreSQL jako bazę,<br>
+a Channels i Celery przełączają na deterministyczne implementacje testowe.
 
 ```powershell
 pytest
@@ -172,7 +176,8 @@ python src/manage.py check
 python src/manage.py makemigrations --check --dry-run
 ```
 
-CI uruchamia pełny zestaw z coverage poza jednym kosztownym wariantem scenariusza `completed`; ten wariant uruchamia osobno bez coverage.<br>
+CI uruchamia pełny zestaw z coverage poza jednym kosztownym wariantem scenariusza `completed`;<br>
+ten wariant uruchamia osobno bez coverage.<br>
 Compose smoke jest oddzielnym testem opt-in:
 
 ```powershell
@@ -183,9 +188,10 @@ Nie uruchamiaj Compose smoke równolegle z innym stosem używającym tych samych
 
 ## Role i bezpieczeństwo
 
-Konto jest neutralne: organizatorem zostaje przez relację z konkretnym turniejem, a uczestnikiem przez własny `PlayerProfile` i udział.<br>
+Konto jest neutralne: organizatorem zostaje przez relację z konkretnym turniejem,<br>
+a uczestnikiem przez własny `PlayerProfile` i udział.<br>
 Superuser ma uprawnienia systemowe, ale nie staje się automatycznie organizatorem turnieju.<br>
-Mutacje domenowe są autoryzowane po stronie backendu, a rozgrywka korzysta z transakcji, blokad i kluczy idempotencji.<br>
+Mutacje domenowe są autoryzowane po stronie backendu, a rozgrywka korzysta z transakcji, blokad i kluczy idempotencji.<br>
 Szczegóły opisuje [docs/security.md](docs/security.md).
 
 ## Roadmapa
