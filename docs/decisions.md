@@ -11,7 +11,7 @@ Canonical Plans w [`docs/plans/`](plans/01_system_specification.md) pozostają n
 
 ### Modularny monolit Django
 
-Jedna aplikacja wdrożeniowa upraszcza transakcje i spójność.
+Jedna aplikacja wdrożeniowa upraszcza transakcje i spójność.<br>
 Rozdział następuje przez moduły domenowe, serwisy i selektory, nie przez przedwczesne mikroserwisy.
 
 ### PostgreSQL w development, testach i produkcji
@@ -22,36 +22,36 @@ SQLite nie jest równoważnym środowiskiem dla tych kontraktów.
 ### REST jako autorytet, WebSocket jako dostawa
 
 Komendy przechodzą przez REST.
-WebSocket publikuje stan po commit, a reconnect kończy się pobraniem snapshotu REST.
+WebSocket publikuje stan po commit, a reconnect kończy się pobraniem snapshotu REST.<br>
 Eliminuje to drugą ścieżkę mutacji.
 
 ### Relacyjne role
 
-Konto pozostaje neutralne. Organizator i uczestnik są relacjami z konkretnym turniejem.
+Konto pozostaje neutralne. Organizator i uczestnik są relacjami z konkretnym turniejem.<br>
 Globalna flaga organizatora prowadziłaby do zbyt szerokich uprawnień.
 
 ### Jeden profil, wiele uczestnictw, historyczne snapshoty
 
 `PlayerProfile` nie jest kopiowany na turniej.
-Uczestnictwo przechowuje tylko niezbędny snapshot nazwy,
+Uczestnictwo przechowuje tylko niezbędny snapshot nazwy,<br>
 dzięki czemu późniejsza edycja profilu nie zmienia historii.
 
 ### Pełny `Roll`
 
 Każdy rzut zapisuje wszystkie pięć wartości oraz zatrzymania,
-także gdy część kości nie była ponownie losowana.
+także gdy część kości nie była ponownie losowana.<br>
 Replay nie musi rekonstruować stanu z różnic.
 
 ### Surowy wynik rankingu
 
-Ranking grupowy i Porównywarka sumują `raw_score`.
+Ranking grupowy i Porównywarka sumują `raw_score`.<br>
 `final_score` nie zastępuje tego kontraktu i może służyć innym,
 przyszłym mechanizmom rozliczenia.
 
 ### Jawne kontrolowane losowanie
 
 Dogrywki powtarzają się dla nadal remisujących.
-Losowanie jest audytowalną komendą organizatora w stanie `OVERTIME`,
+Losowanie jest audytowalną komendą organizatora w stanie `OVERTIME`,<br>
 gdy dalsza dogrywka jest obiektywnie niemożliwa.
 Zapisana decyzja jest trwała i odtwarzana przy retry.
 
@@ -63,8 +63,8 @@ aby użytkownik natychmiast znał wiążący rezultat.
 
 ### Dwie jawne ścieżki development
 
-Local development używa lokalnego Pythona, Daphne i PostgreSQL;
-może pożyczyć Redis z Dockera. Docker development uruchamia cały stos w Compose.<br>
+Local development używa lokalnego Pythona, Daphne i PostgreSQL; może pożyczyć Redis z Dockera.<br>
+Docker development uruchamia cały stos w Compose.<br>
 Mieszanie obu bez zmiany portów prowadzi do konfliktów, dlatego README opisuje je osobno.
 
 ### Dokumentacja dwujęzyczna
