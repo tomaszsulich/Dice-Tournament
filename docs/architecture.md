@@ -4,7 +4,7 @@ Polski | [English](architecture.en.md)
 
 ## Kontekst
 
-Dice Tournament jest modularnym monolitem Django.
+Dice Tournament jest modularnym monolitem Django.<br>
 MVP prowadzi pełny turniej grupowy i utrzymuje jeden autorytatywny stan w PostgreSQL.<br>
 REST służy do komend i snapshotów, a WebSocket wyłącznie dostarcza aktualizacje już zatwierdzonego stanu.
 
@@ -55,7 +55,7 @@ Granice współpracują przez jawne modele `Game`, `GameParticipant`, `Turn`,
 6. `transaction.on_commit()` publikuje zdarzenie WebSocket albo zleca zadanie.
 7. Klient po reconnect pobiera autorytatywny snapshot REST.
 
-Komendy aktywnej tury blokują rekordy w kolejności `Game → Turn`.
+Komendy aktywnej tury blokują rekordy w kolejności `Game → Turn`.<br>
 Stoły jednej rundy nie blokują się wzajemnie; bariera rundy działa dopiero po ich ukończeniu.
 
 ## Dane i historia
@@ -72,7 +72,7 @@ Historia uczestnika jest prywatna, a organizer otrzymuje odczyt tylko w zakresie
 - `production`: `DEBUG=False`, HTTPS-only cookies, SMTP i sekrety z env;
 - Compose development: web, baza, Redis, dwa workery, Beat i usługa migracji.
 
-Docker development i local development są odrębnymi ścieżkami.
+Docker development i local development są odrębnymi ścieżkami.<br>
 Local może wykorzystać tylko kontener Redis, ale porty obu środowisk nie mogą kolidować.
 
 ## Skala i wydajność

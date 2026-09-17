@@ -1,4 +1,4 @@
-[Polski](security.md) | English
+[Polski](https://github.com/tomaszsulich/Dice-Tournament/blob/main/docs/security.md) | English
 
 # Security
 
@@ -39,8 +39,8 @@ It neither replaces the organizer dashboard nor creates domain relationships imp
 
 Mutations are atomic.<br>
 Row locks and database constraints protect the final registration place,
-lifecycle transitions, round creation, active turns, category use
-and the single tie-break decision.<br>
+lifecycle transitions, round creation, active turns,<br>
+category use and the single tie-break decision.<br>
 Turn commands share one lock order: `Game → Turn`.
 
 Roll and category commands use idempotency keys.<br>
@@ -53,10 +53,10 @@ The API rejects identical assignments where they would be semantic no-ops.
 
 ## Abuse controls
 
-Separate throttles cover login, refresh, password reset, general mutations,
-game commands and registration. Django password validators remain enabled.<br>
-Errors do not expose secrets or another user's data. Missing objects and denied
-access may deliberately share a `404` response.
+Separate throttles cover login, refresh, password reset, general mutations, game commands and registration.<br>
+Django password validators remain enabled.<br>
+Errors do not expose secrets or another user's data.<br>
+Missing objects and denied access may deliberately share a `404` response.
 
 ## Secrets and demo data
 
@@ -78,5 +78,5 @@ Dependency updates and deployment remain explicit maintenance activities.
 
 The MVP does not include WebAuthn, public result APIs,
 a full `AuditEvent` subsystem, cancelled-event retention or a correction workflow.<br>
-Those gaps must not be bypassed with a weaker administrative endpoint.
+Those gaps must not be bypassed with a weaker administrative endpoint.<br>
 Each future feature requires its own permission and threat-model review.
