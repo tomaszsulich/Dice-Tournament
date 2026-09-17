@@ -78,8 +78,8 @@ def test_readmes_document_repository_root_commands_and_daphne_src_exception():
         content = (PROJECT_ROOT / readme_name).read_text(encoding="utf-8")
 
         for required_command in (
-            "py -3.12 -m venv .venv",
-            "python -m pip install -r requirements/dev.txt",
+            "python -m pip install uv==0.12.15",
+            "uv sync --frozen",
             "python src/manage.py migrate",
             "Set-Location src",
             "daphne -b 127.0.0.1 -p 8000 config.asgi:application",
@@ -95,6 +95,32 @@ def test_readmes_document_repository_root_commands_and_daphne_src_exception():
 
 
 @pytest.mark.unit
+def test_locked_dependencies_are_used_in_local_docker_and_ci_workflows():
+    pyproject = (PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    dockerfile = (PROJECT_ROOT / "Dockerfile").read_text(encoding="utf-8")
+    workflow = (PROJECT_ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+
+    assert (PROJECT_ROOT / "uv.lock").is_file()
+    assert 'requires-python = ">=3.12,<3.13"' in pyproject
+    assert "uv sync --frozen --no-dev" in dockerfile
+    assert "uv sync --frozen" in workflow
+    assert "uv run coverage run -m pytest" in workflow
+
+    obsolete_paths = (
+        "requirements/base.txt",
+        "requirements/dev.txt",
+        "docs/01_system_specification.md",
+        "docs/02_business_plan.md",
+        "docs/03_technical_plan.md",
+        "src/accounts/tests/factories.py",
+        "src/tournaments/tests/demo_builders/__init__.py",
+    )
+
+    for path in obsolete_paths:
+        assert not (PROJECT_ROOT / path).exists()
+
+
+@pytest.mark.unit
 def test_unsuffixed_documents_are_polish_and_english_uses_en_suffix():
     assert not list(PROJECT_ROOT.rglob("*.pl.md"))
 
@@ -102,4 +128,5 @@ def test_unsuffixed_documents_are_polish_and_english_uses_en_suffix():
         english_document = polish_document.with_name(
             f"{polish_document.stem}.en{polish_document.suffix}"
         )
+
         assert english_document in DOCUMENTATION_FILES

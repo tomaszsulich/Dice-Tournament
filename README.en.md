@@ -4,7 +4,8 @@
 
 Dice Tournament is a Django application for running group-stage dice tournaments.
 Organizers configure events, manage entrants and monitor every table live.<br>
-Players take their own turns and can revisit a complete roll history after a tournament has finished.
+Players take their own turns and can revisit a complete roll history
+after a tournament has finished.
 
 The MVP supports up to 128 active entrants, remote and in-person play, concurrent tables, group rankings, overtime rounds<br>
 and comparisons across one to four completed tournaments.
@@ -64,12 +65,14 @@ Redis may run locally or as the only Docker service.
 ### 1. Create the Python environment
 
 ```powershell
-py -3.12 -m venv .venv
+python -m pip install uv==0.12.15
+uv sync --frozen
 .\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -r requirements/dev.txt
 Copy-Item .env.example .env
 ```
+
+The committed `uv.lock` is the dependency source of truth for local development,
+Docker and CI. Regenerate it only as part of a deliberate `pyproject.toml` dependency update.
 
 Give `.env` a fresh `SECRET_KEY` and valid local PostgreSQL credentials.<br>
 To use demo data, also set `ALLOW_DEMO_SEED=true` and `DEMO_PASSWORD`.<br>

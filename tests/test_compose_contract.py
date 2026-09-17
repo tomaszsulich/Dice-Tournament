@@ -32,6 +32,8 @@ def test_compose_config_renders():
         env=env,
         capture_output=True,
         check=False,
+        encoding="utf-8",
+        errors="replace",
         text=True,
     )
 
@@ -100,6 +102,8 @@ def test_compose_runtime_smoke_is_healthy_when_explicitly_enabled():
                 env=env,
                 capture_output=True,
                 check=False,
+                encoding="utf-8",
+                errors="replace",
                 text=True,
                 timeout=30,
             )
@@ -117,6 +121,8 @@ def test_compose_runtime_smoke_is_healthy_when_explicitly_enabled():
             env=env,
             capture_output=True,
             check=False,
+            encoding="utf-8",
+            errors="replace",
             text=True,
             timeout=240,
         )
@@ -130,6 +136,8 @@ def test_compose_runtime_smoke_is_healthy_when_explicitly_enabled():
             env=env,
             capture_output=True,
             check=False,
+            encoding="utf-8",
+            errors="replace",
             text=True,
             timeout=30,
         )
@@ -145,6 +153,8 @@ def test_compose_runtime_smoke_is_healthy_when_explicitly_enabled():
             env=env,
             capture_output=True,
             check=False,
+            encoding="utf-8",
+            errors="replace",
             text=True,
             timeout=120,
         )

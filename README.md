@@ -3,7 +3,8 @@ Polski | [English](README.en.md)
 # Dice Tournament
 
 Dice Tournament to aplikacja Django do prowadzenia grupowych turniejów gry w kości.
-Organizator przygotowuje turniej, zarządza uczestnikami<br>i obserwuje wszystkie stoły w czasie rzeczywistym.
+Organizator przygotowuje turniej, zarządza uczestnikami<br>
+i obserwuje wszystkie stoły w czasie rzeczywistym.
 Uczestnik rozgrywa własne tury, a po zakończeniu turnieju może wrócić do pełnej historii rzutów.
 
 MVP obsługuje do 128 aktywnych uczestników, zdalne i stacjonarne wydarzenia, równoległą grę przy stołach, ranking grupowy, dogrywki<br>oraz porównanie od jednego do czterech zakończonych turniejów.
@@ -61,12 +62,14 @@ Redis może działać lokalnie albo jako jedyna usługa uruchomiona przez Docker
 ### 1. Środowisko Pythona
 
 ```powershell
-py -3.12 -m venv .venv
+python -m pip install uv==0.12.15
+uv sync --frozen
 .\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -r requirements/dev.txt
 Copy-Item .env.example .env
 ```
+
+`uv.lock` jest źródłem wersji zależności dla środowiska lokalnego, Dockera i CI.
+Aktualizuj go świadomie tylko razem ze zmianą zależności w `pyproject.toml`.
 
 Ustaw w `.env` własny `SECRET_KEY`, dane lokalnego PostgreSQL i — jeśli ma być używany seed — `ALLOW_DEMO_SEED=true`
 oraz `DEMO_PASSWORD`. Nie commituj `.env`.
