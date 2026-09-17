@@ -1,4 +1,4 @@
-[Polski](README.md) | English
+[Polski](./README.md) | English
 
 # Dice Tournament
 
