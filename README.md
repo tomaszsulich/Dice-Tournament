@@ -2,8 +2,8 @@ Polski | [English](README.en.md)
 
 # Dice Tournament
 
-Dice Tournament to aplikacja Django do prowadzenia grupowych turniejów gry w kości.
-Organizator przygotowuje turniej, zarządza uczestnikami i obserwuje wszystkie stoły w czasie rzeczywistym.
+Dice Tournament to aplikacja Django do prowadzenia grupowych turniejów gry w kości.<br>
+Organizator przygotowuje turniej, zarządza uczestnikami i obserwuje wszystkie stoły w czasie rzeczywistym.<br>
 Uczestnik rozgrywa własne tury, a po zakończeniu turnieju może wrócić do pełnej historii rzutów.
 
 MVP obsługuje do 128 aktywnych uczestników, zdalne i stacjonarne wydarzenia, równoległą grę przy stołach, ranking grupowy, dogrywki oraz porównanie od jednego do czterech zakończonych turniejów.
@@ -29,7 +29,7 @@ Szczegóły decyzji i świadomych odrzuceń opisuje [dokument decyzji](docs/dec
 
 ## Architektura w skrócie
 
-Backend stanowią Django, Django REST Framework i PostgreSQL.
+Backend stanowią Django, Django REST Framework i PostgreSQL.<br>
 Daphne obsługuje ASGI, Channels dostarcza aktualizacje WebSocket przez Redis, a Celery wykonuje zadania poboczne.<br>
 HTML, CSS i JavaScript są serwowane przez Django.<br>
 Logika turnieju i logika kości pozostają rozdzielone w obrębie aplikacji `tournaments`.
@@ -49,7 +49,7 @@ Więcej informacji:
 - Git;
 - opcjonalnie Docker z Docker Compose.
 
-Polecenia w tym README zakładają, że bieżącym katalogiem jest główny katalog repozytorium.
+Polecenia w tym README zakładają, że bieżącym katalogiem jest główny katalog repozytorium.<br>
 Jedynym wyjątkiem jest uruchomienie Daphne w wariancie lokalnym: `config.asgi` jest importowane z katalogu `src`,<br>
 dlatego przed tym poleceniem trzeba przejść do `src`.
 
@@ -178,8 +178,7 @@ python src/manage.py makemigrations --check --dry-run
 ```
 
 CI uruchamia pełny zestaw z coverage poza jednym kosztownym wariantem scenariusza `completed`;<br>
-ten wariant uruchamia osobno bez coverage.<br>
-Compose smoke jest oddzielnym testem opt-in:
+ten wariant uruchamia osobno bez coverage. Compose smoke jest oddzielnym testem opt-in:
 
 ```powershell
 pytest -m compose_smoke --run-compose-smoke
@@ -192,8 +191,8 @@ Nie uruchamiaj Compose smoke równolegle z innym stosem używającym tych samych
 Konto jest neutralne: organizatorem zostaje przez relację z konkretnym turniejem,<br>
 a uczestnikiem przez własny `PlayerProfile` i udział.<br>
 Superuser ma uprawnienia systemowe, ale nie staje się automatycznie organizatorem turnieju.<br>
-Mutacje domenowe są autoryzowane po stronie backendu, a rozgrywka korzysta z transakcji, blokad i kluczy idempotencji.
-Szczegóły opisuje [docs/security.md](docs/security.md).
+Mutacje domenowe są autoryzowane po stronie backendu, a rozgrywka korzysta z transakcji,<br>
+blokad i kluczy idempotencji. Szczegóły opisuje [docs/security.md](docs/security.md).
 
 ## Roadmapa
 
