@@ -134,13 +134,31 @@ class SessionTokenRefreshView(TokenRefreshView):
 
 
 @extend_schema(
+    methods=["GET"],
     responses={
         **AUTHENTICATED_COMMAND_ERROR_RESPONSES,
         200: PlayerProfileSerializer,
+    },
+)
+@extend_schema(
+    methods=["POST"],
+    request=PlayerProfileSerializer,
+    responses={
+        **AUTHENTICATED_COMMAND_ERROR_RESPONSES,
         201: PlayerProfileSerializer,
         400: VALIDATION_ERROR_RESPONSE,
         409: DOMAIN_ERROR_RESPONSE,
-    }
+    },
+)
+@extend_schema(
+    methods=["PATCH"],
+    request=PlayerProfileSerializer,
+    responses={
+        **AUTHENTICATED_COMMAND_ERROR_RESPONSES,
+        200: PlayerProfileSerializer,
+        400: VALIDATION_ERROR_RESPONSE,
+        409: DOMAIN_ERROR_RESPONSE,
+    },
 )
 @api_view(["GET", "POST", "PATCH"])
 @permission_classes([IsAuthenticated])

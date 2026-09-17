@@ -16,9 +16,10 @@ ani pretekstem do dodawania indeksów „na zapas”.
 
 ## Chroniony kontrakt liczby zapytań
 
-Selektor panelu organizatora ma regresyjny test liczby zapytań dla 16 i 128
-uczestników. Obecny kontrakt testowy oczekuje **6 zapytań ORM** dla kompletnego
-obrazu stanu. Wzrost liczby uczestników może zwiększać ilość zwracanych danych,
+Selektor panelu organizatora ma regresyjny test liczby zapytań dla 16 i 128 uczestników.
+Obecny kontrakt testowy oczekuje **6 zapytań ORM**<br>
+dla kompletnego obrazu stanu.
+Wzrost liczby uczestników może zwiększać ilość zwracanych danych,
 ale nie powinien zwiększać liczby zapytań do bazy.
 
 Pozostałe stałe budżety chronią:

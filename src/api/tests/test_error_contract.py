@@ -120,7 +120,7 @@ def test_openapi_documents_security_and_domain_refusals_for_mvp_commands(api_cli
         },
         "/api/auth/users/reset-password/": {"204", "400", "403", "429", "500"},
         "/api/auth/users/reset-password-confirm/": {"204", "400", "403", "429", "500"},
-        "/api/profile/": {"200", "201", "400", "401", "403", "409", "429", "500"},
+        "/api/profile/": {"201", "400", "401", "403", "409", "429", "500"},
         "/api/games/{game_id}/roll/": {
             "201",
             "400",
@@ -157,3 +157,11 @@ def test_openapi_documents_security_and_domain_refusals_for_mvp_commands(api_cli
     for path, expected in expected_responses.items():
         operation = schema["paths"][path]["post"]
         assert expected <= set(operation["responses"]), path
+
+    profile_path = schema["paths"]["/api/profile/"]
+
+    assert {"200", "401", "403", "429", "500"} <= set(profile_path["get"]["responses"])
+
+    assert {"200", "400", "401", "403", "409", "429", "500"} <= set(
+        profile_path["patch"]["responses"]
+    )

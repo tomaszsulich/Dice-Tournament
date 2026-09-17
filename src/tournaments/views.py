@@ -1,5 +1,6 @@
 from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
+from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -10,6 +11,7 @@ from tournaments.selectors.game_state import get_game_snapshot
 from tournaments.services.connection_state import official_game_for_participant
 
 
+@extend_schema(exclude=True)
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def participant_table(request: Request, game_id: int) -> HttpResponse:
