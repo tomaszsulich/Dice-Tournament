@@ -34,10 +34,10 @@ def test_ci_checks_migrations_postgresql_full_tests_and_coverage():
     assert "@postgres:5432" in workflow
     assert "POSTGRES_SERVICE_HOST: postgres" in workflow
     assert "makemigrations --check --dry-run" in workflow
-    assert "python -m ruff check ." in workflow
-    assert "python -m ruff format --check ." in workflow
-    assert "python -m coverage run -m pytest" in workflow
-    assert "python -m coverage report" in workflow
+    assert "uv run ruff check ." in workflow
+    assert "uv run ruff format --check ." in workflow
+    assert "uv run coverage run -m pytest" in workflow
+    assert "uv run coverage report" in workflow
     assert "printenv" not in workflow
     assert "echo $SECRET_KEY" not in workflow
     assert "echo ${SECRET_KEY}" not in workflow
@@ -58,7 +58,7 @@ def test_ci_checks_migrations_postgresql_full_tests_and_coverage():
     regular_command = " ".join(regular_step.split())
 
     assert (
-        f'python -m coverage run -m pytest --deselect="{completed_test}"'
+        f'uv run coverage run -m pytest --deselect="{completed_test}"'
     ) in regular_command
 
     assert '-m "not slow"' not in regular_step
@@ -73,7 +73,7 @@ def test_ci_checks_migrations_postgresql_full_tests_and_coverage():
 
     assert '-m "not slow"' not in regular_step
     assert f'--deselect="{completed_test}"' in regular_step
-    assert "python -m pytest -q" in isolated_step
+    assert "uv run pytest -q" in isolated_step
     assert f'"{completed_test}"' in isolated_step
     assert "--deselect" not in isolated_step
 

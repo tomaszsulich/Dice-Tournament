@@ -2,7 +2,8 @@ FROM python:3.12-slim AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/app/src
+    PYTHONPATH=/app/src \
+    PATH="/app/.venv/bin:$PATH"
 
 WORKDIR /app
 
@@ -10,10 +11,10 @@ RUN apt-get update \
     && apt-get install --no-install-recommends -y libpq5 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements/base.txt requirements/base.txt
+COPY pyproject.toml uv.lock ./
 
-RUN python -m pip install --no-cache-dir --upgrade pip \
-    && python -m pip install --no-cache-dir -r requirements/base.txt
+RUN python -m pip install --no-cache-dir uv==0.12.15 \
+    && uv sync --frozen --no-dev
 
 COPY . .
 
@@ -33,7 +34,7 @@ FROM runtime AS development
 
 USER root
 
-RUN python -m pip install --no-cache-dir -r requirements/dev.txt
+RUN uv sync --frozen
 
 USER appuser
 

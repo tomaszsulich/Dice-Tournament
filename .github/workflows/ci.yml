@@ -46,33 +46,33 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements/dev.txt
+          python -m pip install uv==0.12.15
+          uv sync --frozen
 
       - name: Run Ruff checks
         run: |
-          python -m ruff check .
-          python -m ruff format --check .
+          uv run ruff check .
+          uv run ruff format --check .
 
       - name: Check Django configuration
-        run: python src/manage.py check
+        run: uv run python src/manage.py check
 
       - name: Check for missing migrations
-        run: python src/manage.py makemigrations --check --dry-run
+        run: uv run python src/manage.py makemigrations --check --dry-run
 
       - name: Apply database migrations
-        run: python src/manage.py migrate --noinput
+        run: uv run python src/manage.py migrate --noinput
 
       - name: Run regular test suite with coverage
         run: >-
-          python -m coverage run -m pytest
+          uv run coverage run -m pytest
           --deselect="src/tournaments/tests/test_seed_demo.py::test_seed_demo_supports_each_mvp_scenario[completed]"
 
       - name: Run completed demo scenario without coverage
         run: >-
-          python -m pytest -q
+          uv run pytest -q
           "src/tournaments/tests/test_seed_demo.py::test_seed_demo_supports_each_mvp_scenario[completed]"
         timeout-minutes: 30
 
       - name: Report coverage
-        run: python -m coverage report
+        run: uv run coverage report
