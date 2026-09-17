@@ -17,9 +17,8 @@ indexes.
 
 ## Guarded query-count contract
 
-The organizer-dashboard selector has a regression guard for both 16 and 128
-participants. The current test contract expects **6 ORM queries**<br>
-for a complete state snapshot.
+The organizer-dashboard selector has a regression guard for both 16 and 128 participants.<br>
+The current test contract expects **6 ORM queries** for a complete state snapshot.<br>
 More participants may increase the amount of data returned
 but they should not increase the number of database queries.
 
@@ -45,7 +44,7 @@ and by measurements taken before and after the change.
 The `--seed` value stabilizes domain content and allocations.<br>
 The number of tournaments in the `completed` scenario is the exception:<br>
 it is chosen independently from two to four
-so that the Comparison view never demonstrates only a single tournament.
+so that the Comparison view never demonstrates only a single tournament.<br>
 Each of those tournaments retains content reproducible from the supplied seed.
 
 Execution time varies by machine and runtime environment.<br>
@@ -53,14 +52,14 @@ Record timing results as evidence from a specific local or CI run;
 do not enforce them as fixed repository-level performance thresholds.
 
 The `completed` scenario intentionally records the complete history of every participant,<br>
-so it is not the performance profile for the active dashboard.
+so it is not the performance profile for the active dashboard.<br>
 The measurements below use active scenarios; `completed` is verified
 as a functional scenario.
 
 The full `test_seed_demo_supports_each_mvp_scenario[completed]` test is intentionally marked `slow`:<br>
 it builds two to four complete tournaments through the real roll, hold and category-selection services.<br>
 The scoped-reset test does not replay that history; it verifies replacement of the whole namespace,
-protection of unrelated data and the absence of duplicate users using a lightweight game result.<br>
+protection of unrelated data<br>and the absence of duplicate users using a lightweight game result.<br>
 A separate functional test retains the full-history coverage.
 
 Local measurements recorded on 16 September 2026 on Windows, Python 3.12.10,
@@ -101,6 +100,6 @@ Measure-Command {
 }
 ```
 
-Record timing results together with a short description of the environment.
+Record timing results together with a short description of the environment.<br>
 Treat them as a sanity check for that run, not as a universal performance
 guarantee.
