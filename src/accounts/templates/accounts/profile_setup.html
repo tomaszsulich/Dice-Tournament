@@ -1,0 +1,38 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Player profile · Dice Tournament</title>
+  <link rel="stylesheet" href="{% static 'accounts/css/auth.css' %}">
+</head>
+
+<body>
+  <main class="auth-shell">
+    <section class="auth-card" aria-labelledby="page-title">
+      <header class="auth-heading">
+        <div class="brand-mark" aria-hidden="true">⚄</div>
+        <div>
+          <p class="eyebrow">Dice Tournament</p>
+          <h1 id="page-title">Create player&nbsp;profile</h1>
+        </div>
+      </header>
+      <p class="intro">Optional for&nbsp;your&nbsp;account. Required to&nbsp;join and play in&nbsp;tournaments.</p>
+
+      <form id="profile-form" class="auth-form" novalidate>
+        <label>Display name<input name="display_name" maxlength="150" autocomplete="name" required></label>
+        <label>Nickname <span class="optional">optional</span><input name="nickname" maxlength="50"></label>
+        <p id="form-error" class="form-message error" role="alert" hidden></p>
+        <p id="form-success" class="form-message success" role="status" hidden></p>
+        <button class="primary-action" type="submit">Create player&nbsp;profile</button>
+      </form>
+      <p class="switch-link"><a href="{% url 'profile' %}">Not now</a></p>
+    </section>
+  </main>
+  <script src="{% static 'accounts/js/auth.js' %}" defer></script>
+  <script src="{% static 'accounts/js/profile.js' %}" defer></script>
+</body>
+
+</html>

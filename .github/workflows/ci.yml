@@ -1,0 +1,78 @@
+name: CI
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  checks:
+    name: Tests and code quality
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.12-bookworm
+
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: dice_tournament
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd "pg_isready -U postgres -d dice_tournament"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      SECRET_KEY: ci-only-secret-key-${{ github.run_id }}-${{ github.run_attempt }}-not-for-production
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/dice_tournament
+      POSTGRES_SERVICE_HOST: postgres
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Install dependencies
+        run: |
+          python -m pip install uv==0.12.15
+          uv sync --frozen
+
+      - name: Run Ruff checks
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+
+      - name: Check Django configuration
+        run: uv run python src/manage.py check
+
+      - name: Check for missing migrations
+        run: uv run python src/manage.py makemigrations --check --dry-run
+
+      - name: Apply database migrations
+        run: uv run python src/manage.py migrate --noinput
+
+      - name: Run regular test suite with coverage
+        run: >-
+          uv run coverage run -m pytest
+          --deselect="src/tournaments/tests/test_seed_demo.py::test_seed_demo_supports_each_mvp_scenario[completed]"
+
+      - name: Run completed demo scenario without coverage
+        run: >-
+          uv run pytest -q
+          "src/tournaments/tests/test_seed_demo.py::test_seed_demo_supports_each_mvp_scenario[completed]"
+        timeout-minutes: 30
+
+      - name: Report coverage
+        run: uv run coverage report

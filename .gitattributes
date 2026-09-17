@@ -1,0 +1,5 @@
+# Keep shell scripts compatible with Unix-like environments.
+*.sh text eol=lf
+
+# Keep repository documentation consistent across platforms.
+*.md text eol=lf

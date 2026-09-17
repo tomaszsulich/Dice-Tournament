@@ -1,0 +1,51 @@
+[project]
+name = "dice-tournament"
+version = "1.0.0"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "celery",
+    "channels",
+    "channels-redis",
+    "daphne",
+    "django",
+    "djangorestframework",
+    "djangorestframework-simplejwt",
+    "djoser",
+    "drf-spectacular",
+    "psycopg",
+    "python-dotenv",
+    "redis<8",
+]
+
+[dependency-groups]
+dev = [
+    "coverage",
+    "factory-boy",
+    "faker",
+    "pre-commit",
+    "pytest",
+    "pytest-django",
+    "ruff",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["accounts", "api", "common", "config", "tournaments"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/config/settings/*.py" = ["F403"]
+"**/migrations/*.py" = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

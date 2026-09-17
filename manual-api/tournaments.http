@@ -1,0 +1,50 @@
+@baseUrl = http://127.0.0.1:8000
+@accessToken = ACCESS_TOKEN
+@roundId = 1
+@tournamentId = 1
+
+### Open registration
+POST {{baseUrl}}/api/tournaments/{{tournamentId}}/open-registration/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{}
+
+### Start tournament
+POST {{baseUrl}}/api/tournaments/{{tournamentId}}/start/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{}
+
+### Read ranking
+GET {{baseUrl}}/api/tournaments/{{tournamentId}}/ranking/
+Authorization: Bearer {{accessToken}}
+
+### Forbidden ordinary status PATCH (must return 405)
+PATCH {{baseUrl}}/api/tournaments/{{tournamentId}}/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{"status": "completed"}
+
+### Complete tournament
+POST {{baseUrl}}/api/tournaments/{{tournamentId}}/complete/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{}
+
+### Evaluate round barrier
+POST {{baseUrl}}/api/rounds/{{roundId}}/barrier/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{}
+
+### Organizer declares further overtime impossible and authorizes CSPRNG draw
+POST {{baseUrl}}/api/rounds/{{roundId}}/draw/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{"reason": "Further overtime cannot be conducted."}

@@ -1,0 +1,32 @@
+# Virtual environment
+.venv/
+
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Ruff
+.ruff_cache/
+
+# Pytest
+.pytest_cache/
+
+# Coverage
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Celery
+celerybeat-schedule*
+celerybeat.pid
+
+# Windows
+desktop.ini
+Thumbs.db
+
+# Local authentication artifacts
+cookies.txt

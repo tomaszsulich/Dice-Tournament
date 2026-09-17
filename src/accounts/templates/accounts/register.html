@@ -1,0 +1,52 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create account · Dice Tournament</title>
+  <link rel="stylesheet" href="{% static 'accounts/css/auth.css' %}">
+</head>
+
+<body>
+  <main class="auth-shell">
+    <section class="auth-card auth-card-wide" aria-labelledby="page-title">
+      <header class="auth-heading">
+        <div class="brand-mark" aria-hidden="true">⚄</div>
+        <div>
+          <p class="eyebrow">Dice Tournament</p>
+          <h1 id="page-title">Create your account</h1>
+        </div>
+      </header>
+      <p class="intro">Player profile is&nbsp;optional. Add one now if you want to&nbsp;play.</p>
+
+      <form id="register-form" class="auth-form" novalidate>
+        <div class="field-grid">
+          <label>Username<input name="username" autocomplete="username" required></label>
+          <label>Email<input name="email" type="email" autocomplete="email" required></label>
+        </div>
+        <label>Password<input name="password" type="password" autocomplete="new-password" required></label>
+
+        <label class="profile-choice">
+          <input id="create-profile" name="create_profile" type="checkbox" checked>
+          <span><strong>Create a&nbsp;player profile</strong><small>Needed to&nbsp;join and play in&nbsp;tournaments.</small></span>
+        </label>
+
+        <div id="profile-fields" class="profile-fields">
+          <label>Display&nbsp;name<input name="display_name" maxlength="150" autocomplete="name"></label>
+          <label>Nickname <span class="optional">optional</span><input name="nickname" maxlength="50"></label>
+        </div>
+
+        <p id="form-error" class="form-message error" role="alert" hidden></p>
+        <button class="primary-action" type="submit">Create&nbsp;account</button>
+      </form>
+
+      <p class="switch-link">Already have an account? <a href="{% url 'login' %}">Sign in</a></p>
+    </section>
+  </main>
+  <script src="{% static 'accounts/js/auth.js' %}" defer></script>
+  <script src="{% static 'accounts/js/register.js' %}" defer></script>
+</body>
+
+</html>
