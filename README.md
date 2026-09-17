@@ -49,7 +49,7 @@ Więcej informacji:
 - Git;
 - opcjonalnie Docker z Docker Compose.
 
-Polecenia w tym README zakładają, że bieżącym katalogiem jest główny katalog repozytorium. 
+Polecenia w tym README zakładają, że bieżącym katalogiem jest główny katalog repozytorium.
 Jedynym wyjątkiem jest uruchomienie Daphne w wariancie lokalnym: `config.asgi` jest importowane z katalogu `src`,<br>
 dlatego przed tym poleceniem trzeba przejść do `src`.
 
