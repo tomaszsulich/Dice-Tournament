@@ -38,11 +38,11 @@ Group rankings aggregate `raw_score`.
 
 ### Dice game
 
-Turns, up to three rolls, holds, category selection and scoring.
+Turns, up to three rolls, holds, category selection and scoring.<br>
 Every `Roll` is a complete five-die snapshot, and the first roll always throws all five.
 
-The boundaries meet through explicit `Game`, `GameParticipant`, `Turn`, `Roll`
-and `ScoreEntry` records. The browser never calculates an authoritative score.
+The boundaries meet through explicit `Game`, `GameParticipant`, `Turn`, `Roll` and `ScoreEntry` records.<br>
+The browser never calculates an authoritative score.
 
 ## Command path
 
@@ -54,7 +54,7 @@ and `ScoreEntry` records. The browser never calculates an authoritative score.
 6. `transaction.on_commit()` publishes a WebSocket event or queues work.
 7. Reconnecting clients fetch a fresh REST snapshot.
 
-Active-turn commands lock rows in `Game → Turn` order.
+Active-turn commands lock rows in `Game → Turn` order.<br>
 Tables within a round progress independently; the round barrier is evaluated only after completion.
 
 ## Identity and history
@@ -71,14 +71,14 @@ A player can only read their own completed history; organizers are scoped to the
 - `production`: `DEBUG=False`, HTTPS-only cookies, SMTP and env secrets;
 - Docker development: web, database, Redis, two workers, Beat and migrations.
 
-Docker development and host-local development are separate routes.
+Docker development and host-local development are separate routes.<br>
 A local app may borrow only the Redis container, provided host ports do not collide.
 
 ## Scale and read performance
 
 The MVP supports 128 active entrants.<br>
-The organizer dashboard intentionally shows every active table without pagination,
-so selectors use eager loading and have a query-budget regression test.<br>
+The organizer dashboard intentionally shows every active table without pagination, so selectors use eager loading<br>
+and have a query-budget regression test.<br>
 Long histories are paginated and exposed through an explicit “Load more” action.
 
 ## Extension points
