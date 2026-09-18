@@ -6,14 +6,15 @@ Polski | [English](01_system_specification.en.md)
 
 ### 1.1. Wizja
 
-System ma być jedynym, wiarygodnym miejscem do przygotowania, przeprowadzenia i późniejszej analizy uniwersalnych turniejów gry w kości.<br>Ma automatyzować czynności organizacyjne, ale nie zastępować decyzji strategicznych uczestników ani ukrywać reguł, według których powstają wyniki i awanse.
+System ma być jedynym, wiarygodnym miejscem do przygotowania, przeprowadzenia i późniejszej analizy uniwersalnych turniejów gry w kości.<br>
+Ma automatyzować czynności organizacyjne, ale nie zastępować decyzji strategicznych uczestników ani ukrywać reguł,<br>
+według których powstają wyniki i awanse.
 
 ### 1.2. Kontekst biznesowy
 
-Projekt odpowiada na problem organizowania turniejów gry w kości, w których uczestnicy rozgrywają wiele rund przy kilku stołach, a wyniki, rankingi, awanse<br>i historia rozgrywek muszą być kontrolowane w jednym miejscu.
+Projekt odpowiada na problem organizowania turniejów gry w kości, w których uczestnicy rozgrywają wiele rund przy kilku stołach, a wyniki, rankingi, awanse i historia rozgrywek muszą być kontrolowane w jednym miejscu.
 
-W tradycyjnym przebiegu turnieju wyniki są zapisywane ręcznie, ranking jest przeliczany po kolejnych rundach, a organizator musi jednocześnie pilnować kolejności graczy, poprawności punktacji i zasad awansu. Przy większej liczbie uczestników
-prowadzi to do opóźnień, pomyłek i utraty szczegółowej historii rozgrywek.
+W tradycyjnym przebiegu turnieju wyniki są zapisywane ręcznie, ranking jest przeliczany po kolejnych rundach, a organizator musi jednocześnie pilnować kolejności graczy, poprawności punktacji i zasad awansu. Przy większej liczbie uczestników prowadzi to do opóźnień, pomyłek i utraty szczegółowej historii rozgrywek.
 
 W odpowiedzi na te problemy aplikacja webowa:
 
@@ -25,7 +26,7 @@ W odpowiedzi na te problemy aplikacja webowa:
 - buduje uniwersalną historię zakończonych turniejów gry w kości;
 - pozwala porównywać wyniki tego samego uczestnika, a docelowo także drużyn, wyłącznie pomiędzy zakończonymi turniejami.
 
-„Uniwersalny” oznacza tutaj możliwość konfigurowania przebiegu turnieju i wybranych reguł punktacji w ramach tej samej rodziny gier kościanych.<br>Nie oznacza możliwości obsługi dowolnej gry.
+„Uniwersalny” oznacza tutaj możliwość konfigurowania przebiegu turnieju i wybranych reguł punktacji w ramach tej samej rodziny gier kościanych. Nie oznacza możliwości obsługi dowolnej gry.
 
 ---
 
@@ -60,8 +61,9 @@ W odpowiedzi na te problemy aplikacja webowa:
 5. Czytelny ranking i archiwum.
 6. Analityka i efekty wizualne.
 
-Zakres nie wynika z liczby modeli, endpointów ani wykorzystanych bibliotek. Projekt koncentruje się na kilku kompletnych przepływach obejmujących poprawne reguły, świadomy model danych, uprawnienia, walidację, testy i dokumentację.
-Funkcja albo technologia trafia do projektu tylko wtedy, gdy wspiera konkretny przypadek użycia.
+Zakres nie wynika z liczby modeli, endpointów ani wykorzystanych bibliotek.<br>
+Projekt koncentruje się na kilku kompletnych przepływach obejmujących poprawne reguły, świadomy model danych, uprawnienia, walidację, testy i dokumentację.<br>
+Funkcja albo technologia trafia do projektu tylko wtedy, gdy wspiera konkretny przypadek użycia.
 
 ---
 
@@ -69,22 +71,22 @@ Funkcja albo technologia trafia do projektu tylko wtedy, gdy wspiera konkretny p
 
 ### 3.1. Konto użytkownika
 
-`User` oznacza neutralne konto w systemie, a nie organizatora turniejów. Uprawnienia organizatora lub uczestnika
-wynikają z relacji użytkownika z konkretnym turniejem.
+`User` oznacza neutralne konto w systemie, a nie organizatora turniejów.<br>
+Uprawnienia organizatora lub uczestnika wynikają z relacji użytkownika z konkretnym turniejem.
 
 Ta sama osoba może być uczestnikiem jednego turnieju i organizatorem innego. System nie zakłada globalnej roli „organizator”.
 
-Konto może nie mieć profilu zawodnika i służyć wyłącznie do oglądania jawnych
-informacji oraz kibicowania. Aplikacja nie udostępnia obserwatorom sterowania
-rozgrywką ani strategicznych podpowiedzi dla uczestników.
+Konto może nie mieć profilu zawodnika i służyć wyłącznie do oglądania jawnych informacji oraz kibicowania.<br>
+Aplikacja nie udostępnia obserwatorom sterowania rozgrywką ani strategicznych podpowiedzi dla uczestników.
 
 ### 3.2. Organizator
 
-Zalogowany użytkownik przypisany do turnieju jako organizator. Tworzy i konfiguruje turniej, zarządza uczestnikami,
-uruchamia etapy, nadzoruje stoły,<br>reaguje na nieprawidłowości i zatwierdza zakończenie turnieju.
+Zalogowany użytkownik przypisany do turnieju jako organizator.<br>
+Tworzy i konfiguruje turniej, zarządza uczestnikami, uruchamia etapy, nadzoruje stoły, reaguje na nieprawidłowości i zatwierdza zakończenie turnieju.
 
-Turniej może mieć więcej niż jednego organizatora. Osobna rola sędziego ani operatora stołu nie należy do projektu;
-nadzór realizują organizatorzy,<br>a fizyczny wynik rejestruje aktywny uczestnik pod kontrolą osób przy stole.
+Turniej może mieć więcej niż jednego organizatora.<br>
+Osobna rola sędziego ani operatora stołu nie należy do projektu;
+nadzór realizują organizatorzy, a fizyczny wynik rejestruje aktywny uczestnik pod kontrolą osób przy stole.
 
 ### 3.3. Uczestnik
 
@@ -101,14 +103,12 @@ Stała jednostka współpracy w obrębie turnieju. Uczestnik może należeć naj
 
 ### 3.5. Grupa i stół
 
-Grupa jest tymczasowym przydziałem uczestników wynikającym z mechanizmu turnieju
-w konkretnej rundzie fazy grupowej. Nie jest drużyną i nie ma własnego
-długoterminowego rankingu. Stół jest konkretną jednostką rozgrywki,
-przy której realizowany jest przydział grupy.
+Grupa jest tymczasowym przydziałem uczestników wynikającym z mechanizmu turnieju w konkretnej rundzie fazy grupowej.<br>
+Nie jest drużyną i nie ma własnego długoterminowego rankingu.<br>
+Stół jest konkretną jednostką rozgrywki, przy której realizowany jest przydział grupy.
 
-Stoły są prezentowane użytkownikom przez prosty numer porządkowy, np. `Stół #1`.
-Nazwa widoczna nie jest technicznym kluczem rekordu ani dowolną nazwą nadawaną
-przez uczestnika.
+Stoły są prezentowane użytkownikom przez prosty numer porządkowy, np. `Stół #1`.<br>
+Nazwa widoczna nie jest technicznym kluczem rekordu ani dowolną nazwą nadawaną przez uczestnika.
 
 ### 3.6. Etap, runda, rozgrywka, tura i rzut
 
@@ -128,28 +128,32 @@ Pojedyncza kolejka uczestnika przy stole jest nazywana „turą”.
 
 ### 3.7. Niezmienna zasada pierwszego rzutu
 
-**Każda nowa tura ZAWSZE zaczyna się od jednoczesnego rzutu wszystkimi pięcioma kośćmi.** Przed pierwszym rzutem nie można zatrzymać żadnej kości.<br>Dopiero po zapisaniu jego wyniku uczestnik może wybrać zatrzymania; drugi i trzeci rzut obejmują wyłącznie kości niezatrzymane.<br>Następna tura ponownie zaczyna się od pięciu niezatrzymanych kości.
+**Każda nowa tura ZAWSZE zaczyna się od jednoczesnego rzutu wszystkimi pięcioma kośćmi.**<br>
+Przed pierwszym rzutem nie można zatrzymać żadnej kości.<br>
+Dopiero po zapisaniu jego wyniku uczestnik może wybrać zatrzymania; drugi i trzeci rzut obejmują wyłącznie kości niezatrzymane.<br>
+Następna tura ponownie zaczyna się od pięciu niezatrzymanych kości.
 
 ### 3.8. Administrator systemowy
 
-Użytkownik z `is_staff` i odpowiednimi permissions, zarządzający działaniem całej instalacji przez Django Admin. Nie jest automatycznie organizatorem każdego turnieju. Ma dostęp techniczny tylko w zakresie potrzebnym do obsługi kont, diagnostyki, sporów i retencji; `is_superuser` pozostaje kontem wyjątkowym,<br>a nie rolą używaną do codziennej pracy.
+Użytkownik z `is_staff` i odpowiednimi permissions, zarządzający działaniem całej instalacji przez Django Admin.<br>
+Nie jest automatycznie organizatorem każdego turnieju.<br>
+Ma dostęp techniczny tylko w zakresie potrzebnym do obsługi kont, diagnostyki, sporów i retencji;<br>
+`is_superuser` pozostaje kontem wyjątkowym, a nie rolą używaną do codziennej pracy.
 
 ### 3.9. Granica domeny turniejowej i gry kościanej
 
 System obejmuje dwa współpracujące, lecz rozdzielone obszary odpowiedzialności.
 
 - **Domena turniejowa** zarządza turniejem, organizatorami, uczestnikami,
-  drużynami turniejowymi, etapami, rundami, przydziałami do grup i stołów,
-  rankingami, awansem oraz cyklem życia wydarzenia.
-- **Domena gry kościanej** zarządza przebiegiem gry przy stole: kolejnością tur,
-  rzutami pięcioma kośćmi, zatrzymaniami, kategoriami formularza<br>i obliczaniem punktacji.
+  drużynami turniejowymi, etapami, rundami,<br>
+  przydziałami do grup i stołów, rankingami, awansem oraz cyklem życia wydarzenia.
+- **Domena gry kościanej** zarządza przebiegiem gry przy stole: kolejnością tur, rzutami pięcioma kośćmi, zatrzymaniami,<br>
+- kategoriami formularza i obliczaniem punktacji.
 
-Domena turniejowa przyjmuje zatwierdzony wynik rozgrywki, ale nie zna reguł
-rozpoznawania figur ani obsługi kości. Domena gry otrzymuje skład stołu i zestaw
-reguł obowiązujący w turnieju, ale nie decyduje o zapisach, przydziale do rundy,
-awansie ani klasyfikacji. Granica ta nie wymaga osobnej aplikacji `gameplay`
-ani budowy silnika dla dowolnych gier. Oba obszary pozostają modułami aplikacji
-`tournaments`, ponieważ rozgrywka nie istnieje w produkcie poza turniejem.
+Domena turniejowa przyjmuje zatwierdzony wynik rozgrywki, ale nie zna reguł rozpoznawania figur ani obsługi kości.<br>
+Domena gry otrzymuje skład stołu i zestaw reguł obowiązujący w turnieju, ale nie decyduje o zapisach, przydziale do rundy, awansie ani klasyfikacji.<br>
+Granica ta nie wymaga osobnej aplikacji `gameplay` ani budowy silnika dla dowolnych gier.<br>
+Oba obszary pozostają modułami aplikacji `tournaments`, ponieważ rozgrywka nie istnieje w produkcie poza turniejem.
 
 ### 3.10. Forma wydarzenia, sieć i sposób rzutu
 
@@ -157,22 +161,19 @@ Forma wydarzenia i sposób komunikacji są niezależnymi osiami.
 Turniej stacjonarny odbywa się w jednym miejscu, a zdalny przez Internet.
 Połączenie online może działać przez Internet albo lokalną sieć LAN.
 Realtime oznacza aktualizowanie stanu, a nie osobny rodzaj turnieju.
-Brak publicznego Internetu nie jest trybem offline,
-jeżeli urządzenia nadal łączą się z serwerem przez LAN.
+Brak publicznego Internetu nie jest trybem offline, jeżeli urządzenia nadal łączą się z serwerem przez LAN.
 
-Turniej stacjonarny używa fizycznych kości, a aktywny uczestnik rejestruje wynik
-w aplikacji pod kontrolą pozostałych osób przy stole. Turniej zdalny korzysta
-z wirtualnego rzutu generowanego przez backend. Jedno wydarzenie nie łączy obu
-form w tryb hybrydowy. Nie powstaje osobna rola sędziego ani operatora stołu;
-nadzór i rozstrzyganie incydentów należą do organizatorów.
+Turniej stacjonarny używa fizycznych kości, a aktywny uczestnik rejestruje wynik w aplikacji pod kontrolą pozostałych osób przy stole.
+Turniej zdalny korzysta z wirtualnego rzutu generowanego przez backend. Jedno wydarzenie nie łączy obu form w tryb hybrydowy.<br>
+Nie powstaje osobna rola sędziego ani operatora stołu; nadzór i rozstrzyganie incydentów należą do organizatorów.
 
 ---
 
 ## 4. Zasady turnieju
 
-Sekcja opisuje pełny kontrakt produktu docelowego. MVP implementuje z niego fazę grupową z wieloma rundami, rotacją stołów
-i rankingiem końcowym.<br>Faza pucharowa, pełny audyt oraz cykl anulowania dochodzą w wersji 1.0 bez zmiany zasad
-już zaimplementowanej rozgrywki grupowej.
+Sekcja opisuje pełny kontrakt produktu docelowego.<br>
+MVP implementuje z niego fazę grupową z wieloma rundami, rotacją stołów i rankingiem końcowym.<br>
+Faza pucharowa, pełny audyt oraz cykl anulowania dochodzą w wersji 1.0 bez zmiany zasad już zaimplementowanej rozgrywki grupowej.
 
 ### 4.1. Cykl życia turnieju
 
@@ -183,17 +184,25 @@ Turniej przechodzi przez kontrolowane statusy:
 3. `ACTIVE` — trwająca faza grupowa lub pucharowa;
 4. `COMPLETED` — rozgrywki zostały zakończone, a rezultaty zablokowane;
 5. `ARCHIVED` — turniej pozostaje w historii, ale nie jest eksponowany w bieżących widokach;
-6. `CANCELLED` — turniej został anulowany bez ogłoszenia końcowych rezultatów; dotychczasowa historia pozostaje czasowo dostępna do audytu,<br>ale nie uczestniczy w porównaniach.
+6. `CANCELLED` — turniej został anulowany bez ogłoszenia końcowych rezultatów; dotychczasowa
+   historia pozostaje czasowo dostępna do audytu, ale nie uczestniczy w porównaniach.
 
-Nie można ponownie otworzyć zakończonego ani anulowanego turnieju zwykłą akcją użytkownika. Ewentualna korekta administracyjna musi być jawna, audytowalna<br>i nie może nadpisywać historii bez śladu.
+Nie można ponownie otworzyć zakończonego ani anulowanego turnieju zwykłą akcją użytkownika.<br>
+Ewentualna korekta administracyjna musi być jawna, audytowalna i nie może nadpisywać historii bez śladu.
 
-Anulowanie jest sytuacją wyjątkową, ale potrzebną w modelu. Może wynikać np. ze zbyt małej liczby uczestników, niedostępności miejsca lub organizatora,<br>poważnej awarii infrastruktury albo błędu konfiguracji wykrytego przed rozpoczęciem.
-Szkic `DRAFT`, dla którego nie rozpoczęto zapisów, można trwale usunąć bez tworzenia anulowanego turnieju.
+Anulowanie jest sytuacją wyjątkową, ale potrzebną w modelu. Może wynikać np. ze zbyt małej liczby uczestników, niedostępności miejsca lub organizatora,
+poważnej awarii infrastruktury albo błędu konfiguracji wykrytego przed rozpoczęciem.<br>
+Szkic `DRAFT`, dla którego nie rozpoczęto zapisów, można trwale usunąć bez tworzenia anulowanego turnieju.<br>
 W `REGISTRATION` uprawniony organizator może anulować turniej po podaniu powodu.<br>
-Anulowanie turnieju `ACTIVE` wymaga dodatkowego jawnego potwierdzenia, zapisu osoby wykonującej operację
-i niepustego uzasadnienia.<br>Nie tworzy zwycięzcy i nie kwalifikuje turnieju do historii porównawczej.
+Anulowanie turnieju `ACTIVE` wymaga dodatkowego jawnego potwierdzenia, zapisu osoby wykonującej operację i niepustego uzasadnienia.<br>
+Nie tworzy zwycięzcy i nie kwalifikuje turnieju do historii porównawczej.
 
-Pełne dane turnieju `CANCELLED` są domyślnie przechowywane przez 30 dni od anulowania, aby umożliwić wyjaśnienie sporu, awarii albo podejrzanego zdarzenia. Po upływie tego okresu szczegółowe dane, powiązania z kontami, zgłoszenia, rzuty i swobodny opis powodu są trwale usuwane.<br>Pozostaje wyłącznie anonimowy rekord zbiorczy bez kluczy obcych do użytkowników: data anulowania, etap, kategoria powodu oraz liczba uczestników<br>i rozpoczętych rund. Udokumentowany, nierozstrzygnięty spór może czasowo wstrzymać usunięcie; blokada wymaga uprawnienia administracyjnego, powodu, terminu końcowego i wpisu audytowego.
+Pełne dane turnieju `CANCELLED` są domyślnie przechowywane przez 30 dni od anulowania, aby umożliwić wyjaśnienie sporu,<br>
+awarii albo podejrzanego zdarzenia.<br>
+Po upływie tego okresu szczegółowe dane, powiązania z kontami, zgłoszenia, rzuty i swobodny opis powodu są trwale usuwane.<br>
+Pozostaje wyłącznie anonimowy rekord zbiorczy bez kluczy obcych do użytkowników: data anulowania, etap, kategoria powodu<br>
+oraz liczba uczestników i rozpoczętych rund.<br>
+Udokumentowany, nierozstrzygnięty spór może czasowo wstrzymać usunięcie; blokada wymaga uprawnienia administracyjnego, powodu, terminu końcowego i wpisu audytowego.
 
 ### 4.2. Konfiguracja przed rozpoczęciem
 
@@ -211,9 +220,10 @@ Organizator ustala co najmniej:
 - maksymalny czas na decyzję: bez limitu, 30, 60 albo 90 sekund;
 - zasady publikacji końcowych wyników.
 
-Konfiguracja wpływająca na wynik nie może zostać zmieniona po rozpoczęciu turnieju. Turniej zachowuje wersję zestawu reguł, dzięki czemu historyczne wyniki pozostają interpretowalne po zmianach aplikacji.
+Konfiguracja wpływająca na wynik nie może zostać zmieniona po rozpoczęciu turnieju. Turniej zachowuje wersję zestawu reguł, dzięki czemu historyczne wyniki pozostają interpretowalne po zmianach aplikacji.
 
-Limit 128 dotyczy pojedynczego turnieju, a nie łącznej liczby kont ani uczestnictw historycznych przechowywanych w systemie. Większa skala wymaga osobnych testów obciążeniowych i ponownej oceny sposobu prezentowania oraz synchronizowania wielu stołów.
+Limit 128 dotyczy pojedynczego turnieju, a nie łącznej liczby kont ani uczestnictw historycznych przechowywanych w systemie.<br>
+Większa skala wymaga osobnych testów obciążeniowych i ponownej oceny sposobu prezentowania oraz synchronizowania wielu stołów.
 
 #### 4.2.1. Zapisy do turnieju
 
@@ -225,23 +235,26 @@ Turniej obsługuje dwa tryby zapisów:
 W trybie `OPEN` dołączenie jest możliwe tylko wtedy, gdy turniej ma status `REGISTRATION`,
 zapisy nie zostały ręcznie zamknięte, nie minął termin i pozostaje wolne miejsce.
 Serwis wykonuje sprawdzenie po zablokowaniu rekordu turnieju w transakcji,
-aby przy jednym ostatnim miejscu dwa równoległe żądania nie zapisały dwóch osób.<br>
+aby przy jednym ostatnim miejscu dwa równoległe żądania nie zapisały dwóch osób.<br>
 Pierwsze poprawne żądanie tworzy lub reaktywuje `TournamentParticipant`,
 a drugie otrzymuje konflikt `409`.
 
-Samodzielny zapis nie pozwala uczestnikowi wybrać numeru startowego, rozstawienia,
-grupy ani stołu. Numer startowy i rozstawienie ustala organizator,<br>przydział do
-grup i stołów wyznacza backend, a deklarowany przed turniejem skład drużyny
-zatwierdza organizator.<br>Endpoint `join` nie może służyć do wpływania na żaden
-z tych elementów.
+Samodzielny zapis nie pozwala uczestnikowi wybrać numeru startowego, rozstawienia, grupy ani stołu.<br>
+Numer startowy i rozstawienie ustala organizator,<br>przydział do grup i stołów wyznacza backend,
+a deklarowany przed turniejem skład drużyny zatwierdza organizator.<br>
+Endpoint `join` nie może służyć do wpływania na żaden z tych elementów.
 
-Uczestnik może sam zrezygnować tylko przed rozpoczęciem turnieju. Operacja `leave` ustawia status `WITHDRAWN` i zachowuje informację o wcześniejszym zapisie zamiast usuwać rekord. Ponowne dołączenie przed zamknięciem zapisów jest dozwolone,
-jeżeli nadal istnieje wolne miejsce.<br>Po przejściu turnieju do `ACTIVE` samodzielne `leave` jest odrzucane;
+Uczestnik może sam zrezygnować tylko przed rozpoczęciem turnieju.<br>
+Operacja `leave` ustawia status `WITHDRAWN` i zachowuje informację o wcześniejszym zapisie zamiast usuwać rekord.<br>
+Ponowne dołączenie przed zamknięciem zapisów jest dozwolone, jeżeli nadal istnieje wolne miejsce.<br>
+Po przejściu turnieju do `ACTIVE` samodzielne `leave` jest odrzucane;
 organizator może oznaczyć uczestnika jako wycofanego, podając powód, a operacja trafia do audytu.
 
-Organizator może dodawać uczestników w obu trybach oraz zamknąć zapisy przed terminem. Turniej można rozpocząć dopiero po osiągnięciu minimalnej liczby uczestników i spełnieniu ograniczeń wymaganych przez skonfigurowane grupy oraz fazę pucharową.
+Organizator może dodawać uczestników w obu trybach oraz zamknąć zapisy przed terminem.
+Turniej można rozpocząć dopiero po osiągnięciu minimalnej liczby uczestników i spełnieniu ograniczeń wymaganych przez skonfigurowane grupy oraz fazę pucharową.
 
-Lista turniejów z otwartymi zapisami jest dostępna wyłącznie po zalogowaniu. Przed dołączeniem pokazuje podstawowe informacje, termin, skrót zasad,<br>limit i liczbę wolnych miejsc, ale nie ujawnia pełnej listy uczestników ani danych rozgrywek.
+Lista turniejów z otwartymi zapisami jest dostępna wyłącznie po zalogowaniu.
+Przed dołączeniem pokazuje podstawowe informacje, termin, skrót zasad, limit i liczbę wolnych miejsc, ale nie ujawnia pełnej listy uczestników ani danych rozgrywek.
 
 ### 4.3. Faza grupowa
 
@@ -253,7 +266,7 @@ Lista turniejów z otwartymi zapisami jest dostępna wyłącznie po zalogowaniu.
 - Po zakończeniu rundy surowe wyniki uczestnika są dodawane do jego łącznego wyniku.
 - Po każdej rundzie powstaje aktualny ranking indywidualny.
 - Uczestnicy nie muszą zagrać ze wszystkimi pozostałymi osobami; nie jest to pełny system „każdy z każdym”.
-- Kolejna runda grupowa może zostać utworzona dopiero po zakończeniu wszystkich stołów bieżącej rundy,
+- Kolejna runda grupowa może zostać utworzona dopiero po zakończeniu wszystkich stołów bieżącej rundy,<br>
   ponieważ jej podział zależy od aktualnego rankingu.
 
 W obrębie tej samej rundy stoły działają niezależnie. Nie trzeba czekać, aż uczestnik przy innym stole zakończy swoją turę.
@@ -264,20 +277,18 @@ W obrębie tej samej rundy stoły działają niezależnie. Nie trzeba czekać, a
 2. Przy remisie stosuje się reguły opisane w punkcie 4.7.
 3. Ranking jest dzielony na kolejne koszyki rankingowe. Maksymalna liczba osób w koszyku odpowiada liczbie tworzonych grup.
 4. Koszyki są kolejnymi warstwami rankingu: pierwszy zawiera najwyżej sklasyfikowanych uczestników, następny kolejne miejsca itd.
-5. Kierunek przydzielania koszyków do grup zmienia się naprzemiennie zgodnie z mechanizmem wężykowym:
-  od pierwszej do ostatniej grupy,<br>następnie od ostatniej do pierwszej.
-6. W obrębie każdego koszyka algorytm wyszukuje dopuszczalne permutacje
-   uczestników pomiędzy grupami. Jeżeli istotnego konfliktu nie da się ograniczyć
-   lokalnie, uczestnik może zostać porównany lub zamieniony wyłącznie z osobą
-   z koszyka bezpośrednio sąsiedniego. Poszukiwanie nie przechodzi kaskadowo<br>
-   do dalszych koszyków.
-7. Ograniczenia twarde, funkcja kosztu i ocena przydziałów są deterministyczne.
+5. Kierunek przydzielania koszyków do grup zmienia się naprzemiennie zgodnie z mechanizmem wężykowym:<br>
+  od pierwszej do ostatniej grupy, następnie od ostatniej do pierwszej.
+6. W obrębie każdego koszyka algorytm wyszukuje dopuszczalne permutacje uczestników pomiędzy grupami.<br>
+   Jeżeli istotnego konfliktu nie da się ograniczyć lokalnie, uczestnik może zostać porównany lub zamieniony wyłącznie z osobą
+   z koszyka bezpośrednio sąsiedniego. Poszukiwanie nie przechodzi kaskadowo do dalszych koszyków.
+8. Ograniczenia twarde, funkcja kosztu i ocena przydziałów są deterministyczne.
    Jeżeli istnieje jeden najlepszy wariant, zostaje wybrany.<br>
    Kontrolowane losowanie jest dopuszczalne wyłącznie pomiędzy wariantami o identycznym
    najlepszym koszcie i nie może pogorszyć kosztu<br>ani rozszerzyć obszaru poszukiwania.
-8. Do jednej grupy trafia maksymalnie jedna osoba z danego koszyka.
-9. Uczestnicy są rozdzielani do możliwie równych grup liczących od 2 do 6 osób.
-10. Różnica liczebności największej i najmniejszej grupy nie może przekraczać jednej osoby.
+9. Do jednej grupy trafia maksymalnie jedna osoba z danego koszyka.
+10. Uczestnicy są rozdzielani do możliwie równych grup liczących od 2 do 6 osób.
+11. Różnica liczebności największej i najmniejszej grupy nie może przekraczać jednej osoby.
 
 Dla 16 uczestników i 4 grup bazowy wężyk wygląda następująco:
 
@@ -288,7 +299,9 @@ Koszyk 3:  9 → A, 10 → B, 11 → C, 12 → D
 Koszyk 4: 13 → D, 14 → C, 15 → B, 16 → A
 ```
 
-Otrzymujemy więc bazowo grupy `A: 1, 8, 9, 16`, `B: 2, 7, 10, 15`, `C: 3, 6, 11, 14` i `D: 4, 5, 12, 13`. Jeżeli taki przydział łączy członków tej samej drużyny albo powtarza wcześniejsze spotkanie, algorytm zamienia uczestników wewnątrz odpowiedniego koszyka. Losowość rozstrzyga pomiędzy równie dobrymi, dozwolonymi wariantami.
+Otrzymujemy więc bazowo grupy `A: 1, 8, 9, 16`, `B: 2, 7, 10, 15`, `C: 3, 6, 11, 14` i `D: 4, 5, 12, 13`.<br>
+Jeżeli taki przydział łączy członków tej samej drużyny albo powtarza wcześniejsze spotkanie, algorytm zamienia uczestników wewnątrz odpowiedniego koszyka.<br>
+Losowość rozstrzyga pomiędzy równie dobrymi, dozwolonymi wariantami.
 
 Ograniczenia twarde:
 
@@ -302,9 +315,11 @@ Ograniczenia preferowane:
 - unikanie osób z tej samej drużyny przy jednym stole;
 - unikanie ponownych spotkań tych samych uczestników w fazie grupowej.
 
-Jeżeli idealny przydział nie istnieje, algorytm wybiera rozwiązanie o najmniejszej liczbie i wadze naruszeń preferowanych. Naruszenia oraz przyczyna zastosowania przydziału zastępczego są zapisywane dla organizatora.
+Jeżeli idealny przydział nie istnieje, algorytm wybiera rozwiązanie o najmniejszej liczbie i wadze naruszeń preferowanych.<br>
+Naruszenia oraz przyczyna zastosowania przydziału zastępczego są zapisywane dla organizatora.
 
-Koszyk jest strukturą obliczeniową algorytmu, a nie obowiązkowo osobnym modelem bazodanowym ani widocznym elementem ceremonii. W bazie trzeba zachować końcowy przydział `GroupParticipant`, wersję algorytmu, użyte wagi ograniczeń i ziarno losowania,
+Koszyk jest strukturą obliczeniową algorytmu, a nie obowiązkowo osobnym modelem bazodanowym ani widocznym elementem ceremonii.<br>
+W bazie trzeba zachować końcowy przydział `GroupParticipant`, wersję algorytmu, użyte wagi ograniczeń i ziarno losowania,<br>
 aby dało się odtworzyć sposób utworzenia grup.
 
 ### 4.5. Faza pucharowa i eliminacje
