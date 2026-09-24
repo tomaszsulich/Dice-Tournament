@@ -384,14 +384,13 @@ Kolejność rozegrania rund nie wpływa na tie-break. Porównywane są malejąco
 ### 4.8. Punktacja
 
 - System przechowuje wynik wynikający z zasad gry, ale nie pozwala uczestnikowi wpisać punktów ręcznie.
-- Uczestnik wybiera kategorię punktową, a backend wylicza wartość i zapisuje ją jako pochodną historii rzutów.
-- Te same źródłowe wyniki zasilają ranking indywidualny, średnią rundową drużyny
-  i średni dorobek punktowy na członka zatwierdzonego składu.
-- Wynik uzyskany „z pierwszej ręki”, czyli po pierwszym rzucie tury, jest mnożony razy dwa.
-- Brak wymaganej „szkółki” oznacza karę 50 punktów.
-- Nieskreślenie żadnej figury daje premię 100 punktów.
+- Uczestnik wybiera kategorię punktową, a backend wylicza wartość i zapisuje wynik jako pochodną historii rzutów.
+- Te same dane źródłowe zasilają ranking indywidualny, średnią rundową drużyny i średni dorobek punktowy na członka zatwierdzonego składu.
+- Wynik uzyskany po pierwszym rzucie tury („z pierwszej ręki”) jest podwajany.
+- Niespełnienie wymogu „szkółki”, obejmującej kategorie 1-6, oznacza karę 50 punktów.
+- Zachowanie wszystkich figur bez skreślenia daje premię 100 punktów.
 
-Dokładna lista kategorii i ich funkcje punktujące znajduje się w wersjonowanym zestawie reguł. Silnik punktacji ma być niezależny od warstwy widoków i testowany osobno.
+Dokładna lista kategorii i ich funkcje punktujące znajduje się w wersjonowanym zestawie reguł. Silnik punktacji jest niezależny od warstwy widoków i testowany osobno.
 
 #### Wariant A — malejąca punktacja pokerów
 
