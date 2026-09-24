@@ -239,7 +239,7 @@ Turniej obsługuje dwa tryby zapisów:
 W trybie `OPEN` dołączenie jest możliwe tylko wtedy, gdy turniej ma status `REGISTRATION`,
 zapisy nie zostały ręcznie zamknięte,<br>
 nie minął termin i pozostaje wolne miejsce.
-Serwis wykonuje sprawdzenie po zablokowaniu rekordu turnieju w transakcji,
+Serwis wykonuje sprawdzenie po zablokowaniu rekordu turnieju w transakcji,<br>
 aby przy jednym ostatnim miejscu dwa równoległe żądania nie zapisały dwóch osób.<br>
 Pierwsze poprawne żądanie tworzy lub reaktywuje `TournamentParticipant`,
 a drugie otrzymuje konflikt `409`.
@@ -256,10 +256,10 @@ Po przejściu turnieju do `ACTIVE` samodzielne `leave` jest odrzucane;
 organizator może oznaczyć uczestnika jako wycofanego, podając powód, a operacja trafia do audytu.
 
 Organizator może dodawać uczestników w obu trybach oraz zamknąć zapisy przed terminem.
-Turniej można rozpocząć dopiero po osiągnięciu minimalnej liczby uczestników i spełnieniu ograniczeń wymaganych przez skonfigurowane grupy oraz fazę pucharową.
+Turniej można rozpocząć dopiero po osiągnięciu minimalnej liczby uczestników i spełnieniu ograniczeń wynikających z konfiguracji grup oraz fazy pucharowej.
 
 Lista turniejów z otwartymi zapisami jest dostępna wyłącznie po zalogowaniu.
-Przed dołączeniem pokazuje podstawowe informacje, termin, skrót zasad, limit i liczbę wolnych miejsc, ale nie ujawnia pełnej listy uczestników ani danych rozgrywek.
+Przed dołączeniem pokazuje podstawowe informacje, termin, skrót zasad, maksymalną pojemność i liczbę wolnych miejsc, ale nie ujawnia pełnego składu ani danych rozgrywek.
 
 ### 4.3. Faza grupowa
 
@@ -305,7 +305,7 @@ Koszyk 4: 13 → D, 14 → C, 15 → B, 16 → A
 ```
 
 Otrzymujemy więc bazowo grupy `A: 1, 8, 9, 16`, `B: 2, 7, 10, 15`, `C: 3, 6, 11, 14` i `D: 4, 5, 12, 13`.<br>
-Jeżeli taki przydział łączy członków tej samej drużyny albo powtarza wcześniejsze spotkanie, algorytm zamienia uczestników wewnątrz odpowiedniego koszyka.<br>
+Jeżeli taki przydział łączy członków tej samej drużyny albo powtarza wcześniejsze spotkanie, algorytm zamienia uczestników wewnątrz odpowiedniego koszyka.<br> 
 Losowość rozstrzyga pomiędzy równie dobrymi, dozwolonymi wariantami.
 
 Ograniczenia twarde:
@@ -339,27 +339,28 @@ aby dało się odtworzyć sposób utworzenia grup.
 - Następna runda pucharowa rozpoczyna się dopiero po rozstrzygnięciu wszystkich meczów poprzedniej rundy.
 - Remis decydujący o awansie wymaga dogrywki; losowanie jest dopuszczalne tylko wtedy, gdy dogrywka nie może się odbyć.
 
-Oznacza to, że relacje pomiędzy rundami są dwojakie: rundy grupowe budują wspólny ranking bez eliminacji, natomiast rundy pucharowe tworzą drabinkę,<br>w której wynik meczu wskazuje uczestnika następnego meczu.
+Oznacza to, że relacje pomiędzy rundami są dwojakie: rundy grupowe budują wspólny ranking bez eliminacji,<br>
+natomiast rundy pucharowe tworzą drabinkę, w której wynik meczu wskazuje uczestnika następnego meczu.
 
 ### 4.6. Ranking indywidualny i drużynowy
 
 Ranking indywidualny powstaje z sumy surowych wyników uczestnika w fazie grupowej.
 Ranking ten decyduje o awansie i rozstawieniu.
 
-Podstawowe statystyki uczestnika obejmują sumę, średnią rundową, najlepszą rundę
-i liczbę rozegranych rund.<br>W porównaniach pomiędzy turniejami średnia jest pokazywana razem z liczbą rund.<br>Mediana i odchylenie standardowe mogą zostać dodane w V2 jako analityka uzupełniająca.
+Podstawowe statystyki uczestnika obejmują sumę punktową, średnią rundową, najlepszy wynik rundy oraz liczbę rozegranych rund.<br>
+W porównaniach między turniejami średnia jest pokazywana razem z liczbą rund.<br>
+Mediana i odchylenie standardowe mogą zostać dodane w V2 jako analityka uzupełniająca.
 
 Dla drużyny występują dwie różne miary:
 
 - **średnia rundowa drużyny** — łączna suma punktów zdobytych przez członków
-  podzielona przez liczbę faktycznie rozegranych wyników uczestnik–runda;
+  podzielona przez liczbę ich indywidualnych występów w rundach;
 - **średni dorobek punktowy na członka zatwierdzonego składu** — suma punktów drużyny
   podzielona przez historyczną liczebność zatwierdzonego składu.
 
-Podstawowym porównaniem wyników drużyn pomiędzy turniejami jest średnia rundowa
-drużyny.<br>Statystyki pokazują również łączną sumę punktów, historyczny skład i jego liczebność,
-liczbę osób nadal grających<br>oraz liczbę faktycznie rozegranych wyników uczestnik–runda,
-aby żadna miara nie była analizowana bez kontekstu.
+Podstawowym wskaźnikiem służącym do porównywania wyników drużyn między turniejami jest średnia rundowa drużyny.<br>
+Statystyki pokazują również łączną sumę punktów, historyczny skład i jego liczebność,<br>
+liczbę osób nadal grających oraz liczbę występów uwzględnionych przy obliczaniu średniej, aby żadna miara nie była analizowana bez kontekstu.
 
 Ranking drużynowy:
 
