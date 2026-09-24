@@ -82,7 +82,8 @@ Aplikacja nie udostępnia obserwatorom sterowania rozgrywką ani strategicznych 
 ### 3.2. Organizator
 
 Zalogowany użytkownik przypisany do turnieju jako organizator.<br>
-Tworzy i konfiguruje turniej, zarządza uczestnikami, uruchamia etapy, nadzoruje stoły, reaguje na nieprawidłowości i zatwierdza zakończenie turnieju.
+Tworzy i konfiguruje turniej, zarządza uczestnikami, uruchamia etapy, nadzoruje stoły, reaguje na nieprawidłowości<br>
+i zatwierdza zakończenie turnieju.
 
 Turniej może mieć więcej niż jednego organizatora.<br>
 Osobna rola sędziego ani operatora stołu nie należy do projektu;
@@ -151,7 +152,8 @@ System obejmuje dwa współpracujące, lecz rozdzielone obszary odpowiedzialnoś
 - kategoriami formularza i obliczaniem punktacji.
 
 Domena turniejowa przyjmuje zatwierdzony wynik rozgrywki, ale nie zna reguł rozpoznawania figur ani obsługi kości.<br>
-Domena gry otrzymuje skład stołu i zestaw reguł obowiązujący w turnieju, ale nie decyduje o zapisach, przydziale do rundy, awansie ani klasyfikacji.<br>
+Domena gry otrzymuje skład stołu i zestaw reguł obowiązujący w turnieju, ale nie decyduje o zapisach, przydziale do rundy,<br>
+awansie ani klasyfikacji.<br>
 Granica ta nie wymaga osobnej aplikacji `gameplay` ani budowy silnika dla dowolnych gier.<br>
 Oba obszary pozostają modułami aplikacji `tournaments`, ponieważ rozgrywka nie istnieje w produkcie poza turniejem.
 
@@ -184,8 +186,8 @@ Turniej przechodzi przez kontrolowane statusy:
 3. `ACTIVE` — trwająca faza grupowa lub pucharowa;
 4. `COMPLETED` — rozgrywki zostały zakończone, a rezultaty zablokowane;
 5. `ARCHIVED` — turniej pozostaje w historii, ale nie jest eksponowany w bieżących widokach;
-6. `CANCELLED` — turniej został anulowany bez ogłoszenia końcowych rezultatów; dotychczasowa
-   historia pozostaje czasowo dostępna do audytu, ale nie uczestniczy w porównaniach.
+6. `CANCELLED` — turniej został anulowany bez ogłoszenia końcowych rezultatów;<br>
+    dotychczasowa historia pozostaje czasowo dostępna do audytu, ale nie uczestniczy w porównaniach.
 
 Nie można ponownie otworzyć zakończonego ani anulowanego turnieju zwykłą akcją użytkownika.<br>
 Ewentualna korekta administracyjna musi być jawna, audytowalna i nie może nadpisywać historii bez śladu.
@@ -200,9 +202,10 @@ Nie tworzy zwycięzcy i nie kwalifikuje turnieju do historii porównawczej.
 Pełne dane turnieju `CANCELLED` są domyślnie przechowywane przez 30 dni od anulowania, aby umożliwić wyjaśnienie sporu,<br>
 awarii albo podejrzanego zdarzenia.<br>
 Po upływie tego okresu szczegółowe dane, powiązania z kontami, zgłoszenia, rzuty i swobodny opis powodu są trwale usuwane.<br>
-Pozostaje wyłącznie anonimowy rekord zbiorczy bez kluczy obcych do użytkowników: data anulowania, etap, kategoria powodu<br>
-oraz liczba uczestników i rozpoczętych rund.<br>
-Udokumentowany, nierozstrzygnięty spór może czasowo wstrzymać usunięcie; blokada wymaga uprawnienia administracyjnego, powodu, terminu końcowego i wpisu audytowego.
+Pozostaje wyłącznie anonimowy rekord zbiorczy bez kluczy obcych do użytkowników.<br>
+Obejmuje datę anulowania, etap, kategorię powodu oraz liczbę uczestników i rozpoczętych rund.<br>
+Udokumentowany, nierozstrzygnięty spór może czasowo wstrzymać usunięcie.<br>
+Blokada wymaga uprawnienia administracyjnego, podania powodu i terminu końcowego oraz wpisu audytowego.
 
 ### 4.2. Konfiguracja przed rozpoczęciem
 
@@ -220,7 +223,8 @@ Organizator ustala co najmniej:
 - maksymalny czas na decyzję: bez limitu, 30, 60 albo 90 sekund;
 - zasady publikacji końcowych wyników.
 
-Konfiguracja wpływająca na wynik nie może zostać zmieniona po rozpoczęciu turnieju. Turniej zachowuje wersję zestawu reguł, dzięki czemu historyczne wyniki pozostają interpretowalne po zmianach aplikacji.
+Konfiguracja wpływająca na wynik nie może zostać zmieniona po rozpoczęciu turnieju.<br>
+Turniej zachowuje wersję zestawu reguł, dzięki czemu historyczne wyniki pozostają interpretowalne po zmianach aplikacji.
 
 Limit 128 dotyczy pojedynczego turnieju, a nie łącznej liczby kont ani uczestnictw historycznych przechowywanych w systemie.<br>
 Większa skala wymaga osobnych testów obciążeniowych i ponownej oceny sposobu prezentowania oraz synchronizowania wielu stołów.
@@ -233,7 +237,8 @@ Turniej obsługuje dwa tryby zapisów:
 - `OPEN` — zalogowany użytkownik z `PlayerProfile` może zapisać się samodzielnie.
 
 W trybie `OPEN` dołączenie jest możliwe tylko wtedy, gdy turniej ma status `REGISTRATION`,
-zapisy nie zostały ręcznie zamknięte, nie minął termin i pozostaje wolne miejsce.
+zapisy nie zostały ręcznie zamknięte,<br>
+nie minął termin i pozostaje wolne miejsce.
 Serwis wykonuje sprawdzenie po zablokowaniu rekordu turnieju w transakcji,
 aby przy jednym ostatnim miejscu dwa równoległe żądania nie zapisały dwóch osób.<br>
 Pierwsze poprawne żądanie tworzy lub reaktywuje `TournamentParticipant`,
