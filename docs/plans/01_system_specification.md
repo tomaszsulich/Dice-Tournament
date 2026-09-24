@@ -475,7 +475,7 @@ Po zakończeniu turnieju:
 
 | Pytanie | Decyzja |
 | --- | --- |
-| Czy kolejne rundy eliminują uczestników? | W fazie grupowej nie. Wyniki są sumowane i budują ranking. Eliminacje rozpoczynają się dopiero w fazie pucharowej; zwycięzcy ćwierćfinałów przechodzą do półfinałów itd. |
+| Czy kolejne rundy eliminują uczestników? | W fazie grupowej nie. Wyniki są sumowane i budują ranking.<br>Eliminacje rozpoczynają się dopiero w fazie pucharowej; zwycięzcy ćwierćfinałów przechodzą do półfinałów itd. |
 | Czy turniej działa w systemie „każdy z każdym”? | Nie. Uczestnicy są łączeni w grupy na podstawie rankingu, koszyków i ograniczeń. System ogranicza powtórne spotkania, ale nie wymaga spotkania każdej pary. |
 | Czy następna runda ma czekać na wszystkie stoły, czy dopiero następny etap? | Przy obecnej zasadzie ponownego układania grup z aktualnego rankingu następna runda grupowa musi czekać na zakończenie wszystkich stołów bieżącej rundy. Czekanie wyłącznie przed następnym etapem wymagałoby ustalenia wszystkich grup z góry albo pozostawienia stałych grup, dlatego ten wariant nie został wybrany. Stoły nie czekają natomiast na siebie pomiędzy turami i działają równolegle w obrębie rundy. |
 | Koszyki czy mechanizm wężykowy? | Oba elementy tworzą jeden mechanizm MVP. Ranking jest dzielony na kolejne koszyki o maksymalnej wielkości równej liczbie grup, a koszyki są rozkładane naprzemiennie wężykiem. Wewnątrz koszyka algorytm minimalizuje koszt wspólnych stołów członków tej samej drużyny i powtórnych spotkań. Losuje tylko pomiędzy równoważnymi wariantami o identycznym najlepszym koszcie. „Bezpośredni snake bez koszyków” jest tylko uproszczonym opisem tego samego bazowego rozkładu, w którym koszyki pozostają niejawne. |
