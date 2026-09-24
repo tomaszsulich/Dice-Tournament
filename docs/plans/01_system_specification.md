@@ -422,25 +422,25 @@ Wybrany wariant obowiązuje przez cały turniej i zostaje zablokowany po jego ro
 1. Backend sprawdza, czy trwa tura danego uczestnika, i rozpoczyna ją bez zatrzymanych kości.
 2. Uczestnik wybiera akcję „Rzuć”.
 3. Pierwszy rzut każdej tury zawsze obejmuje wszystkie pięć kości naraz. Przed tym rzutem nie można zatrzymać żadnej kości.
-4. W turnieju zdalnym backend losuje wartości, a w stacjonarnym przyjmuje zweryfikowany przy stole odczyt fizycznych kości.
-  W obu przypadkach zapisuje<br>pełny wynik rzutu i sam oblicza punktację.
-5. Dopiero po pierwszym rzucie uczestnik może kliknąć albo dotknąć wybrane kości.
-Interfejs automatycznie przenosi je do wydzielonej strefy „Zatrzymane kości”<br>albo z powrotem do obszaru rzutu.
-Frontend wysyła zmianę zatrzymania do backendu, a dopiero zapisany stan określa, które kości pozostają<br>
-i które zostaną przerzucone. Przeciąganie nie jest wymaganym sposobem obsługi.
-6. Drugi i trzeci rzut obejmują wyłącznie kości niezatrzymane; wartości kości zatrzymanych pozostają bez zmian.
-7. W turze można wykonać maksymalnie trzy rzuty.
-8. Uczestnik może wcześniej wybrać dostępną kategorię punktową.
-9. Wybór kategorii jest jednoznaczną decyzją kończącą turę i blokuje następne rzuty.
-10. Po trzecim rzucie przycisk pozostaje w stałym miejscu jako nieaktywny.
-    Uczestnik musi wybrać kategorię; dopóki backend nie przyjmie tej decyzji,<br>
-    system nie przechodzi do kolejnej osoby.
-11. Backend oblicza punkty, zapisuje decyzję i przekazuje kolejkę następnej osobie zgodnie z `turn_order`.
+4. W turnieju zdalnym backend losuje wartości, a w stacjonarnym przyjmuje zweryfikowany przy stole odczyt fizycznych kości.<br>
+   W obu przypadkach zapisuje pełny wynik rzutu i sam oblicza punktację.
+5. Dopiero po pierwszym rzucie uczestnik może kliknąć albo dotknąć wybrane kości.<br>
+   Interfejs automatycznie przenosi je do wydzielonej strefy „Zatrzymane kości” albo z powrotem do obszaru rzutu.<br>
+   Frontend wysyła zmianę zatrzymania do backendu, a dopiero zapisany stan określa, które kości pozostają i które zostaną przerzucone.<br>
+   Przeciąganie nie jest wymaganym sposobem obsługi.
+7. Drugi i trzeci rzut obejmują wyłącznie kości niezatrzymane; wartości kości zatrzymanych pozostają bez zmian.
+8. W turze można wykonać maksymalnie trzy rzuty.
+9. Uczestnik może wcześniej wybrać dostępną kategorię punktową.
+10. Wybór kategorii jest jednoznaczną decyzją kończącą turę i blokuje następne rzuty.
+11. Po trzecim rzucie przycisk pozostaje w stałym miejscu jako nieaktywny.<br>
+    Uczestnik musi wybrać kategorię; dopóki backend nie przyjmie tej decyzji, system nie przechodzi do kolejnej osoby.
+12. Backend oblicza punkty, zapisuje decyzję i przekazuje kolejkę następnej osobie zgodnie z `turn_order`.
 
 Każda kolejna tura ponownie zeruje zatrzymania i zaczyna się obowiązkowym rzutem wszystkimi pięcioma kośćmi.<br>
 Zatrzymania nigdy nie przechodzą pomiędzy uczestnikami ani turami.
 
-Kolejność przy stole jest przechowywana jako pozycja. Może być ustawiona przez organizatora; domyślne sortowanie alfabetyczne nie jest regułą domenową.
+Kolejność przy stole jest przechowywana jako pozycja.<br>
+Może być ustawiona przez organizatora; domyślne sortowanie alfabetyczne nie jest regułą domenową.
 
 ### 4.10. Widoczność w trakcie i po turnieju
 
