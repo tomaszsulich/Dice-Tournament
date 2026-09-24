@@ -354,13 +354,13 @@ Mediana i odchylenie standardowe mogą zostać dodane w V2 jako analityka uzu
 Dla drużyny występują dwie różne miary:
 
 - **średnia rundowa drużyny** — łączna suma punktów zdobytych przez członków
-  podzielona przez liczbę ich indywidualnych występów w rundach;
+  podzielona przez łączną liczbę rozegranych przez nich rund;
 - **średni dorobek punktowy na członka zatwierdzonego składu** — suma punktów drużyny
   podzielona przez historyczną liczebność zatwierdzonego składu.
 
 Podstawowym wskaźnikiem służącym do porównywania wyników drużyn między turniejami jest średnia rundowa drużyny.<br>
 Statystyki pokazują również łączną sumę punktów, historyczny skład i jego liczebność,<br>
-liczbę osób nadal grających oraz liczbę występów uwzględnionych przy obliczaniu średniej, aby żadna miara nie była analizowana bez kontekstu.
+liczbę osób nadal grających oraz liczbę rund uwzględnionych w średniej, aby żadna miara nie była analizowana bez kontekstu.
 
 Ranking drużynowy:
 
