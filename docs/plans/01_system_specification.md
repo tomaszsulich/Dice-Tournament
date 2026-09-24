@@ -449,7 +449,8 @@ Formularz pokazuje również dostępne i wykorzystane kategorie wszystkich osób
 Wyłącznie zalogowany uczestnik może wybrać kategorię w swojej aktualnej turze; pozostałe pola są tylko do odczytu.
 
 Obowiązuje zasada zera podpowiedzi.<br>
-System nie wskazuje najlepszej kategorii, nie proponuje kości do zatrzymania, nie pokazuje prawdopodobieństw ani przewidywanych punktów przed podjęciem decyzji.<br>
+System nie wskazuje najlepszej kategorii ani nie proponuje kości do zatrzymania.<br>
+Nie pokazuje również prawdopodobieństw ani przewidywanych punktów przed podjęciem decyzji.<br>
 Formularz informuje jedynie, które pozycje są jeszcze dostępne, a które zostały już wykorzystane.<br>
 Szczegółowej historii rzutów nie można otworzyć podczas trwania turnieju.
 
