@@ -448,7 +448,10 @@ Podczas aktywnej rozgrywki uczestnicy danego stołu widzą wspólny formularz wy
 Formularz pokazuje również dostępne i wykorzystane kategorie wszystkich osób przy tym stole.<br>
 Wyłącznie zalogowany uczestnik może wybrać kategorię w swojej aktualnej turze; pozostałe pola są tylko do odczytu.
 
-Obowiązuje zasada zera podpowiedzi. System nie wskazuje najlepszej kategorii, nie proponuje kości do zatrzymania, nie pokazuje prawdopodobieństw ani przewidywanych punktów przed podjęciem decyzji. Formularz informuje jedynie, które pozycje są jeszcze dostępne, a które zostały już wykorzystane. Szczegółowej historii rzutów nie można otworzyć podczas trwania turnieju.
+Obowiązuje zasada zera podpowiedzi.<br>
+System nie wskazuje najlepszej kategorii, nie proponuje kości do zatrzymania, nie pokazuje prawdopodobieństw ani przewidywanych punktów przed podjęciem decyzji.<br>
+Formularz informuje jedynie, które pozycje są jeszcze dostępne, a które zostały już wykorzystane.<br>
+Szczegółowej historii rzutów nie można otworzyć podczas trwania turnieju.
 
 Po zakończeniu etapu uczestnicy tracą dostęp do wspólnego formularza tego etapu. Do chwili zakończenia całego turnieju nie mogą otworzyć historii rzutów — także własnej. Formularz nie jest jednak usuwany: dla organizatora przechodzi w nieedytowalny widok historyczny powiązany z osią zdarzeń, aby można było wyjaśnić nieprawidłowości.
 
