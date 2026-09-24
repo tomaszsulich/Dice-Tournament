@@ -454,13 +454,17 @@ Nie pokazuje również prawdopodobieństw ani przewidywanych punktów przed podj
 Formularz informuje jedynie, które pozycje są jeszcze dostępne, a które zostały już wykorzystane.<br>
 Szczegółowej historii rzutów nie można otworzyć podczas trwania turnieju.
 
-Po zakończeniu etapu uczestnicy tracą dostęp do wspólnego formularza tego etapu. Do chwili zakończenia całego turnieju nie mogą otworzyć historii rzutów — także własnej. Formularz nie jest jednak usuwany: dla organizatora przechodzi w nieedytowalny widok historyczny powiązany z osią zdarzeń, aby można było wyjaśnić nieprawidłowości.
+Po zakończeniu etapu uczestnicy tracą dostęp do wspólnego formularza tego etapu.<br>
+Do chwili zakończenia całego turnieju nie mogą otworzyć historii rzutów — także własnej.<br>
+Formularz nie jest jednak usuwany. Organizator widzi na osi zdarzeń jego nieedytowalną wersję historyczną.<br>
+Pozwala to wyjaśniać nieprawidłowości.
 
 Po zakończeniu turnieju:
 
 - uczestnik może przeglądać wyłącznie własne rzuty, zatrzymania, decyzje i wyniki;
-- organizator może przeglądać pełną historię wszystkich uczestników swojego turnieju oraz odtworzyć stan wspólnego formularza krok po kroku;
-- uczestnik nie otrzymuje historii rzutów innych osób;
+- organizator może przeglądać pełną historię wszystkich uczestników swojego turnieju;<br>
+  może również odtworzyć stan wspólnego formularza krok po kroku;
+- uczestnik nie otrzymuje dostępu do historii rzutów innych osób;
 - dostęp do porównań jest ograniczony do turniejów ze statusem `COMPLETED` lub `ARCHIVED`.
 
 ---
