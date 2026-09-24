@@ -390,7 +390,8 @@ Kolejność rozegrania rund nie wpływa na tie-break. Porównywane są malejąco
 - Niespełnienie wymogu „szkółki”, obejmującej kategorie 1-6, oznacza karę 50 punktów.
 - Zachowanie wszystkich figur bez skreślenia daje premię 100 punktów.
 
-Dokładna lista kategorii i ich funkcje punktujące znajduje się w wersjonowanym zestawie reguł. Silnik punktacji jest niezależny od warstwy widoków i testowany osobno.
+Dokładna lista kategorii i ich funkcje punktujące znajduje się w wersjonowanym zestawie reguł.<br>
+Silnik punktacji jest niezależny od warstwy widoków i testowany osobno.
 
 #### Wariant A — malejąca punktacja pokerów
 
