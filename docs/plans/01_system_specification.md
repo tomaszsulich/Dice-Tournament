@@ -444,7 +444,9 @@ Może być ustawiona przez organizatora; domyślne sortowanie alfabetyczne nie j
 
 ### 4.10. Widoczność w trakcie i po turnieju
 
-Podczas aktywnej rozgrywki uczestnicy danego stołu widzą wspólny formularz wyników, aktualną kolejkę oraz dostępne i zajęte kategorie wszystkich osób przy tym stole. Edytowalna jest wyłącznie komórka aktualnej tury należąca do zalogowanego uczestnika; pozostałe komórki są tylko do odczytu.
+Podczas aktywnej rozgrywki uczestnicy danego stołu widzą wspólny formularz wyników oraz aktualną kolejność.<br>
+Formularz pokazuje również dostępne i wykorzystane kategorie wszystkich osób przy tym stole.<br>
+Wyłącznie zalogowany uczestnik może wybrać kategorię w swojej aktualnej turze; pozostałe pola są tylko do odczytu.
 
 Obowiązuje zasada zera podpowiedzi. System nie wskazuje najlepszej kategorii, nie proponuje kości do zatrzymania, nie pokazuje prawdopodobieństw ani przewidywanych punktów przed podjęciem decyzji. Formularz informuje jedynie, które pozycje są jeszcze dostępne, a które zostały już wykorzystane. Szczegółowej historii rzutów nie można otworzyć podczas trwania turnieju.
 
