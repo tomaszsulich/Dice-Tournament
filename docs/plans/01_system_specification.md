@@ -385,7 +385,7 @@ Kolejność rozegrania rund nie wpływa na tie-break. Porównywane są malejąco
 
 - System przechowuje wynik wynikający z zasad gry, ale nie pozwala uczestnikowi wpisać punktów ręcznie.
 - Uczestnik wybiera kategorię punktową, a backend wylicza wartość i zapisuje wynik jako pochodną historii rzutów.
-- Te same dane źródłowe zasilają ranking indywidualny, średnią rundową drużyny i średni dorobek punktowy na członka zatwierdzonego składu.
+- Te same dane źródłowe zasilają ranking indywidualny oraz obie miary drużynowe.
 - Wynik uzyskany po pierwszym rzucie tury („z pierwszej ręki”) jest podwajany.
 - Niespełnienie wymogu „szkółki”, obejmującej kategorie 1-6, oznacza karę 50 punktów.
 - Zachowanie wszystkich figur bez skreślenia daje premię 100 punktów.
