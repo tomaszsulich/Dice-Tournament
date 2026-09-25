@@ -482,7 +482,7 @@ Po zakończeniu turnieju:
 | Czy spotkania wewnątrzdrużynowe<br>są bezwzględnie zakazane?<br>Czy powtórne spotkania<br>również są zawsze wykluczone? | Nie, ponieważ dla części składów byłoby to matematycznie niewykonalne.<br>Oba warunki są ograniczeniami preferowanymi o wysokiej wadze.<br>System minimalizuje liczbę naruszeń.<br>Informację o nich pokazuje organizatorowi. |
 | Jak rozstrzyga się<br>mecz pucharowy<br>złożony z kilku rozgrywek? | Wygrywa uczestnik z wyższą sumą surowych wyników wszystkich rozgrywek danego meczu.<br>Remis rozstrzyga dogrywka, a losowanie jest ostatecznością. |
 | Czy ranking drużynowy wpływa na awans? | Nie. Awans i rozstawienie wynikają wyłącznie z rankingu indywidualnego.<br>Ranking drużynowy jest dodatkową klasyfikacją opartą na średniej rundowej drużyny. |
-| Po co status&nbsp;`CANCELLED`?<br>Co dzieje się z jego danymi? | Status obsługuje rzadkie, ale realne zakończenie bez zwycięzcy, np. przy zbyt małej liczbie chętnych, utracie miejsca, niedostępności organizatora, poważnej awarii lub błędzie konfiguracji.<br>Pełne dane są dostępne przez 30 dni na potrzeby audytu i sporów, a następnie trwale usuwane.<br>Pozostaje wyłącznie anonimowy rekord zbiorczy. Turniej nigdy nie trafia do porównań. |
+| Po co status&nbsp;`CANCELLED`?<br>Co dzieje się z jego danymi? | Status obsługuje rzadkie, ale realne zakończenie bez zwycięzcy, np. zbyt małą liczbę chętnych, utratę miejsca, niedostępność organizatora, poważną awarię lub błąd konfiguracji.<br>Pełne dane są dostępne przez 30 dni na potrzeby audytu i sporów, a następnie trwale usuwane.<br>Pozostaje wyłącznie anonimowy rekord zbiorczy. Turniej nigdy nie trafia do porównań. |
 
 ### 5.2. Dane, historia i interfejs gry
 
