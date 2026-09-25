@@ -488,8 +488,8 @@ Po zakończeniu turnieju:
 
 | Pytanie | Decyzja |
 | --- | --- |
-| Czy baza zawiera tylko wyniki? | Nie. Przechowuje każdy zaakceptowany wynik rzutu, jego źródło fizyczne albo wirtualne, zatrzymania, kolejność, wybór kategorii oraz obliczone punkty. Sumy i średnie są agregatami możliwymi do ponownego wyliczenia. |
-| Czy istnieje historia pojedynczej rozgrywki? | Tak. Można odtworzyć tury i rzuty uczestnika oraz wskazać, z jakich danych powstał wynik. Widoczność historii zależy od roli i statusu turnieju. |
+| Czy baza zawiera<br>wyłącznie wyniki? | Nie. Każdy zaakceptowany wynik rzutu jest przechowywany wraz ze źródłem fizycznym albo wirtualnym.<br>Zapis obejmuje też zatrzymania, kolejność, wybór kategorii i obliczone punkty.<br>Sumy i średnie są agregatami, które można ponownie wyliczyć. |
+| Czy istnieje historia pojedynczej rozgrywki? | Tak. Można odtworzyć tury i rzuty uczestnika oraz wskazać, z jakich danych powstał wynik.<br>Widoczność historii zależy od roli i statusu turnieju. |
 | Kiedy uczestnik widzi historię? | W trakcie rozgrywki widzi wspólny formularz i bieżący stan, ale nie szczegółową historię rzutów. Po zakończeniu turnieju widzi wyłącznie własną historię. Nigdy nie otrzymuje szczegółowej historii innych uczestników. Organizator widzi historię nadzorowanego turnieju. |
 | Co dzieje się z formularzem po zakończeniu etapu? | Przestaje być dostępny uczestnikom jako wspólny formularz, ale nie znika z systemu. Dla organizatora staje się nieedytowalnym widokiem historycznym. Organizator może wybrać rundę, stół i rozgrywkę, zobaczyć końcowy formularz oraz odtworzyć jego zmiany krok po kroku. Dostęp pozostaje także po zakończeniu turnieju. Do zakończenia całego turnieju uczestnik nie może otworzyć ani cudzej, ani własnej historii rzutów. |
 | Czy system podpowiada decyzję? | Nie. Pokazuje jedynie dostępność pól wynikającą ze wspólnego formularza. Nie rekomenduje kategorii lub zatrzymań, nie pokazuje prawdopodobieństw ani prognozowanej punktacji przed wyborem. |
