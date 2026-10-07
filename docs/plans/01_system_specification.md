@@ -7,7 +7,7 @@ Polski | [English](01_system_specification.en.md)
 ### 1.1. Wizja
 
 System ma być jedynym, wiarygodnym miejscem do przygotowania, przeprowadzenia i późniejszej analizy uniwersalnych turniejów gry w kości.<br>
-Ma automatyzować czynności organizacyjne, ale nie zastępować decyzji strategicznych uczestników ani ukrywać reguł,<br>
+Ma automatyzować czynności organizacyjne, ale nie zastępować decyzji strategicznych uczestników ani ukrywać reguł,
 według których powstają wyniki i awanse.
 
 ### 1.2. Kontekst biznesowy
